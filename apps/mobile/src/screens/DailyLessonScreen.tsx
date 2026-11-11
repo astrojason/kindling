@@ -7,6 +7,7 @@ import { getStreakStatus } from "@random-knowledge/shared/streak";
 import { useAuth } from "../lib/auth-context";
 import { useTheme } from "../lib/theme";
 import { useDailyLesson } from "../hooks/useDailyLesson";
+import { CategoriesSavedModal } from "../components/CategoriesSavedModal";
 import { CategoryPicker } from "../components/CategoryPicker";
 import { DoneView } from "../components/DoneView";
 import { ErrorView } from "../components/ErrorView";
@@ -83,13 +84,7 @@ export function DailyLessonScreen() {
           )}
         </View>
 
-        {showCategoriesSetting && categoriesSaved && (
-          <View style={styles.categoryToggle}>
-            <Text style={{ color: theme.fgMuted, fontSize: 13 }}>
-              Saved! Future lessons will come from: {selectedCategories.map((key) => CATEGORIES[key]).join(", ")}. Today’s lesson stays the same.
-            </Text>
-          </View>
-        )}
+        <CategoriesSavedModal visible={categoriesSaved} categories={selectedCategories} onClose={() => setCategoriesSaved(false)} />
 
         {showCategoryPicker && (
           <CategoryPicker
@@ -149,7 +144,6 @@ const styles = StyleSheet.create({
   streakBadge: { flexDirection: "row", alignItems: "center", gap: 2 },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 14 },
   badge: { alignSelf: "flex-start", borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, marginTop: 14 },
-  categoryToggle: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 10, marginBottom: 20 },
   streak: { marginTop: 20 },
   footer: { borderTopWidth: 1, paddingTop: 12, marginTop: 24 },
 });
