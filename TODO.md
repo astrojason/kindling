@@ -3,6 +3,7 @@
 ## Brightly UI + features (shipped, needs verification)
 
 - [ ] Try the new Today / Explore / Review / Profile UI with a real account on web, and on mobile after a new local `eas build` (mobile has no gradient or SVG ring: the goal ring is a ring of ticks, the hero card is solid purple). Existing lessons have no diagram or games until new ones are generated; check one fresh lesson shows the diagram and a bonus game, and that the fact-check pass keeps accepting the larger draft (max_tokens raised to 4500).
+- [ ] Daily plan: the app now prepares enough lessons for the daily goal (goal ÷ ~4 min per lesson, capped at 5; extras are stored as `date~2`, `date~3`… and generated on demand one after another when the app opens). Check on a real account that a 15 minute goal yields about 4 lessons, that they show up in history/Explore, and watch OpenAI token use: it multiplies per user (`DAILY_TOKEN_LIMIT` errors show on the lesson that hit it). Consider generating extras in the nightly cron too so they are ready when the app opens
 - [ ] Mobile Explore only lists past lessons (no stash / shared lessons yet)
 
 ## Follow-up

@@ -1,31 +1,58 @@
 import { CATEGORIES } from "@/lib/categories";
-import { estimateMinutes } from "@/lib/lesson-time";
-import type { Lesson } from "@/lib/types";
+import type { PlanItem } from "@/lib/lesson-plan";
 
-/** The purple hero card: today's lesson with a big start button. */
-export function PlanCard({ lesson, done, onStart }: { lesson: Lesson; done: boolean; onStart: () => void }) {
+function rowStatus(item: PlanItem): string {
+  if (item.status === "ready") return item.done ? "Done" : `${item.minutes} min`;
+  if (item.status === "error") return "Failed";
+  return item.status === "generating" ? "Preparing…" : "Queued";
+}
+
+/** The purple hero card: today's lessons (enough to cover the daily goal), each openable once ready. */
+export function PlanCard({ plan, onStart, onOpen, onRetry }: { plan: PlanItem[]; onStart: () => void; onOpen: (key: string) => void; onRetry: () => void }) {
+  const doneCount = plan.filter((item) => item.done).length;
+  const totalMinutes = plan.reduce((sum, item) => sum + (item.minutes ?? 0), 0);
+  const next = plan.find((item) => item.status === "ready" && !item.done);
+  const failed = plan.some((item) => item.status === "error");
+  const preparing = plan.some((item) => item.status === "queued" || item.status === "generating");
   return (
-    <section aria-label="Today's lesson" className="rounded-lg bg-gradient-to-b from-hero-from to-hero-to p-5 text-hero-fg shadow-lg">
-      <p className="text-xs font-extrabold uppercase tracking-wider opacity-80">Today&apos;s lesson</p>
-      <p className="mb-4 mt-1 text-sm opacity-90">~{estimateMinutes(lesson)} min · {done ? "1 of 1 done" : "0 of 1 done"}</p>
-      <div className="mb-4 flex items-center gap-3 rounded-md bg-surface p-3 text-fg-strong">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="size-6">
-            <path d="M12 6.5C10.3 5 8 4.5 4.5 4.5v13c3.5 0 5.8.5 7.5 2 1.7-1.5 4-2 7.5-2v-13C16 4.5 13.7 5 12 6.5ZM12 6.5v13" />
-          </svg>
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-bold text-accent">{CATEGORIES[lesson.category]}</p>
-          <p className="truncate text-base font-extrabold">{lesson.title}</p>
-        </div>
-        <span className="text-xs font-semibold text-fg-muted">{estimateMinutes(lesson)} min</span>
-      </div>
+    <section aria-label="Today's plan" className="rounded-lg bg-gradient-to-b from-hero-from to-hero-to p-5 text-hero-fg shadow-lg">
+      <p className="text-xs font-extrabold uppercase tracking-wider opacity-80">Today&apos;s plan</p>
+      <p className="mb-4 mt-1 text-sm opacity-90">~{totalMinutes} min · {plan.length} {plan.length === 1 ? "lesson" : "lessons"} · {doneCount} of {plan.length} done</p>
+      <ul className="mb-4 flex flex-col gap-2">
+        {plan.map((item) => (
+          <li key={item.key}>
+            <button
+              type="button"
+              disabled={item.status !== "ready"}
+              onClick={() => onOpen(item.key)}
+              className={`flex w-full items-center gap-3 rounded-md p-3 text-left text-fg-strong ${item.done ? "bg-surface/70" : "bg-surface"}`}
+            >
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-extrabold text-accent" aria-hidden="true">
+                {item.done ? "✓" : item.slot}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-xs font-bold text-accent">{item.category ? CATEGORIES[item.category] : `Lesson ${item.slot}`}</span>
+                <span className="block truncate text-sm font-extrabold">{item.title ?? (item.status === "error" ? "Could not prepare this lesson" : "Getting this lesson ready")}</span>
+              </span>
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-fg-muted">
+                {(item.status === "generating") && <span className="size-3.5 animate-spin rounded-full border-2 border-accent-soft border-t-accent" />}
+                {rowStatus(item)}
+              </span>
+            </button>
+            {item.error && <pre role="alert" className="mt-1 whitespace-pre-wrap rounded-sm bg-surface p-2.5 text-xs text-rust select-all">{item.error}</pre>}
+          </li>
+        ))}
+      </ul>
+      {failed && (
+        <button type="button" onClick={onRetry} className="mb-3 w-full rounded-md border-2 border-hero-fg/60 py-2.5 text-sm font-extrabold">Try preparing the rest again</button>
+      )}
       <button
         type="button"
-        onClick={onStart}
-        className="w-full rounded-md bg-surface py-4 text-lg font-extrabold text-accent shadow-sm transition-transform active:scale-[0.99]"
+        disabled={!next && !preparing}
+        onClick={next ? onStart : undefined}
+        className="w-full rounded-md bg-surface py-4 text-lg font-extrabold text-accent shadow-sm disabled:opacity-80"
       >
-        {done ? "Review today’s lesson" : "Start today’s lesson"}
+        {next ? (doneCount > 0 ? "Continue today’s plan" : "Start today’s plan") : preparing ? "Preparing your lessons…" : "Review today’s lessons"}
       </button>
     </section>
   );

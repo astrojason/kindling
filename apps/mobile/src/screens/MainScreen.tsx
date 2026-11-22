@@ -10,17 +10,23 @@ import { ReviewScreen } from "./ReviewScreen";
 export function MainScreen() {
   const [tab, setTab] = useState<Tab>("today");
   const [inLesson, setInLesson] = useState(false);
+  const [todayShown, setTodayShown] = useState(0);
+
+  function changeTab(next: Tab) {
+    if (next === "today" && tab !== "today") setTodayShown((n) => n + 1);
+    setTab(next);
+  }
   const showTabBar = !(tab === "today" && inLesson);
 
   return (
     <View style={{ flex: 1 }}>
       <View style={{ flex: 1, display: tab === "today" ? "flex" : "none" }}>
-        <DailyLessonScreen onFlowChange={setInLesson} onOpenReview={() => setTab("review")} />
+        <DailyLessonScreen onFlowChange={setInLesson} refreshKey={todayShown} onOpenReview={() => changeTab("review")} />
       </View>
       {tab === "explore" && <ExploreScreen />}
       {tab === "review" && <ReviewScreen />}
       {tab === "profile" && <ProfileScreen />}
-      {showTabBar && <TabBar active={tab} onChange={setTab} />}
+      {showTabBar && <TabBar active={tab} onChange={changeTab} />}
     </View>
   );
 }

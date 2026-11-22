@@ -102,6 +102,29 @@ it("logs the generation for admins before responding", async () => {
   expect(logGenerationAdmin).toHaveBeenCalledWith("reader", "Verified lesson", "on-access");
 });
 
+it("records which lesson of the day's plan an extra generation was", async () => {
+  await POST(request({ category: "nature", slot: 3 }));
+  expect(logGenerationAdmin).toHaveBeenCalledWith("reader", "Verified lesson", "on-access", { slot: 3 });
+});
+
+it("ignores a slot that is not a plan lesson number", async () => {
+  await POST(request({ category: "nature", slot: 99 }));
+  expect(logGenerationAdmin).toHaveBeenCalledWith("reader", "Verified lesson", "on-access");
+});
+
+it("logs a failed generation with its error and slot", async () => {
+  vi.mocked(generateSourcedLesson).mockRejectedValue(new Error("Source review failed"));
+  vi.spyOn(console, "error").mockImplementation(() => {});
+  await POST(request({ category: "nature", slot: 2 }));
+  expect(logGenerationAdmin).toHaveBeenCalledWith("reader", "Generation failed", "on-access", { slot: 2, error: "Source review failed" });
+});
+
+it("logs a generation refused for the daily token limit", async () => {
+  vi.mocked(fetch).mockResolvedValue(Response.json({ tokens: 250_000 }));
+  await POST(request());
+  expect(logGenerationAdmin).toHaveBeenCalledWith("reader", "Generation failed", "on-access", { error: expect.stringContaining("Daily token limit reached") });
+});
+
 it("still returns the lesson when logging fails", async () => {
   vi.mocked(logGenerationAdmin).mockRejectedValue(new Error("firestore unavailable"));
   const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});

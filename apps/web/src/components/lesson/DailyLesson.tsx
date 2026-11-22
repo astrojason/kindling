@@ -67,8 +67,14 @@ export function DailyLesson() {
         <div className="mx-auto w-full max-w-[560px] px-4 pb-28 pt-8">
           {editingCategories ? <Card>{picker}</Card> : (
             <TodayHome
-              uid={user.uid} date={date} lesson={lesson} done={!!state.progress?.done} streak={streak}
-              categoryCount={selectedCategories.length} onStart={() => setStarted(true)}
+              uid={user.uid} date={date} plan={state.plan} streak={streak}
+              categoryCount={selectedCategories.length}
+              onStart={() => {
+                const next = state.plan.find((item) => item.status === "ready" && !item.done);
+                if (next) void actions.openLesson(next.key).then(() => setStarted(true));
+              }}
+              onOpen={(key) => void actions.openLesson(key).then(() => setStarted(true))}
+              onRetry={actions.retryPlan}
               onEditCategories={() => setEditingCategories(true)}
             />
           )}
@@ -123,15 +129,33 @@ function LessonPhase({ state, uid }: { state: ReturnType<typeof useDailyLesson>;
 }
 
 function LoadedLesson({ state, uid }: { state: ReturnType<typeof useDailyLesson>; uid?: string }) {
-  const { phase, date, lesson, progress, quiz, preReview, actions } = state;
+  const { phase, lessonKey: date, lesson, progress, quiz, preReview, actions } = state;
   if (!lesson) return null;
   if (phase === "prereview") return <PreReviewView lesson={lesson} preReview={preReview} onAnswer={actions.answerPreReview} onSkip={actions.skipPreReview} />;
   if (phase === "lesson") return <LessonView lesson={lesson} date={date} onStartQuiz={actions.startQuiz} />;
   if (phase === "quiz") return <QuizView lesson={lesson} quiz={quiz} onSelect={actions.selectOption} onNext={actions.nextQuestion} />;
   if (phase !== "done" || !progress) return null;
-  return <DoneView lesson={lesson} date={date} progress={progress} uid={uid} earnedXp={state.earnedXp} rewardError={state.rewardError}
-    onMore={() => actions.adjustWeight(lesson.category, 4)}
-    onLess={() => actions.adjustWeight(lesson.category, -4)} />;
+  const next = state.plan.find((item) => item.status === "ready" && !item.done && item.key !== date);
+  const waiting = state.plan.some((item) => !item.done && item.key !== date && (item.status === "queued" || item.status === "generating"));
+  return (
+    <>
+      {(next || waiting) && (
+        <div className="mb-4 rounded-md bg-accent-soft p-4 text-center">
+          <p className="mb-2 text-sm font-extrabold text-fg-strong">{next ? "Keep going with today’s plan" : "Your next lesson is being prepared…"}</p>
+          {next ? (
+            <button type="button" onClick={() => void actions.openLesson(next.key)} className="rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-accent-fg">
+              Next lesson: {next.title}
+            </button>
+          ) : (
+            <LoadingView text="Preparing" />
+          )}
+        </div>
+      )}
+      <DoneView lesson={lesson} date={date} progress={progress} uid={uid} earnedXp={state.earnedXp} rewardError={state.rewardError}
+        onMore={() => actions.adjustWeight(lesson.category, 4)}
+        onLess={() => actions.adjustWeight(lesson.category, -4)} />
+    </>
+  );
 }
 
 const SETTINGS_PHASES: string[] = ["prereview", "lesson", "quiz", "done"];

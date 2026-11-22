@@ -7,6 +7,8 @@ import { todayStr } from "@random-knowledge/shared/date";
 import { pausedFallbackDate } from "@random-knowledge/shared/paused-generation";
 import { advanceQuiz, initialQuizState, selectAnswer } from "@random-knowledge/shared/quiz";
 import type { DailyProgress, GeneratedLesson, HistoryEntry, Lesson, StreakData } from "@random-knowledge/shared/types";
+import { estimateMinutes } from "@random-knowledge/shared/lesson-time";
+import { lessonsNeeded, slotKey, slotOf, type PlanItem } from "@random-knowledge/shared/lesson-plan";
 import { lessonXp } from "@random-knowledge/shared/xp";
 import {
   addReviewCards,
@@ -18,6 +20,7 @@ import {
   getLesson,
   getProgress,
   getSelectedCategories,
+  getStats,
   getStreak,
   getWeights,
   resetAllUserData,
@@ -48,6 +51,12 @@ export function useDailyLesson(user: User | null) {
   const [rewardError, setRewardError] = useState<string | null>(null);
   const [earnedXp, setEarnedXp] = useState<number | null>(null);
   const sessionStart = useRef<number | null>(null);
+  /** The lesson being read: today's first lesson, or a later one of today's plan. */
+  const [lessonKey, setLessonKey] = useState(todayStr());
+  const [plan, setPlan] = useState<PlanItem[]>([]);
+  const lessons = useRef(new Map<string, Lesson>());
+  const planRun = useRef(0);
+  const context = useRef<{ weights: Weights; history: HistoryEntry[]; categories: CategoryKey[]; paused: boolean } | null>(null);
 
   const showLesson = useCallback((currentLesson: Lesson, savedProgress: DailyProgress | null) => {
     setLessonState(currentLesson);
@@ -89,10 +98,15 @@ export function useDailyLesson(user: User | null) {
       let currentLesson = todaysLesson;
       if (!currentLesson) {
         setPhase("generating");
-        currentLesson = await createDailyLesson(user, today, weightsData, history, categoriesData ?? CATEGORY_KEYS);
+        currentLesson = (await createDailyLesson(user, today, weightsData, history, categoriesData ?? CATEGORY_KEYS)).lesson;
       }
 
       showLesson(currentLesson, progressData);
+      lessons.current = new Map([[today, currentLesson]]);
+      setLessonKey(today);
+      setPlan([planItem(1, today, currentLesson, !!progressData?.done)]);
+      context.current = { weights: weightsData, history: updatedHistory(history, currentLesson, todaysLesson, today), categories: categoriesData ?? CATEGORY_KEYS, paused: !!fallbackDate };
+      void preparePlan(user, today);
     } catch (err) {
       console.error("useDailyLesson load failed:", err);
       setErrorMessage(errorMessageFor(err, "Something went wrong."));
@@ -106,7 +120,6 @@ export function useDailyLesson(user: User | null) {
     // Intentional: (re)load today's lesson/streak/progress whenever the
     // signed-in user changes. This is a genuine remote-data fetch keyed off
     // `user`, not derived state.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
 
@@ -175,9 +188,10 @@ export function useDailyLesson(user: User | null) {
     };
     busy.current = true;
     try {
-      const saved = await completeDailyLesson(uid, date, finalProgress);
+      const saved = await completeDailyLesson(uid, lessonKey, finalProgress);
       setStreakState(saved.streak);
       setProgressState(saved.progress);
+      setPlan((items) => items.map((item) => (item.key === lessonKey ? { ...item, done: true } : item)));
       setPhase("done");
       // Only the save that actually recorded this completion earns points (a second device gets the saved result back instead).
       if (saved.progress === finalProgress) await saveRewards(uid, completedLesson, finalProgress.correct);
@@ -190,6 +204,73 @@ export function useDailyLesson(user: User | null) {
     }
   }
 
+  /** Makes the plan's other lessons for today ready: enough to cover the daily goal, generated one after another in the background. */
+  async function preparePlan(u: User, today: string) {
+    const ctx = context.current;
+    const first = lessons.current.get(today);
+    if (!ctx || !first || ctx.paused) return;
+    const run = ++planRun.current;
+    try {
+      const { goalMinutes } = await getStats(u.uid);
+      const needed = lessonsNeeded(goalMinutes, estimateMinutes(first));
+      setPlan((items) => [
+        ...items.filter((item) => item.slot <= needed || item.status === "ready"),
+        ...Array.from({ length: needed }, (_, i) => i + 1)
+          .filter((slot) => !items.some((item) => item.slot === slot))
+          .map((slot) => ({ slot, key: slotKey(today, slot), status: "queued" as const, done: false })),
+      ].sort((a, b) => a.slot - b.slot));
+      for (let slot = 2; slot <= needed; slot++) {
+        if (planRun.current !== run) return;
+        const key = slotKey(today, slot);
+        if (lessons.current.has(key)) continue;
+        setPlan((items) => items.map((item) => (item.key === key ? { ...item, status: "generating", error: undefined } : item)));
+        try {
+          let lesson = await getLesson(u.uid, key);
+          if (!lesson) {
+            const created = await createDailyLesson(u, key, ctx.weights, ctx.history, ctx.categories);
+            lesson = created.lesson;
+            ctx.history = created.history;
+          }
+          const done = !!(await getProgress(u.uid, key))?.done;
+          const ready = lesson;
+          lessons.current.set(key, ready);
+          setPlan((items) => items.map((item) => (item.key === key ? planItem(slot, key, ready, done) : item)));
+        } catch (err) {
+          console.error(`Preparing lesson ${slot} of today's plan failed:`, err);
+          setPlan((items) => items.map((item) => (item.key === key ? { ...item, status: "error", error: errorMessageFor(err, "Could not prepare this lesson.") } : item)));
+          return;
+        }
+      }
+    } catch (err) {
+      console.error("Planning today's lessons failed:", err);
+      setPlan((items) => items.map((item) => (item.status === "ready" ? item : { ...item, status: "error", error: errorMessageFor(err, "Could not plan today's lessons.") })));
+    }
+  }
+
+  /** Re-checks the daily goal and prepares any extra lessons it now calls for (e.g. after raising the goal in Profile). */
+  function refreshPlan() {
+    if (user && !busy.current) void preparePlan(user, date);
+  }
+
+  /** Opens one of today's prepared lessons (its saved result if already finished). */
+  async function openLesson(key: string) {
+    const next = lessons.current.get(key);
+    if (!user || !next || busy.current) return;
+    try {
+      const savedProgress = await getProgress(user.uid, key);
+      sessionStart.current = null;
+      setLessonKey(key);
+      setErrorMessage(null);
+      setRewardError(null);
+      setEarnedXp(null);
+      showLesson(next, savedProgress);
+    } catch (err) {
+      console.error("Failed to open the lesson:", err);
+      setErrorMessage(errorMessageFor(err, "Could not open this lesson."));
+      setPhase("error");
+    }
+  }
+
   /** Points, learning time and review cards for a finished lesson. A failure is shown on the results screen, never swallowed. */
   async function saveRewards(uid: string, completedLesson: Lesson, correct: number) {
     const xp = lessonXp(correct);
@@ -199,7 +280,7 @@ export function useDailyLesson(user: User | null) {
     try {
       await addStats(uid, date, { xp, seconds });
       setEarnedXp(xp);
-      await addReviewCards(uid, completedLesson, date);
+      await addReviewCards(uid, completedLesson, lessonKey);
     } catch (err) {
       console.error("Failed to save points and review cards:", err);
       setRewardError(errorMessageFor(err, "Your points and review cards could not be saved."));
@@ -221,6 +302,7 @@ export function useDailyLesson(user: User | null) {
   async function resetAll() {
     if (!user) return;
     try {
+      planRun.current++;
       await resetAllUserData(user.uid);
       setStreakState({ streak: 0, longest: 0, lastDate: null });
       setWeightsState(defaultWeights());
@@ -252,7 +334,9 @@ export function useDailyLesson(user: User | null) {
     rewardError,
     earnedXp,
     categoryKeys: CATEGORY_KEYS,
-    actions: { retry: load, startQuiz, selectOption, nextQuestion, adjustWeight, resetAll, saveCategories },
+    lessonKey,
+    plan,
+    actions: { retry: load, openLesson, retryPlan: refreshPlan, refreshPlan, startQuiz, selectOption, nextQuestion, adjustWeight, resetAll, saveCategories },
   };
 }
 
@@ -264,7 +348,7 @@ function canRefreshLesson(phase: Phase, busy: boolean): boolean {
   return AppState.currentState === "active" && phase !== "quiz" && !busy;
 }
 
-async function createDailyLesson(user: User, date: string, weights: Weights, history: HistoryEntry[], categories: CategoryKey[]): Promise<Lesson> {
+async function createDailyLesson(user: User, date: string, weights: Weights, history: HistoryEntry[], categories: CategoryKey[]): Promise<{ lesson: Lesson; history: HistoryEntry[] }> {
   if (!API_BASE_URL) throw new Error("EXPO_PUBLIC_API_BASE_URL is not set — see apps/mobile/.env.local.example.");
   const recentCats = history.slice(-2).map((entry) => entry.category);
   const category = pickCategory(weights, recentCats, categories);
@@ -273,7 +357,7 @@ async function createDailyLesson(user: User, date: string, weights: Weights, his
   const res = await fetch(`${API_BASE_URL}/api/generate-lesson`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
-    body: JSON.stringify({ category, recentTitles }),
+    body: JSON.stringify({ category, recentTitles, ...(slotOf(date) > 1 && { slot: slotOf(date) }) }),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
@@ -281,6 +365,16 @@ async function createDailyLesson(user: User, date: string, weights: Weights, his
   }
   const lesson: GeneratedLesson & { category: CategoryKey } = await res.json();
   await setLesson(user.uid, date, lesson);
-  await appendHistory(user.uid, { date, category, title: lesson.title }, history);
-  return lesson;
+  const nextHistory = await appendHistory(user.uid, { date, category, title: lesson.title }, history);
+  return { lesson, history: nextHistory };
+}
+
+function planItem(slot: number, key: string, lesson: Lesson, done: boolean): PlanItem {
+  return { slot, key, status: "ready", done, title: lesson.title, category: lesson.category, minutes: estimateMinutes(lesson) };
+}
+
+/** History as of now: a freshly generated first lesson was just appended to it, a saved one already was. */
+function updatedHistory(history: HistoryEntry[], lesson: Lesson, saved: Lesson | null, today: string): HistoryEntry[] {
+  if (saved || history.some((entry) => entry.date === today)) return history;
+  return [...history, { date: today, category: lesson.category, title: lesson.title }].slice(-60);
 }

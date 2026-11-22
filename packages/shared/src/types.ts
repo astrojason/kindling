@@ -131,6 +131,10 @@ export interface GenerationLogEntry {
   createdAt: string;
   /** Absent on entries logged before the source was recorded. */
   source?: GenerationSource;
+  /** Which lesson of the day's plan this was (2 and up); absent for the first lesson and older entries. */
+  slot?: number;
+  /** Set when the generation failed (or was refused); `title` is then "Generation failed". */
+  error?: string;
 }
 
 /** One user's outcome within a daily-lesson cron run (src/app/api/cron/generate-daily-lesson/route.ts). */

@@ -25,6 +25,7 @@ export function ProfileScreen() {
   const [data, setData] = useState<{ stats: StatsData; streak: StreakData } | null>(null);
   const [goal, setGoal] = useState<number | null>(null);
   const [savingGoal, setSavingGoal] = useState<number | null>(null);
+  const [goalSaved, setGoalSaved] = useState<number | null>(null);
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,10 +45,12 @@ export function ProfileScreen() {
   async function chooseGoal(minutes: number) {
     if (!user) return;
     setSavingGoal(minutes);
+    setGoalSaved(null);
     setError(null);
     try {
       await setGoalMinutes(user.uid, minutes);
       setGoal(minutes);
+      setGoalSaved(minutes);
     } catch (err) {
       console.error("Failed to save the daily goal:", err);
       setError(err instanceof Error ? err.message : "Could not save your daily goal.");
@@ -109,6 +112,11 @@ export function ProfileScreen() {
                   </Pressable>
                 ))}
               </View>
+              {goalSaved !== null && (
+                <Text accessibilityRole="alert" style={{ color: theme.success, fontSize: 13, fontWeight: "700", marginTop: 8 }}>
+                  ✓ Daily goal saved: {goalSaved} minutes.
+                </Text>
+              )}
             </View>
           </>
         )}

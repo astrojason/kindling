@@ -17,9 +17,9 @@ import { LoadingView } from "../components/LoadingView";
 import { QuizView } from "../components/QuizView";
 import { StreakStatus } from "../components/StreakStatus";
 import { TodayHome } from "../components/TodayHome";
-import { Card } from "../components/ui";
+import { Button, Card } from "../components/ui";
 
-export function DailyLessonScreen({ onFlowChange, onOpenReview }: { onFlowChange: (inFlow: boolean) => void; onOpenReview: () => void }) {
+export function DailyLessonScreen({ onFlowChange, onOpenReview, refreshKey }: { onFlowChange: (inFlow: boolean) => void; onOpenReview: () => void; refreshKey: number }) {
   const theme = useTheme();
   const { user, signOut } = useAuth();
   const state = useDailyLesson(user);
@@ -32,6 +32,12 @@ export function DailyLessonScreen({ onFlowChange, onOpenReview }: { onFlowChange
   const showCategoriesSetting = canEditCategories && !editingCategories;
   const streakCount = getStreakStatus(streak, date).count;
   const showHome = !started && !!user && !!lesson && ["lesson", "done"].includes(phase);
+
+  const { refreshPlan } = actions;
+  useEffect(() => {
+    // Coming back to Today: a changed daily goal may call for more lessons.
+    if (refreshKey > 0) refreshPlan();
+  }, [refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     onFlowChange(started);
@@ -79,11 +85,16 @@ export function DailyLessonScreen({ onFlowChange, onOpenReview }: { onFlowChange
           <TodayHome
             uid={user.uid}
             date={date}
-            lesson={lesson}
-            done={!!state.progress?.done}
+            plan={state.plan}
             streak={streak}
             categoryCount={selectedCategories.length}
-            onStart={() => setStarted(true)}
+            refreshKey={refreshKey}
+            onStart={() => {
+              const next = state.plan.find((item) => item.status === "ready" && !item.done);
+              if (next) void actions.openLesson(next.key).then(() => setStarted(true));
+            }}
+            onOpen={(key) => void actions.openLesson(key).then(() => setStarted(true))}
+            onRetry={actions.retryPlan}
             onEditCategories={() => {
               setEditingCategories(true);
               setCategoriesSaved(false);
@@ -161,7 +172,8 @@ export function DailyLessonScreen({ onFlowChange, onOpenReview }: { onFlowChange
 }
 
 function LessonPhase({ state, uid }: { state: ReturnType<typeof useDailyLesson>; uid?: string }) {
-  const { phase, date, lesson, progress, quiz, errorMessage, actions } = state;
+  const theme = useTheme();
+  const { phase, lessonKey: date, lesson, progress, quiz, errorMessage, actions } = state;
   if (phase === "loading") return <LoadingView text="Setting things up" />;
   if (phase === "generating") return <LoadingView text="Researching and checking today’s lesson" />;
   if (phase === "error") return <ErrorView message={errorMessage ?? "Unknown error"} onRetry={actions.retry} />;
@@ -169,7 +181,16 @@ function LessonPhase({ state, uid }: { state: ReturnType<typeof useDailyLesson>;
   if (phase === "lesson") return <LessonView lesson={lesson} date={date} onStartQuiz={actions.startQuiz} />;
   if (phase === "quiz") return <QuizView lesson={lesson} quiz={quiz} onSelect={actions.selectOption} onNext={actions.nextQuestion} />;
   if (phase !== "done" || !progress) return null;
+  const next = state.plan.find((item) => item.status === "ready" && !item.done && item.key !== date);
+  const waiting = state.plan.some((item) => !item.done && item.key !== date && (item.status === "queued" || item.status === "generating"));
   return (
+    <View>
+      {(next || waiting) && (
+        <View style={{ backgroundColor: theme.accentSoft, borderRadius: 24, padding: 16, marginBottom: 16, alignItems: "center", gap: 10 }}>
+          <Text style={{ color: theme.fgStrong, fontSize: 14, fontWeight: "800" }}>{next ? "Keep going with today’s plan" : "Your next lesson is being prepared…"}</Text>
+          {next ? <Button title={`Next lesson: ${next.title}`} onPress={() => void actions.openLesson(next.key)} /> : <LoadingView text="Preparing" />}
+        </View>
+      )}
     <DoneView
       lesson={lesson}
       date={date}
@@ -180,6 +201,7 @@ function LessonPhase({ state, uid }: { state: ReturnType<typeof useDailyLesson>;
       onMore={() => actions.adjustWeight(lesson.category, 4)}
       onLess={() => actions.adjustWeight(lesson.category, -4)}
     />
+    </View>
   );
 }
 

@@ -7,8 +7,8 @@ interface ProgressData {
   cards: ReviewCard[];
 }
 
-/** Points, daily goal, learning time and review cards for a user; `reload` refetches after they change. */
-export function useProgressData(uid: string) {
+/** Points, daily goal, learning time and review cards for a user; `reload` or a new `refreshKey` refetches after they change. */
+export function useProgressData(uid: string, refreshKey = 0) {
   const [data, setData] = useState<ProgressData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
@@ -29,7 +29,7 @@ export function useProgressData(uid: string) {
     return () => {
       cancelled = true;
     };
-  }, [uid, version]);
+  }, [uid, version, refreshKey]);
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
   return { data, error, loading: !data && !error, reload };

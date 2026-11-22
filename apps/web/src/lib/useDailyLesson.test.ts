@@ -11,7 +11,7 @@ import type { Lesson } from "./types";
 
 vi.mock("./firestore", () => ({
   addReviewCards: vi.fn(), addStats: vi.fn(), appendHistory: vi.fn(), completeDailyLesson: vi.fn(), getAccessRequest: vi.fn(), getHistory: vi.fn(), getLesson: vi.fn(),
-  getPreReviewEnabled: vi.fn(), getProgress: vi.fn(), getSelectedCategories: vi.fn(), getStreak: vi.fn(), getWeights: vi.fn(),
+  getPreReviewEnabled: vi.fn(), getProgress: vi.fn(), getSelectedCategories: vi.fn(), getStats: vi.fn(), getStreak: vi.fn(), getWeights: vi.fn(),
   resetAllUserData: vi.fn(), setLesson: vi.fn(), setSelectedCategories: vi.fn(), setWeights: vi.fn(),
 }));
 
@@ -45,6 +45,7 @@ beforeEach(() => {
   vi.mocked(store.getHistory).mockResolvedValue([]);
   vi.mocked(store.getAccessRequest).mockResolvedValue(null);
   vi.mocked(store.getProgress).mockResolvedValue(null);
+  vi.mocked(store.getStats).mockResolvedValue({ xp: 0, goalMinutes: 1, seconds: {} });
   vi.mocked(store.getPreReviewEnabled).mockResolvedValue(false);
   vi.mocked(store.getSelectedCategories).mockResolvedValue(["nature"]);
   root = createRoot(document.createElement("div"));
@@ -257,5 +258,43 @@ describe("category preference weights", () => {
     await mount();
     await expect(act(async () => current.actions.adjustWeight("nature", 4))).rejects.toThrow("offline");
     expect(current.weights.nature).toBe(10);
+  });
+});
+
+describe("preparing enough lessons for the daily goal", () => {
+  it("generates the other lessons of the plan under date~slot keys and records them in history", async () => {
+    vi.mocked(store.getStats).mockResolvedValue({ xp: 0, goalMinutes: 3, seconds: {} });
+    vi.mocked(store.getLesson).mockImplementation(async (_uid, key) => (key.includes("~") ? null : lesson));
+    vi.mocked(store.appendHistory).mockImplementation(async (_uid, entry, existing) => [...existing, entry]);
+    vi.mocked(fetch).mockImplementation(async () => Response.json(lesson));
+    await mount();
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
+    const date = current.date;
+    expect(current.plan.map((item) => [item.key, item.status])).toEqual([[date, "ready"], [`${date}~2`, "ready"], [`${date}~3`, "ready"]]);
+    expect(store.setLesson).toHaveBeenCalledWith(user.uid, `${date}~2`, lesson);
+    expect(store.appendHistory).toHaveBeenLastCalledWith(user.uid, expect.objectContaining({ date: `${date}~3` }), expect.arrayContaining([expect.objectContaining({ date: `${date}~2` })]));
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(fetch).mock.calls.map(([, init]) => JSON.parse(String(init?.body)).slot)).toEqual([2, 3]);
+  });
+
+  it("shows a failed extra lesson as an error on that lesson without breaking the first", async () => {
+    vi.mocked(store.getStats).mockResolvedValue({ xp: 0, goalMinutes: 3, seconds: {} });
+    vi.mocked(store.getLesson).mockImplementation(async (_uid, key) => (key.includes("~") ? null : lesson));
+    vi.mocked(fetch).mockResolvedValue(Response.json({ error: "Daily token limit reached" }, { status: 429 }));
+    await mount();
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
+    expect(current.phase).toBe("lesson");
+    expect(current.plan[1]).toMatchObject({ status: "error", error: "Daily token limit reached" });
+  });
+
+  it("does not generate extras when auto generation is off", async () => {
+    vi.mocked(store.getStats).mockResolvedValue({ xp: 0, goalMinutes: 20, seconds: {} });
+    vi.mocked(store.getAccessRequest).mockResolvedValue({ uid: "reader", email: null, displayName: null, status: "granted", firstSeenAt: "x", lastSeenAt: "x", autoGeneration: false } as never);
+    vi.mocked(store.getHistory).mockResolvedValue([{ date: "2026-09-20", category: "nature", title: "Old" }]);
+    vi.mocked(store.getLesson).mockImplementation(async (_uid, key) => (key === "2026-09-20" ? lesson : null));
+    await mount();
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
+    expect(fetch).not.toHaveBeenCalled();
+    expect(current.plan).toHaveLength(1);
   });
 });

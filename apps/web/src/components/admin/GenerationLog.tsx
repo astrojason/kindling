@@ -15,9 +15,19 @@ export function GenerationLog({ entries, requests }: { entries: GenerationLogEnt
     <ul className="flex flex-col gap-2">
       {entries.map((entry) => (
         <li key={`${entry.uid}-${entry.createdAt}`} className="rounded-sm border border-border bg-surface-raised px-4 py-3 text-sm text-fg">
-          <span className="font-medium">{entry.title}</span> generated for {labelFor(entry.uid, requests)}
+          {entry.error ? (
+            <>
+              <span className="font-medium text-rust">Failed</span> for {labelFor(entry.uid, requests)}
+              <pre className="mt-1 whitespace-pre-wrap rounded-sm bg-rust-soft p-2 text-xs text-rust select-all">{entry.error}</pre>
+            </>
+          ) : (
+            <>
+              <span className="font-medium">{entry.title}</span> generated for {labelFor(entry.uid, requests)}
+            </>
+          )}
           <span className="block text-xs text-fg-muted">
             {entry.source && `${SOURCE_LABELS[entry.source]} · `}
+            {entry.slot && `Lesson ${entry.slot} of the day’s plan · `}
             {new Date(entry.createdAt).toLocaleString()}
           </span>
         </li>

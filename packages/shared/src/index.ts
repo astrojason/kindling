@@ -12,3 +12,4 @@ export * from "./srs";
 export * from "./games";
 export * from "./lesson-time";
 export * from "./clock";
+export * from "./lesson-plan";

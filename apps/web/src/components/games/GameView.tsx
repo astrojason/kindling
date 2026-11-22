@@ -1,5 +1,6 @@
 "use client";
 
+import { baseDate } from "@/lib/lesson-plan";
 import { nowMs } from "@/lib/clock";
 import { useRef, useState } from "react";
 import { OrderGame } from "@/components/games/OrderGame";
@@ -30,7 +31,7 @@ export function GameView({ uid, date, game, played, onPlayed }: { uid: string; d
     setPhase("saving");
     setError(null);
     try {
-      await addStats(uid, date, { xp, seconds });
+      await addStats(uid, baseDate(date), { xp, seconds });
       await markGamePlayed(uid, date);
       setEarned(xp);
       setPhase("done");

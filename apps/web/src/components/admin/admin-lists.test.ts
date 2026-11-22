@@ -88,6 +88,17 @@ describe("generation log", () => {
     expect(container.textContent).toContain("Generated on page access");
   });
 
+  it("labels a later lesson of the day's plan with its number", async () => {
+    await render([entry({ source: "on-access", slot: 3 })]);
+    expect(container.textContent).toContain("Lesson 3 of the day’s plan");
+  });
+
+  it("shows a failed generation with its full error", async () => {
+    await render([entry({ title: "Generation failed", source: "on-access", error: "Daily token limit reached (250,000 / 250,000)" })]);
+    expect(container.textContent).toContain("Failed");
+    expect(container.textContent).toContain("Daily token limit reached (250,000 / 250,000)");
+  });
+
   it("doesn't guess for older entries logged before the source was recorded", async () => {
     await render([entry({})]);
     expect(container.textContent).not.toMatch(/Auto-generated|Generated on page access/);

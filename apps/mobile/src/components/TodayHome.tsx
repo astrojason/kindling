@@ -1,10 +1,10 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { SymbolView } from "expo-symbols";
 import { CATEGORIES } from "@random-knowledge/shared/categories";
-import { estimateMinutes } from "@random-knowledge/shared/lesson-time";
+import type { PlanItem } from "@random-knowledge/shared/lesson-plan";
 import { dueCards } from "@random-knowledge/shared/srs";
 import { getStreakStatus } from "@random-knowledge/shared/streak";
-import type { Lesson, StatsData, StreakData } from "@random-knowledge/shared/types";
+import type { StatsData, StreakData } from "@random-knowledge/shared/types";
 import { goalFraction, levelFor, minutesOn, weekDays } from "@random-knowledge/shared/xp";
 import { useProgressData } from "../hooks/useProgressData";
 import { radius, useTheme } from "../lib/theme";
@@ -12,27 +12,40 @@ import { ErrorBox } from "./ErrorBox";
 import { GoalRing } from "./GoalRing";
 import { LoadingView } from "./LoadingView";
 
+function rowStatus(item: PlanItem): string {
+  if (item.status === "ready") return item.done ? "Done" : `${item.minutes} min`;
+  if (item.status === "error") return "Failed";
+  return item.status === "generating" ? "Preparing…" : "Queued";
+}
+
 const WEEKDAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
 
 /** The Today tab: greeting, streak and points, daily goal, today's lesson, review and shortcuts. */
 export function TodayHome({
-  uid, date, lesson, done, streak, categoryCount, onStart, onEditCategories, onOpenReview,
+  uid, date, plan, streak, categoryCount, refreshKey, onStart, onOpen, onRetry, onEditCategories, onOpenReview,
 }: {
   uid: string;
   date: string;
-  lesson: Lesson;
-  done: boolean;
+  plan: PlanItem[];
   streak: StreakData;
   categoryCount: number;
+  /** Changes whenever the tab is shown again, so goal and points edited elsewhere are re-read. */
+  refreshKey: number;
   onStart: () => void;
+  onOpen: (key: string) => void;
+  onRetry: () => void;
   onEditCategories: () => void;
   onOpenReview: () => void;
 }) {
   const theme = useTheme();
-  const progress = useProgressData(uid);
+  const progress = useProgressData(uid, refreshKey);
   const stats = progress.data?.stats;
   const dueCount = progress.data ? dueCards(progress.data.cards, date).length : 0;
-  const minutes = estimateMinutes(lesson);
+  const doneCount = plan.filter((item) => item.done).length;
+  const totalMinutes = plan.reduce((sum, item) => sum + (item.minutes ?? 0), 0);
+  const next = plan.find((item) => item.status === "ready" && !item.done);
+  const failed = plan.some((item) => item.status === "error");
+  const preparing = plan.some((item) => item.status === "queued" || item.status === "generating");
 
   return (
     <View style={styles.stack}>
@@ -51,20 +64,47 @@ export function TodayHome({
 
       <View style={[styles.hero, { backgroundColor: theme.heroFrom }]}>
         <View style={[styles.heroGlow, { backgroundColor: theme.heroTo }]} />
-        <Text style={[styles.heroLabel, { color: theme.heroFg }]}>TODAY’S LESSON</Text>
-        <Text style={[styles.heroMeta, { color: theme.heroFg }]}>~{minutes} min · {done ? "1 of 1 done" : "0 of 1 done"}</Text>
-        <View style={[styles.lessonRow, { backgroundColor: theme.surface }]}>
-          <View style={[styles.lessonIcon, { backgroundColor: theme.accentSoft }]}>
-            <SymbolView name="book.fill" size={22} tintColor={theme.accent} />
+        <Text style={[styles.heroLabel, { color: theme.heroFg }]}>TODAY’S PLAN</Text>
+        <Text style={[styles.heroMeta, { color: theme.heroFg }]}>
+          ~{totalMinutes} min · {plan.length} {plan.length === 1 ? "lesson" : "lessons"} · {doneCount} of {plan.length} done
+        </Text>
+        {plan.map((item) => (
+          <View key={item.key} style={styles.planItem}>
+            <Pressable
+              accessibilityRole="button"
+              disabled={item.status !== "ready"}
+              onPress={() => onOpen(item.key)}
+              style={[styles.lessonRow, { backgroundColor: theme.surface, opacity: item.done ? 0.75 : 1 }]}
+            >
+              <View style={[styles.lessonIcon, { backgroundColor: theme.accentSoft }]}>
+                <Text style={{ color: theme.accent, fontSize: 15, fontWeight: "800" }}>{item.done ? "✓" : item.slot}</Text>
+              </View>
+              <View style={styles.flex}>
+                <Text style={{ color: theme.accent, fontSize: 12, fontWeight: "700" }}>{item.category ? CATEGORIES[item.category] : `Lesson ${item.slot}`}</Text>
+                <Text numberOfLines={1} style={{ color: theme.fgStrong, fontSize: 15, fontWeight: "800" }}>
+                  {item.title ?? (item.status === "error" ? "Could not prepare this lesson" : "Getting this lesson ready")}
+                </Text>
+              </View>
+              {item.status === "generating" && <ActivityIndicator color={theme.accent} />}
+              <Text style={{ color: theme.fgMuted, fontSize: 12, fontWeight: "600" }}>{rowStatus(item)}</Text>
+            </Pressable>
+            {item.error && <ErrorBox message={item.error} />}
           </View>
-          <View style={styles.flex}>
-            <Text style={{ color: theme.accent, fontSize: 12, fontWeight: "700" }}>{CATEGORIES[lesson.category]}</Text>
-            <Text numberOfLines={1} style={{ color: theme.fgStrong, fontSize: 16, fontWeight: "800" }}>{lesson.title}</Text>
-          </View>
-          <Text style={{ color: theme.fgMuted, fontSize: 12, fontWeight: "600" }}>{minutes} min</Text>
-        </View>
-        <Pressable accessibilityRole="button" onPress={onStart} style={[styles.startButton, { backgroundColor: theme.surface }]}>
-          <Text style={{ color: theme.accent, fontSize: 18, fontWeight: "800" }}>{done ? "Review today’s lesson" : "Start today’s lesson"}</Text>
+        ))}
+        {failed && (
+          <Pressable accessibilityRole="button" onPress={onRetry} style={[styles.retry, { borderColor: theme.heroFg }]}>
+            <Text style={{ color: theme.heroFg, fontWeight: "800" }}>Try preparing the rest again</Text>
+          </Pressable>
+        )}
+        <Pressable
+          accessibilityRole="button"
+          disabled={!next}
+          onPress={onStart}
+          style={[styles.startButton, { backgroundColor: theme.surface, opacity: next || preparing ? 1 : 0.8 }]}
+        >
+          <Text style={{ color: theme.accent, fontSize: 18, fontWeight: "800" }}>
+            {next ? (doneCount > 0 ? "Continue today’s plan" : "Start today’s plan") : preparing ? "Preparing your lessons…" : "Review today’s lessons"}
+          </Text>
         </Pressable>
       </View>
 
@@ -153,10 +193,12 @@ const styles = StyleSheet.create({
   hero: { borderRadius: radius.lg, padding: 20, overflow: "hidden" },
   heroGlow: { position: "absolute", right: -50, bottom: -60, width: 220, height: 220, borderRadius: 110, opacity: 0.55 },
   heroLabel: { fontSize: 12, fontWeight: "800", letterSpacing: 1, opacity: 0.85 },
-  heroMeta: { fontSize: 14, marginTop: 4, marginBottom: 16, opacity: 0.9 },
-  lessonRow: { flexDirection: "row", alignItems: "center", gap: 12, borderRadius: radius.md, padding: 12, marginBottom: 16 },
+  heroMeta: { fontSize: 14, marginTop: 4, marginBottom: 14, opacity: 0.9 },
+  planItem: { marginBottom: 8 },
+  retry: { borderWidth: 2, borderRadius: radius.md, paddingVertical: 12, alignItems: "center", marginBottom: 12 },
+  lessonRow: { flexDirection: "row", alignItems: "center", gap: 12, borderRadius: radius.md, padding: 12 },
   lessonIcon: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
-  startButton: { borderRadius: radius.md, paddingVertical: 16, alignItems: "center" },
+  startButton: { borderRadius: radius.md, paddingVertical: 16, alignItems: "center", marginTop: 8 },
   dueBadge: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
   pill: { borderRadius: radius.pill, paddingHorizontal: 20, paddingVertical: 10 },
 });

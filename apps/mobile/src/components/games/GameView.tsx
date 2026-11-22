@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import type { Game } from "@random-knowledge/shared/games";
 import { gameXp } from "@random-knowledge/shared/xp";
+import { baseDate } from "@random-knowledge/shared/lesson-plan";
 import { nowMs } from "@random-knowledge/shared/clock";
 import { addStats, markGamePlayed } from "../../lib/firestore";
 import { radius, useTheme } from "../../lib/theme";
@@ -29,7 +30,7 @@ export function GameView({ uid, date, game, played, onPlayed }: { uid: string; d
     setPhase("saving");
     setError(null);
     try {
-      await addStats(uid, date, { xp, seconds });
+      await addStats(uid, baseDate(date), { xp, seconds });
       await markGamePlayed(uid, date);
       setEarned(xp);
       setPhase("done");

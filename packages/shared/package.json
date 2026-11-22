@@ -1,6 +1,6 @@
 {
   "name": "@random-knowledge/shared",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -20,7 +20,8 @@
     "./srs": "./src/srs.ts",
     "./games": "./src/games.ts",
     "./lesson-time": "./src/lesson-time.ts",
-    "./clock": "./src/clock.ts"
+    "./clock": "./src/clock.ts",
+    "./lesson-plan": "./src/lesson-plan.ts"
   },
   "peerDependencies": {
     "firebase": "^12.18.0"

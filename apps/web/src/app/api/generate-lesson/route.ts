@@ -6,6 +6,7 @@ import { CATEGORIES, type CategoryKey } from "@/lib/categories";
 import { attachLessonAudio } from "@/lib/lesson-audio";
 import { generateSourcedLesson } from "@/lib/lesson-generation";
 import { autoGenerationEnabled } from "@/lib/paused-generation";
+import { MAX_PLAN_LESSONS } from "@/lib/lesson-plan";
 import { DAILY_TOKEN_LIMIT, getTokensUsedToday, reportTokensUsed } from "@/lib/token-budget";
 
 export const dynamic = "force-dynamic";
@@ -38,12 +39,15 @@ export async function POST(request: Request) {
   const { uid } = authorized;
   let category: CategoryKey;
   let recentTitles: string[];
+  let slot: number | undefined;
   try {
     const body = await request.json();
     if (typeof body.category !== "string" || !Object.hasOwn(CATEGORIES, body.category)) {
       return NextResponse.json({ error: `Unknown category: ${body.category}` }, { status: 400 });
     }
     category = body.category;
+    // Only later lessons of the day's plan (2 and up) report their number, for the admin generation log.
+    slot = Number.isInteger(body.slot) && body.slot >= 2 && body.slot <= MAX_PLAN_LESSONS ? body.slot : undefined;
     recentTitles = Array.isArray(body.recentTitles)
       ? body.recentTitles.filter((title: unknown): title is string => typeof title === "string").slice(-12).map((title: string) => title.slice(0, 200))
       : [];
@@ -53,10 +57,9 @@ export async function POST(request: Request) {
 
   const used = await getTokensUsedToday().catch(() => 0);
   if (used >= DAILY_TOKEN_LIMIT) {
-    return NextResponse.json(
-      { error: `Daily token limit reached (${used.toLocaleString()} / ${DAILY_TOKEN_LIMIT.toLocaleString()})` },
-      { status: 429 }
-    );
+    const error = `Daily token limit reached (${used.toLocaleString()} / ${DAILY_TOKEN_LIMIT.toLocaleString()})`;
+    await logFailure(uid, { slot, error });
+    return NextResponse.json({ error }, { status: 429 });
   }
 
   try {
@@ -68,13 +71,18 @@ export async function POST(request: Request) {
       onTokens: reportTokensUsed,
     });
     const lesson = await attachLessonAudio(`lesson-audio/${uid}/${Date.now()}.mp3`, { category, ...generated });
-    await logGenerationAdmin(uid, lesson.title, "on-access").catch((err) => console.error("Failed to log lesson generation", err));
+    await logGenerationAdmin(uid, lesson.title, "on-access", ...(slot ? [{ slot }] : [])).catch((err) => console.error("Failed to log lesson generation", err));
     return NextResponse.json(lesson);
   } catch (err) {
     console.error("Source-backed lesson generation failed", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Could not create a sourced lesson. Please try again." },
-      { status: 502 }
-    );
+    const error = err instanceof Error ? err.message : "Could not create a sourced lesson. Please try again.";
+    await logFailure(uid, { slot, error });
+    return NextResponse.json({ error }, { status: 502 });
   }
+}
+
+/** A failed attempt is logged too so the admin can see users hitting errors; a failure to log is reported, not hidden. */
+async function logFailure(uid: string, details: { slot?: number; error: string }) {
+  await logGenerationAdmin(uid, "Generation failed", "on-access", { ...(details.slot && { slot: details.slot }), error: details.error })
+    .catch((err) => console.error("Failed to log lesson generation failure", err));
 }

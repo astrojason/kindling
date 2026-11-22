@@ -5,6 +5,7 @@ import type { AccessRequest } from "./auth-guard";
 import { todayStr } from "./date";
 import { fromFirestoreLesson, toFirestoreLesson } from "./lesson-storage";
 import type { CronRunLogEntry, DailyProgress, GenerationLogEntry, HistoryEntry, Lesson, PushToken, ReviewCard, SharedLesson, StashEntry, StatsData, StreakData } from "./types";
+import { baseDate } from "./lesson-plan";
 import { newReviewCards } from "./srs";
 import { DEFAULT_STATS } from "./xp";
 import { advanceStreak } from "./streak";
@@ -134,7 +135,7 @@ export function createFirestoreApi(db: Firestore) {
     return snap.exists() ? (snap.data() as DailyProgress) : null;
   }
 
-  /** Saves a completed quiz and its streak together, once per lesson date across tabs/retries. */
+  /** Saves a completed quiz and its streak together, once per lesson across tabs/retries. `date` is the lesson key (a plain date, or `date~2` for a later lesson of the day); the streak counts the day it falls on. */
   async function completeDailyLesson(uid: string, date: string, progress: DailyProgress): Promise<{
     streak: StreakData;
     progress: DailyProgress;
@@ -148,7 +149,7 @@ export function createFirestoreApi(db: Firestore) {
       const current = streakSnap.exists() ? streakSnap.data() as StreakData : DEFAULT_STREAK;
       const saved = progressSnap.exists() ? progressSnap.data() as DailyProgress : null;
       if (saved?.done) return { streak: current, progress: saved };
-      const next = advanceStreak(current, date);
+      const next = advanceStreak(current, baseDate(date));
       transaction.set(streakRef, next);
       transaction.set(progressRef, progress);
       return { streak: next, progress };

@@ -1,3 +1,4 @@
+import { baseDate } from "./lesson-plan";
 import type { Lesson, ReviewCard, ReviewRating } from "./types";
 
 /** Days until a card is due again, by Leitner box 0-6. */
@@ -24,7 +25,7 @@ export function newReviewCards(lesson: Lesson, lessonDate: string): ReviewCard[]
     correctIndex: q.correctIndex,
     explanation: q.explanation,
     box: 1,
-    due: addDays(lessonDate, BOX_DAYS[1]),
+    due: addDays(baseDate(lessonDate), BOX_DAYS[1]),
   }));
 }
 

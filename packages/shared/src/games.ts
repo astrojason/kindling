@@ -1,3 +1,4 @@
+import { baseDate, slotOf } from "./lesson-plan";
 import type { GameKind, Lesson, LessonGames, MatchPair, TrueFalseStatement } from "./types";
 
 export type Game =
@@ -23,7 +24,7 @@ export function gameFor(lesson: Lesson, date: string): Game | null {
   if (!games) return null;
   const kinds = available(games);
   if (!kinds.length) return null;
-  const day = Math.floor(new Date(`${date}T00:00:00Z`).getTime() / 86_400_000);
+  const day = Math.floor(new Date(`${baseDate(date)}T00:00:00Z`).getTime() / 86_400_000) + slotOf(date);
   const kind = kinds[day % kinds.length];
   if (kind === "pairs") return { kind, pairs: games.pairs! };
   if (kind === "order") return { kind, prompt: games.order!.prompt, items: games.order!.items };

@@ -9,21 +9,23 @@ import { LoadingView } from "@/components/lesson/LoadingView";
 import { getStreakStatus } from "@/lib/streak";
 import { dueCards } from "@/lib/srs";
 import { useProgressData } from "@/lib/useProgressData";
-import type { Lesson, StreakData } from "@/lib/types";
+import type { PlanItem } from "@/lib/lesson-plan";
+import type { StreakData } from "@/lib/types";
 
 const tileClass = "flex flex-col items-start gap-1 rounded-md bg-surface p-4 text-left text-sm font-extrabold text-fg-strong shadow-sm";
 
 /** The Today tab: greeting, streak and points, daily goal, today's lesson, review and shortcuts. */
 export function TodayHome({
-  uid, date, lesson, done, streak, categoryCount, onStart, onEditCategories,
+  uid, date, plan, streak, categoryCount, onStart, onOpen, onRetry, onEditCategories,
 }: {
   uid: string;
   date: string;
-  lesson: Lesson;
-  done: boolean;
+  plan: PlanItem[];
   streak: StreakData;
   categoryCount: number;
   onStart: () => void;
+  onOpen: (key: string) => void;
+  onRetry: () => void;
   onEditCategories: () => void;
 }) {
   const progress = useProgressData(uid);
@@ -41,7 +43,7 @@ export function TodayHome({
       {progress.error && <pre role="alert" className="whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all">{progress.error}</pre>}
       {progress.data && <GoalCard stats={progress.data.stats} date={date} />}
 
-      <PlanCard lesson={lesson} done={done} onStart={onStart} />
+      <PlanCard plan={plan} onStart={onStart} onOpen={onOpen} onRetry={onRetry} />
 
       {progress.data && <ReviewRow dueCount={dueCards(progress.data.cards, date).length} totalCount={progress.data.cards.length} />}
 

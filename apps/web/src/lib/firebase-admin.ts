@@ -120,8 +120,13 @@ export async function uploadLessonAudioAdmin(path: string, audio: Uint8Array): P
 }
 
 /** Records a generation event for the admin-visible generation log (see GenerationLog). */
-export async function logGenerationAdmin(uid: string, title: string, source: GenerationSource): Promise<void> {
-  const entry: GenerationLogEntry = { uid, title, source, createdAt: new Date().toISOString() };
+export async function logGenerationAdmin(
+  uid: string,
+  title: string,
+  source: GenerationSource,
+  details: { slot?: number; error?: string } = {},
+): Promise<void> {
+  const entry: GenerationLogEntry = { uid, title, source, createdAt: new Date().toISOString(), ...details };
   await getFirestore(getAdminApp()).collection("generationLog").add(entry);
 }
 

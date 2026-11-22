@@ -14,10 +14,13 @@ export function daysAgoStr(n: number, timeZone = Intl.DateTimeFormat().resolvedO
   return date.toISOString().slice(0, 10);
 }
 
+/** Accepts a plain date or a plan-lesson key (`date~2`), labelling the latter "· Lesson 2". */
 export function formatDateLabel(date: string): string {
-  return new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
+  const label = new Date(`${date.slice(0, 10)}T00:00:00`).toLocaleDateString(undefined, {
     weekday: "long",
     month: "long",
     day: "numeric",
   });
+  const slot = date.slice(11);
+  return slot ? `${label} · Lesson ${slot}` : label;
 }
