@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Nunito } from "next/font/google";
 import { AuthProvider } from "@/lib/auth-context";
-import { Footer } from "@/components/Footer";
 import { ToastProvider } from "@/components/Toast";
 import "./globals.css";
 
@@ -46,7 +45,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <ToastProvider>{children}</ToastProvider>
           </AuthProvider>
         </div>
-        <Footer />
       </body>
     </html>
   );

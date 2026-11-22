@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import packageJson from "../../../package.json";
 
 const ICON = "size-6";
 
@@ -30,7 +31,7 @@ export function TabBar() {
   const pathname = usePathname();
   return (
     <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface">
-      <ul className="mx-auto flex w-full max-w-[560px] justify-around px-2 pb-[env(safe-area-inset-bottom)]">
+      <ul className="mx-auto flex w-full max-w-[560px] justify-around px-2">
         {TABS.map((tab) => {
           const active = isActive(pathname, tab.match);
           return (
@@ -47,6 +48,7 @@ export function TabBar() {
           );
         })}
       </ul>
+      <p className="pb-[max(0.25rem,env(safe-area-inset-bottom))] text-center text-[9px] leading-none text-fg-muted">v{packageJson.version}</p>
     </nav>
   );
 }

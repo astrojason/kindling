@@ -1,5 +1,19 @@
 # TODO
 
+## Merge with commonbook into "Kindling" (new app, new Firebase project, new bundle ID)
+
+Decisions: name **Kindling** (spark motif; domain `kindling.astrojason.com`), brand-new Firebase project and iOS bundle ID (the App Store submission for `com.astrojason.random-knowledge` was cancelled, so nothing is live), this repo becomes the host (renamed `kindling.astrojason.com`), `commonbook.astrojason.com` is archived with its git history, Brightly look for everything, ALL data from both old projects (`random-knowledge-ea232`, `recall-4899d`) migrates.
+
+- [ ] Create the new Firebase project (Auth with Google/Apple/email, Firestore, App Hosting, Cloud Scheduler) and the new Apple bundle ID + Sign in with Apple capability; pick final IDs (user action)
+- [ ] Rename app display name, package names, `app.json`, manifest, icons and copy to Kindling (a spark/flame icon); keep the Brightly theme
+- [ ] Scripted migration into the new project, dry-run first and idempotent: Auth users (same UIDs, both old projects, matched by email), `users`, `accessRequests`, lessons/progress/streak/stats/stash/shares/generationLog, commonbook `notes`, `sessions`, `meta/stats`; map commonbook roles (PENDING/USER/ADMIN/SUPERADMIN) onto `accessRequests` + the `superadmin` claim
+- [ ] Port commonbook logic to `packages/shared` with its tests (SM-2, rsvp, prose, tags); reconcile with `srs.ts` so a review card can come from a lesson quiz or a note
+- [ ] Port commonbook pages to Next.js routes in the Brightly style (Notes dashboard/library, capture, note detail, quiz-chat session, Discover, speed read); add a Notes tab, fold note reviews into Review, move interest keywords/`articlesAppUid` into Settings
+- [ ] Port commonbook `/api` functions to route handlers (`chat`, `draft-note`, `discover/*`, `admin/set-role`) using the existing `api-auth`, `token-budget` and `generationLog`; add Turso and ScraperAPI env vars; drop the external token tracker
+- [ ] Update `firestore.rules` and `firestore.indexes.json` for notes/sessions
+- [ ] Add notes, review and Discover to the Expo app after web is stable
+- [ ] Point `kindling.astrojason.com` at the new backend, redirect the old `random-knowledge` and `commonbook` domains, archive the old Vercel project and the `commonbook` repo, rename this repo
+
 ## Brightly UI + features (shipped, needs verification)
 
 - [ ] Try the new Today / Explore / Review / Profile UI with a real account on web, and on mobile after a new local `eas build` (mobile has no gradient or SVG ring: the goal ring is a ring of ticks, the hero card is solid purple). Existing lessons have no diagram or games until new ones are generated; check one fresh lesson shows the diagram and a bonus game, and that the fact-check pass keeps accepting the larger draft (max_tokens raised to 4500).
