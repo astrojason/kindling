@@ -19,7 +19,7 @@
     "android": {
       "package": "com.astrojason.randomknowledge",
       "adaptiveIcon": {
-        "backgroundColor": "#141b22",
+        "backgroundColor": "#5b45d6",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
@@ -42,7 +42,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/splash-icon.png",
-          "backgroundColor": "#141b22",
+          "backgroundColor": "#14112b",
           "imageWidth": 160
         }
       ],
