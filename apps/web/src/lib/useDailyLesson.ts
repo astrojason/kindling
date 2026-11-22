@@ -7,6 +7,8 @@ import { CATEGORY_KEYS, defaultWeights, pickCategory, type CategoryKey, type Wei
 import { todayStr } from "@/lib/date";
 import { pausedFallbackDate } from "@/lib/paused-generation";
 import {
+  addReviewCards,
+  addStats,
   appendHistory,
   getAccessRequest,
   completeDailyLesson,
@@ -23,7 +25,10 @@ import {
   setWeights,
 } from "@/lib/firestore";
 import { advanceQuiz, initialQuizState, selectAnswer } from "@/lib/quiz";
+import { lessonXp } from "@/lib/xp";
 import type { DailyProgress, GeneratedLesson, HistoryEntry, Lesson, StreakData } from "@/lib/types";
+
+const MAX_LESSON_SECONDS = 20 * 60;
 
 type Phase = "loading" | "categories" | "generating" | "error" | "prereview" | "lesson" | "quiz" | "done";
 
@@ -39,6 +44,10 @@ export function useDailyLesson(user: User | null) {
   const [quiz, setQuiz] = useState(initialQuizState);
   const [preReview, setPreReview] = useState({ qIndex: 0 });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  /** Set when the points or review cards for a finished lesson could not be saved; the lesson and streak are already saved. */
+  const [rewardError, setRewardError] = useState<string | null>(null);
+  const [earnedXp, setEarnedXp] = useState<number | null>(null);
+  const sessionStart = useRef<number | null>(null);
 
   const showLesson = useCallback((currentLesson: Lesson, savedProgress: DailyProgress | null, preReviewOn: boolean) => {
     setLessonState(currentLesson);
@@ -106,6 +115,10 @@ export function useDailyLesson(user: User | null) {
   }, [load]);
 
   useEffect(() => {
+    if ((phase === "prereview" || phase === "lesson" || phase === "quiz") && sessionStart.current === null) sessionStart.current = Date.now();
+  }, [phase]);
+
+  useEffect(() => {
     syncAppBadge(phase === "prereview" || phase === "lesson" || phase === "quiz");
   }, [phase]);
 
@@ -170,12 +183,30 @@ export function useDailyLesson(user: User | null) {
       setStreakState(saved.streak);
       setProgressState(saved.progress);
       setPhase("done");
+      // Only the save that actually recorded this completion earns points (a second tab gets the saved result back instead).
+      if (saved.progress === finalProgress) await saveRewards(uid, completedLesson, finalProgress.correct);
     } catch (err) {
       console.error("Failed to save quiz results:", err);
       setErrorMessage(errorMessageFor(err, "Failed to save your results."));
       setPhase("error");
     } finally {
       busy.current = false;
+    }
+  }
+
+  /** Points, learning time and review cards for a finished lesson. A failure is shown on the results screen, never swallowed. */
+  async function saveRewards(uid: string, completedLesson: Lesson, correct: number) {
+    const xp = lessonXp(correct);
+    const seconds = Math.min(Math.round((Date.now() - (sessionStart.current ?? Date.now())) / 1000), MAX_LESSON_SECONDS);
+    sessionStart.current = null;
+    setRewardError(null);
+    try {
+      await addStats(uid, date, { xp, seconds });
+      setEarnedXp(xp);
+      await addReviewCards(uid, completedLesson, date);
+    } catch (err) {
+      console.error("Failed to save points and review cards:", err);
+      setRewardError(errorMessageFor(err, "Your points and review cards could not be saved."));
     }
   }
 
@@ -224,6 +255,8 @@ export function useDailyLesson(user: User | null) {
     quiz,
     preReview,
     errorMessage,
+    rewardError,
+    earnedXp,
     categoryKeys: CATEGORY_KEYS,
     actions: { retry: load, answerPreReview, skipPreReview, startQuiz, selectOption, nextQuestion, adjustWeight, resetAll, saveCategories },
   };

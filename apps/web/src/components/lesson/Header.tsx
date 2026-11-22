@@ -11,6 +11,7 @@ export function Header({
   categoryCount,
   onEditCategories,
   onSignOut,
+  onBack,
 }: {
   date: string;
   streakCount: number;
@@ -20,11 +21,17 @@ export function Header({
   categoryCount: number;
   onEditCategories: () => void;
   onSignOut: () => void;
+  onBack?: () => void;
 }) {
   return (
     <div className="mb-5 border-b border-border pb-3.5">
       <div className="mb-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">
+          {onBack && (
+            <button type="button" onClick={onBack} className="text-sm font-extrabold text-accent">
+              ‹ Today
+            </button>
+          )}
           <HeaderMenu
             showAdminLink={showAdminLink}
             showCategoriesSetting={showCategoriesSetting}
@@ -36,7 +43,7 @@ export function Header({
             {streakCount > 0 && (
               <span
                 aria-label={`${streakCount} ${streakCount === 1 ? "day" : "days"} streak`}
-                className="flex items-center gap-0.5 text-xs font-semibold text-accent"
+                className="flex items-center gap-0.5 text-xs font-extrabold text-gold"
               >
                 <FlameIcon className="size-3.5" />
                 {streakCount}
@@ -53,7 +60,7 @@ export function Header({
         </button>
       </div>
       {category && (
-        <span className="mt-3.5 inline-block rounded-sm bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent">
+        <span className="mt-3.5 inline-block rounded-full bg-accent-soft px-3 py-1 text-xs font-extrabold text-accent">
           {CATEGORIES[category]}
         </span>
       )}

@@ -1,10 +1,12 @@
 import type { Firestore } from "firebase/firestore";
-import { collection, deleteDoc, doc, getDoc, getDocs, limit, orderBy, query, runTransaction, setDoc, startAfter, updateDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, increment, limit, orderBy, query, runTransaction, setDoc, startAfter, updateDoc } from "firebase/firestore";
 import { CATEGORY_KEYS, defaultWeights, type CategoryKey, type Weights } from "./categories";
 import type { AccessRequest } from "./auth-guard";
 import { todayStr } from "./date";
 import { fromFirestoreLesson, toFirestoreLesson } from "./lesson-storage";
-import type { CronRunLogEntry, DailyProgress, GenerationLogEntry, HistoryEntry, Lesson, PushToken, SharedLesson, StashEntry, StreakData } from "./types";
+import type { CronRunLogEntry, DailyProgress, GenerationLogEntry, HistoryEntry, Lesson, PushToken, ReviewCard, SharedLesson, StashEntry, StatsData, StreakData } from "./types";
+import { newReviewCards } from "./srs";
+import { DEFAULT_STATS } from "./xp";
 import { advanceStreak } from "./streak";
 
 const DEFAULT_STREAK: StreakData = { streak: 0, longest: 0, lastDate: null };
@@ -44,6 +46,49 @@ export function createFirestoreApi(db: Firestore) {
 
   async function setPreReviewEnabled(uid: string, enabled: boolean): Promise<void> {
     await setDoc(doc(db, "users", uid, "meta", "settings"), { preReview: enabled }, { merge: true });
+  }
+
+  /** Points, learning time per day and the daily goal. New users start at zero with the default goal. */
+  async function getStats(uid: string): Promise<StatsData> {
+    const snap = await getDoc(doc(db, "users", uid, "meta", "stats"));
+    if (!snap.exists()) return DEFAULT_STATS;
+    const data = snap.data() as Partial<StatsData>;
+    return { xp: data.xp ?? 0, goalMinutes: data.goalMinutes ?? DEFAULT_STATS.goalMinutes, seconds: data.seconds ?? {} };
+  }
+
+  /** Adds points and seconds of learning time to `date` with atomic increments, so two tabs never overwrite each other. */
+  async function addStats(uid: string, date: string, add: { xp?: number; seconds?: number }): Promise<void> {
+    await setDoc(
+      doc(db, "users", uid, "meta", "stats"),
+      { xp: increment(add.xp ?? 0), seconds: { [date]: increment(add.seconds ?? 0) } },
+      { merge: true },
+    );
+  }
+
+  async function setGoalMinutes(uid: string, minutes: number): Promise<void> {
+    await setDoc(doc(db, "users", uid, "meta", "stats"), { goalMinutes: minutes }, { merge: true });
+  }
+
+  /** Marks today's bonus game as played so its points are only awarded once. */
+  async function markGamePlayed(uid: string, date: string): Promise<void> {
+    await setDoc(doc(db, "users", uid, "progress", date), { gamePlayed: true }, { merge: true });
+  }
+
+  async function getReviewCards(uid: string): Promise<ReviewCard[]> {
+    const snap = await getDocs(collection(db, "users", uid, "reviewCards"));
+    return snap.docs.map((d) => d.data() as ReviewCard);
+  }
+
+  /** Schedules a finished lesson's quiz questions for review, leaving cards that already exist (and their progress) alone. */
+  async function addReviewCards(uid: string, lesson: Lesson, lessonDate: string): Promise<void> {
+    for (const card of newReviewCards(lesson, lessonDate)) {
+      const ref = doc(db, "users", uid, "reviewCards", card.id);
+      if (!(await getDoc(ref)).exists()) await setDoc(ref, card);
+    }
+  }
+
+  async function saveReviewCard(uid: string, card: ReviewCard): Promise<void> {
+    await setDoc(doc(db, "users", uid, "reviewCards", card.id), card);
   }
 
   async function getSelectedCategories(uid: string): Promise<CategoryKey[] | null> {
@@ -264,13 +309,13 @@ export function createFirestoreApi(db: Firestore) {
 
   /** Deletes every document under users/{uid} — streak, weights, history, lessons, progress, stash, share pointers (the shares/ snapshots friends already opened stay). */
   async function resetAllUserData(uid: string): Promise<void> {
-    const metaDocs = ["streak", "weights", "history", "categories"].map((id) => doc(db, "users", uid, "meta", id));
-    const [lessonDocs, progressDocs, stashDocs, shareDocs] = await Promise.all(
-      ["lessons", "progress", "stash", "shares"].map((name) => getDocs(collection(db, "users", uid, name)))
+    const metaDocs = ["streak", "weights", "history", "categories", "stats"].map((id) => doc(db, "users", uid, "meta", id));
+    const [lessonDocs, progressDocs, stashDocs, shareDocs, cardDocs] = await Promise.all(
+      ["lessons", "progress", "stash", "shares", "reviewCards"].map((name) => getDocs(collection(db, "users", uid, name)))
     );
     await Promise.all([
       ...metaDocs.map((d) => deleteDoc(d)),
-      ...[lessonDocs, progressDocs, stashDocs, shareDocs].flatMap((snap) => snap.docs.map((d) => deleteDoc(d.ref))),
+      ...[lessonDocs, progressDocs, stashDocs, shareDocs, cardDocs].flatMap((snap) => snap.docs.map((d) => deleteDoc(d.ref))),
     ]);
   }
 
@@ -294,6 +339,13 @@ export function createFirestoreApi(db: Firestore) {
     setPushToken,
     getPreReviewEnabled,
     setPreReviewEnabled,
+    getStats,
+    addStats,
+    setGoalMinutes,
+    markGamePlayed,
+    getReviewCards,
+    addReviewCards,
+    saveReviewCard,
     getSelectedCategories,
     setSelectedCategories,
     getHistory,

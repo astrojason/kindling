@@ -19,8 +19,68 @@ export interface GeneratedLesson {
   sources?: LessonSource[];
   /** One-based source references for each body paragraph. */
   paragraphSources?: number[][];
+  /** Labeled diagram of the lesson's idea. Absent on lessons saved before diagrams. */
+  diagram?: LessonDiagram;
+  /** Data for the mini-games played after the quiz. Absent on lessons saved before games. */
+  games?: LessonGames;
   /** Cloned-voice narration of the lesson. Absent if synthesis failed or hasn't run yet. */
   audioUrl?: string;
+}
+
+export interface DiagramLabel {
+  term: string;
+  note: string;
+}
+
+/** A blueprint-style concept map: a headline, a subtitle, 4 labeled parts that open a note when tapped, and a few principles. */
+export interface LessonDiagram {
+  title: string;
+  subtitle: string;
+  labels: DiagramLabel[];
+  principles: string[];
+}
+
+export interface MatchPair {
+  term: string;
+  meaning: string;
+}
+
+export interface TrueFalseStatement {
+  statement: string;
+  isTrue: boolean;
+}
+
+export interface LessonGames {
+  pairs?: MatchPair[];
+  order?: { prompt: string; items: string[] };
+  trueFalse?: TrueFalseStatement[];
+}
+
+export type GameKind = "pairs" | "order" | "trueFalse";
+
+export type ReviewRating = "again" | "hard" | "good" | "easy";
+
+/** One quiz question scheduled for spaced repetition at users/{uid}/reviewCards/{id}. */
+export interface ReviewCard {
+  id: string;
+  lessonDate: string;
+  lessonTitle: string;
+  category: CategoryKey;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+  /** Leitner box 0-6; the box sets the interval until the card is due again. */
+  box: number;
+  /** Local calendar date (YYYY-MM-DD) the card is next due. */
+  due: string;
+}
+
+/** Points and learning time at users/{uid}/meta/stats. `seconds` is real time spent in lessons and reviews, keyed by local date. */
+export interface StatsData {
+  xp: number;
+  goalMinutes: number;
+  seconds: Record<string, number>;
 }
 
 export interface LessonSource {
@@ -57,6 +117,8 @@ export interface DailyProgress {
   total: number;
   /** Selected option index per question, in question order. Absent on progress saved before this field existed. */
   answers?: number[];
+  /** True once the bonus mini-game for this lesson has been played (and its points awarded). */
+  gamePlayed?: boolean;
 }
 
 /** One row in the admin-visible log of lesson generations (src/lib/firebase-admin.ts's logGenerationAdmin). */

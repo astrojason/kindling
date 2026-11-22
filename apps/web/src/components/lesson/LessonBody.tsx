@@ -1,3 +1,4 @@
+import { DiagramView } from "@/components/lesson/DiagramView";
 import { MathText } from "@/components/lesson/MathText";
 import { ReadAloudButton } from "@/components/lesson/ReadAloudButton";
 import type { Lesson } from "@/lib/types";
@@ -5,11 +6,11 @@ import type { Lesson } from "@/lib/types";
 export function LessonBody({ lesson }: { lesson: Lesson }) {
   return (
     <div>
-      <h1 className="mb-4 max-w-[34ch] font-heading text-[26px] font-bold leading-snug text-fg-strong">
+      <h1 className="mb-4 max-w-[34ch] font-heading text-[26px] font-extrabold leading-snug text-fg-strong">
         {lesson.title}
       </h1>
       <ReadAloudButton lesson={lesson} />
-      <div className="mb-1 max-w-[62ch] font-heading text-[16.5px] leading-relaxed text-fg">
+      <div className="mb-1 max-w-[62ch] font-heading text-[16.5px] font-medium leading-relaxed text-fg">
         {lesson.body.map((paragraph, i) => (
           <p key={i} className="mb-3.5">
             <MathText text={paragraph} />
@@ -24,6 +25,7 @@ export function LessonBody({ lesson }: { lesson: Lesson }) {
           </p>
         ))}
       </div>
+      {lesson.diagram && <DiagramView diagram={lesson.diagram} />}
       {lesson.sources?.length ? (
         <div className="my-4 border-t border-border pt-3">
           <h2 className="mb-2 text-xs font-semibold text-fg-muted">Sources</h2>

@@ -5,7 +5,7 @@ export function LoadingView({ text }: { text: string }) {
   const theme = useTheme();
   return (
     <View style={styles.container}>
-      <ActivityIndicator color={theme.rust} />
+      <ActivityIndicator color={theme.accent} />
       <Text style={[styles.text, { color: theme.fgMuted }]}>{text}</Text>
     </View>
   );

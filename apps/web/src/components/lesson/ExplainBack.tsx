@@ -7,7 +7,7 @@ import { useLoad } from "@/lib/useLoad";
 
 const MIN_LENGTH = 20;
 const MAX_LENGTH = 1500;
-const buttonClass = "rounded-sm bg-accent px-5 py-2.5 text-sm font-semibold text-accent-fg transition-opacity hover:opacity-85 disabled:opacity-50";
+const buttonClass = "rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-accent-fg transition-opacity hover:opacity-85 disabled:opacity-50";
 
 async function requestJson(path: string, token: string, init?: RequestInit) {
   const res = await fetch(path, { ...init, headers: { Authorization: `Bearer ${token}`, ...(init?.body && { "Content-Type": "application/json" }) } });

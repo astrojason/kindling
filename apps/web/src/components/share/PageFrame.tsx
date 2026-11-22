@@ -1,22 +1,20 @@
-import Link from "next/link";
+"use client";
+
 import type { ReactNode } from "react";
-import { Card } from "@/components/lesson/Card";
 import { LoadingView } from "@/components/lesson/LoadingView";
+import { TabBar } from "@/components/nav/TabBar";
+import { useAuth } from "@/lib/auth-context";
 
-const linkClass = "text-xs font-medium text-fg-muted underline decoration-border decoration-1 underline-offset-2 hover:text-accent";
-
+/** A page in the signed-in app: content on the lavender canvas with the tab bar below (signed-out visitors get no tab bar). */
 export function PageFrame({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   return (
-    <div className="mx-auto w-full max-w-[640px] px-4 py-10">
-      <Card>
-        <nav className="mb-5 flex gap-4 border-b border-border pb-3.5">
-          <Link href="/" className={linkClass}>Today&apos;s lesson</Link>
-          <Link href="/library" className={linkClass}>Library</Link>
-          <Link href="/settings" className={linkClass}>Settings</Link>
-        </nav>
-        {children}
-      </Card>
-    </div>
+    <>
+      <div className="mx-auto w-full max-w-[560px] px-4 pb-28 pt-8">
+        <div className="rounded-md bg-surface px-6 pb-7 pt-6 shadow-sm">{children}</div>
+      </div>
+      {user && <TabBar />}
+    </>
   );
 }
 

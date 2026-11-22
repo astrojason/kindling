@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SymbolView } from "expo-symbols";
 import { formatDateLabel } from "@random-knowledge/shared/date";
@@ -16,19 +16,26 @@ import { LessonView } from "../components/LessonView";
 import { LoadingView } from "../components/LoadingView";
 import { QuizView } from "../components/QuizView";
 import { StreakStatus } from "../components/StreakStatus";
+import { TodayHome } from "../components/TodayHome";
 import { Card } from "../components/ui";
 
-export function DailyLessonScreen() {
+export function DailyLessonScreen({ onFlowChange, onOpenReview }: { onFlowChange: (inFlow: boolean) => void; onOpenReview: () => void }) {
   const theme = useTheme();
   const { user, signOut } = useAuth();
   const state = useDailyLesson(user);
   const { phase, date, lesson, streak, selectedCategories, actions } = state;
   const [editingCategories, setEditingCategories] = useState(false);
   const [categoriesSaved, setCategoriesSaved] = useState(false);
+  const [started, setStarted] = useState(false);
   const canEditCategories = ["lesson", "quiz", "done"].includes(phase);
   const showCategoryPicker = phase === "categories" || (canEditCategories && editingCategories);
   const showCategoriesSetting = canEditCategories && !editingCategories;
   const streakCount = getStreakStatus(streak, date).count;
+  const showHome = !started && !!user && !!lesson && ["lesson", "done"].includes(phase);
+
+  useEffect(() => {
+    onFlowChange(started);
+  }, [started, onFlowChange]);
 
   function confirmReset() {
     Alert.alert(
@@ -42,10 +49,54 @@ export function DailyLessonScreen() {
           onPress: () => {
             setEditingCategories(false);
             setCategoriesSaved(false);
+            setStarted(false);
             void actions.resetAll();
           },
         },
       ]
+    );
+  }
+
+  const picker = showCategoryPicker && (
+    <CategoryPicker
+      selectedCategories={selectedCategories}
+      onSave={async (categories) => {
+        await actions.saveCategories(categories);
+        setEditingCategories(false);
+        setCategoriesSaved(true);
+      }}
+      onCancel={phase === "categories" ? undefined : () => setEditingCategories(false)}
+    />
+  );
+
+  if (showHome) {
+    return (
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <CategoriesSavedModal visible={categoriesSaved} categories={selectedCategories} onClose={() => setCategoriesSaved(false)} />
+        {editingCategories ? (
+          <Card>{picker}</Card>
+        ) : (
+          <TodayHome
+            uid={user.uid}
+            date={date}
+            lesson={lesson}
+            done={!!state.progress?.done}
+            streak={streak}
+            categoryCount={selectedCategories.length}
+            onStart={() => setStarted(true)}
+            onEditCategories={() => {
+              setEditingCategories(true);
+              setCategoriesSaved(false);
+            }}
+            onOpenReview={onOpenReview}
+          />
+        )}
+        <View style={[styles.footer, { borderColor: theme.border }]}>
+          <Text onPress={confirmReset} style={{ color: theme.fgMuted, fontSize: 11, textDecorationLine: "underline" }}>
+            Reset my data
+          </Text>
+        </View>
+      </ScrollView>
     );
   }
 
@@ -55,6 +106,9 @@ export function DailyLessonScreen() {
         <View style={[styles.header, { borderColor: theme.border }]}>
           <View style={styles.headerRow}>
             <View style={styles.headerActions}>
+              {started && phase !== "quiz" && (
+                <Text onPress={() => setStarted(false)} style={{ color: theme.accent, fontSize: 14, fontWeight: "800" }}>‹ Today</Text>
+              )}
               <HeaderMenu
                 showCategoriesSetting={showCategoriesSetting}
                 categoryCount={selectedCategories.length}
@@ -79,26 +133,16 @@ export function DailyLessonScreen() {
           </View>
           {lesson?.category && (
             <View style={[styles.badge, { backgroundColor: theme.accentSoft }]}>
-              <Text style={{ color: theme.accent, fontSize: 12, fontWeight: "600" }}>Today’s lesson: {CATEGORIES[lesson.category]}</Text>
+              <Text style={{ color: theme.accent, fontSize: 12, fontWeight: "800" }}>Today’s lesson: {CATEGORIES[lesson.category]}</Text>
             </View>
           )}
         </View>
 
         <CategoriesSavedModal visible={categoriesSaved} categories={selectedCategories} onClose={() => setCategoriesSaved(false)} />
 
-        {showCategoryPicker && (
-          <CategoryPicker
-            selectedCategories={selectedCategories}
-            onSave={async (categories) => {
-              await actions.saveCategories(categories);
-              setEditingCategories(false);
-              setCategoriesSaved(true);
-            }}
-            onCancel={phase === "categories" ? undefined : () => setEditingCategories(false)}
-          />
-        )}
+        {picker}
 
-        <LessonPhase state={state} />
+        <LessonPhase state={state} uid={user?.uid} />
 
         {(phase === "lesson" || phase === "done") && (
           <View style={styles.streak}>
@@ -116,7 +160,7 @@ export function DailyLessonScreen() {
   );
 }
 
-function LessonPhase({ state }: { state: ReturnType<typeof useDailyLesson> }) {
+function LessonPhase({ state, uid }: { state: ReturnType<typeof useDailyLesson>; uid?: string }) {
   const { phase, date, lesson, progress, quiz, errorMessage, actions } = state;
   if (phase === "loading") return <LoadingView text="Setting things up" />;
   if (phase === "generating") return <LoadingView text="Researching and checking today’s lesson" />;
@@ -130,6 +174,9 @@ function LessonPhase({ state }: { state: ReturnType<typeof useDailyLesson> }) {
       lesson={lesson}
       date={date}
       progress={progress}
+      uid={uid}
+      earnedXp={state.earnedXp}
+      rewardError={state.rewardError}
       onMore={() => actions.adjustWeight(lesson.category, 4)}
       onLess={() => actions.adjustWeight(lesson.category, -4)}
     />
@@ -143,7 +190,7 @@ const styles = StyleSheet.create({
   dateRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   streakBadge: { flexDirection: "row", alignItems: "center", gap: 2 },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 14 },
-  badge: { alignSelf: "flex-start", borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, marginTop: 14 },
+  badge: { alignSelf: "flex-start", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginTop: 14 },
   streak: { marginTop: 20 },
   footer: { borderTopWidth: 1, paddingTop: 12, marginTop: 24 },
 });

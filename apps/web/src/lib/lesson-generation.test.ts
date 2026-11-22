@@ -20,13 +20,21 @@ function fixture() {
     quiz: Array.from({ length: 3 }, () => ({ question: "What happened?", options: ["A", "B", "C", "D"], correctIndex: 0, explanation: "The lesson explains A." })),
     preQuiz: Array.from({ length: 2 }, () => ({ question: "Which do you expect?", options: ["A", "B", "C"], correctIndex: 0, explanation: "The lesson explains A." })),
   };
+  const extras = {
+    diagram: { title: "How it works", subtitle: "Four parts", labels: ["One", "Two", "Three", "Four"].map((term) => ({ term, note: `${term} note.` })), principles: ["P1", "P2", "P3"] },
+    games: {
+      pairs: ["a", "b", "c", "d"].map((term, i) => ({ term, meaning: `meaning ${i}` })),
+      order: { prompt: "Put the steps in order", items: ["first", "second", "third", "fourth"] },
+      trueFalse: [{ statement: "S1", isTrue: true }, { statement: "S2", isTrue: false }, { statement: "S3", isTrue: true }, { statement: "S4", isTrue: false }],
+    },
+  };
   const response = (value: unknown) => ({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify(value) } }], usage: { total_tokens: 50 } });
   const search = vi.fn().mockResolvedValue(research);
   const chat = vi.fn().mockImplementationOnce(async () => response(draft)).mockResolvedValue(response({ supported: true, issues: [] }));
   const client = { responses: { create: search }, chat: { completions: { create: chat } } } as unknown as OpenAI;
   const onTokens = vi.fn().mockResolvedValue(undefined);
   const generate = () => generateSourcedLesson(client, { category: "nature", recentTitles: [], model: "writer", researchModel: "researcher", onTokens });
-  return { research, draft, search, chat, onTokens, generate, response };
+  return { research, draft, extras, search, chat, onTokens, generate, response };
 }
 
 describe("source-backed lesson generation", () => {
@@ -60,6 +68,28 @@ describe("source-backed lesson generation", () => {
     expect(lesson.preQuiz).toBeUndefined();
     expect(lesson.quiz).toHaveLength(3);
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(/pre-review/i), expect.anything());
+    warn.mockRestore();
+  });
+
+  it("keeps a valid diagram and mini-game data", async () => {
+    const f = fixture();
+    Object.assign(f.draft, f.extras);
+    const lesson = await f.generate();
+    expect(lesson.diagram).toEqual(f.extras.diagram);
+    expect(lesson.games).toEqual(f.extras.games);
+  });
+
+  it("drops a malformed diagram or game with a warning instead of failing the lesson", async () => {
+    const f = fixture();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    Object.assign(f.draft, { diagram: { ...f.extras.diagram, labels: [] }, games: { ...f.extras.games, pairs: [{ term: "a" }], order: { prompt: "p", items: ["only"] } } });
+    const lesson = await f.generate();
+    expect(lesson.diagram).toBeUndefined();
+    expect(lesson.games?.pairs).toBeUndefined();
+    expect(lesson.games?.order).toBeUndefined();
+    expect(lesson.games?.trueFalse).toEqual(f.extras.games.trueFalse);
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/diagram/i), expect.anything());
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/game/i), expect.anything());
     warn.mockRestore();
   });
 

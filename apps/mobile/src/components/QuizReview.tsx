@@ -40,5 +40,5 @@ const styles = StyleSheet.create({
   container: { borderTopWidth: 1, paddingTop: 18, marginTop: 20 },
   title: { fontSize: 15, fontWeight: "600", marginBottom: 14 },
   question: { marginBottom: 18 },
-  option: { borderRadius: 6, borderWidth: 1, paddingVertical: 12, paddingHorizontal: 14, marginBottom: 8 },
+  option: { borderRadius: 14, borderWidth: 1, paddingVertical: 12, paddingHorizontal: 14, marginBottom: 8 },
 });

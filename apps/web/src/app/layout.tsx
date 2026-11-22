@@ -1,21 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Lora } from "next/font/google";
+import { Nunito } from "next/font/google";
 import { AuthProvider } from "@/lib/auth-context";
 import { Footer } from "@/components/Footer";
 import { ToastProvider } from "@/components/Toast";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const nunito = Nunito({
+  variable: "--font-nunito",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
-});
-
-const lora = Lora({
-  variable: "--font-lora",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -35,8 +28,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   colorScheme: "light dark",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#e9e1cc" },
-    { media: "(prefers-color-scheme: dark)", color: "#141b22" },
+    { media: "(prefers-color-scheme: light)", color: "#f5f2ff" },
+    { media: "(prefers-color-scheme: dark)", color: "#14112b" },
   ],
 };
 
@@ -46,7 +39,7 @@ export const dynamic = "force-dynamic";
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${inter.variable} ${lora.variable} h-full`}>
+    <html lang="en" className={`${nunito.variable} h-full`}>
       <body className="flex min-h-screen flex-col bg-bg font-sans text-fg antialiased">
         <div className="flex-1">
           <AuthProvider>

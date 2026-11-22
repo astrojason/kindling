@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from "./src/lib/auth-context";
 import { useTheme } from "./src/lib/theme";
 import { useAccessStatus } from "./src/hooks/useAccessStatus";
 import { AccessPendingScreen } from "./src/screens/AccessPendingScreen";
-import { DailyLessonScreen } from "./src/screens/DailyLessonScreen";
+import { MainScreen } from "./src/screens/MainScreen";
 import { LoadingView } from "./src/components/LoadingView";
 import { SignInScreen } from "./src/screens/SignInScreen";
 
@@ -35,7 +35,7 @@ function Body({
   if (!user) return <SignInScreen />;
   if (accessLoading) return <LoadingView text="Loading" />;
   if (!hasAppAccess(status ?? "pending")) return <AccessPendingScreen status={status === "revoked" ? "revoked" : "pending"} />;
-  return <DailyLessonScreen key={user.uid} />;
+  return <MainScreen key={user.uid} />;
 }
 
 export default function App() {

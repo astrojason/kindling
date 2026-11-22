@@ -1,6 +1,6 @@
 {
   "name": "@random-knowledge/shared",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -15,7 +15,12 @@
     "./paused-generation": "./src/paused-generation.ts",
     "./lesson-storage": "./src/lesson-storage.ts",
     "./share": "./src/share.ts",
-    "./firestore": "./src/firestore.ts"
+    "./firestore": "./src/firestore.ts",
+    "./xp": "./src/xp.ts",
+    "./srs": "./src/srs.ts",
+    "./games": "./src/games.ts",
+    "./lesson-time": "./src/lesson-time.ts",
+    "./clock": "./src/clock.ts"
   },
   "peerDependencies": {
     "firebase": "^12.18.0"

@@ -11,6 +11,8 @@ import { LessonView } from "@/components/lesson/LessonView";
 import { LoadingView } from "@/components/lesson/LoadingView";
 import { PreReviewView } from "@/components/lesson/PreReviewView";
 import { QuizView } from "@/components/lesson/QuizView";
+import { TabBar } from "@/components/nav/TabBar";
+import { TodayHome } from "@/components/today/TodayHome";
 import { StreakStatus } from "@/components/lesson/StreakStatus";
 import { useAuth } from "@/lib/auth-context";
 import { isSuperadmin } from "@/lib/auth-guard";
@@ -22,11 +24,63 @@ export function DailyLesson() {
   const state = useDailyLesson(user);
   const { phase, date, lesson, streak, selectedCategories, actions } = state;
   const [editingCategories, setEditingCategories] = useState(false);
+  const [started, setStarted] = useState(false);
   const toast = useToast();
   const canEditCategories = SETTINGS_PHASES.includes(phase);
+  const showHome = !started && !!user && !!lesson && HOME_PHASES.includes(phase);
+
+  const picker = showCategoryPicker(phase, editingCategories) && (
+    <CategoryPicker
+      key={phase === "categories" ? "initial" : "edit"}
+      selectedCategories={selectedCategories}
+      onSave={async (categories) => {
+        await actions.saveCategories(categories);
+        setEditingCategories(false);
+        toast("Categories saved for future lessons.");
+      }}
+      onCancel={phase === "categories" ? undefined : () => setEditingCategories(false)}
+    />
+  );
+
+  const resetLink = (
+    <div className="mt-6 flex justify-between border-t border-border pt-3">
+      <button
+        type="button"
+        onClick={() => {
+          if (window.confirm("Reset your streak, history, and topic preferences? This cannot be undone.")) {
+            setEditingCategories(false);
+            setStarted(false);
+            actions.resetAll();
+          }
+        }}
+        className="text-xs text-fg-muted underline"
+      >
+        Reset my data
+      </button>
+      <span />
+    </div>
+  );
+
+  if (showHome) {
+    return (
+      <>
+        <div className="mx-auto w-full max-w-[560px] px-4 pb-28 pt-8">
+          {editingCategories ? <Card>{picker}</Card> : (
+            <TodayHome
+              uid={user.uid} date={date} lesson={lesson} done={!!state.progress?.done} streak={streak}
+              categoryCount={selectedCategories.length} onStart={() => setStarted(true)}
+              onEditCategories={() => setEditingCategories(true)}
+            />
+          )}
+          {resetLink}
+        </div>
+        <TabBar />
+      </>
+    );
+  }
 
   return (
-    <div className="mx-auto w-full max-w-[640px] px-4 py-10">
+    <div className="mx-auto w-full max-w-[560px] px-4 pb-10 pt-8">
       <Card>
         <Header
           date={date}
@@ -39,22 +93,12 @@ export function DailyLesson() {
             setEditingCategories(true);
           }}
           onSignOut={signOut}
+          onBack={started && phase !== "quiz" ? () => setStarted(false) : undefined}
         />
 
-        {showCategoryPicker(phase, editingCategories) && (
-          <CategoryPicker
-            key={phase === "categories" ? "initial" : "edit"}
-            selectedCategories={selectedCategories}
-            onSave={async (categories) => {
-              await actions.saveCategories(categories);
-              setEditingCategories(false);
-              toast("Categories saved for future lessons.");
-            }}
-            onCancel={phase === "categories" ? undefined : () => setEditingCategories(false)}
-          />
-        )}
+        {picker}
 
-        <LessonPhase state={state} />
+        <LessonPhase state={state} uid={user?.uid} />
 
         {(phase === "lesson" || phase === "done") && (
           <div className="mt-6">
@@ -62,42 +106,30 @@ export function DailyLesson() {
           </div>
         )}
 
-        <div className="mt-6 flex justify-between border-t border-border pt-3">
-          <button
-            type="button"
-            onClick={() => {
-              if (window.confirm("Reset your streak, history, and topic preferences? This cannot be undone.")) {
-                setEditingCategories(false);
-                actions.resetAll();
-              }
-            }}
-            className="text-xs text-fg-muted underline"
-          >
-            Reset my data
-          </button>
-          <span />
-        </div>
+        {resetLink}
       </Card>
     </div>
   );
 }
 
-function LessonPhase({ state }: { state: ReturnType<typeof useDailyLesson> }) {
+const HOME_PHASES: string[] = ["prereview", "lesson", "done"];
+
+function LessonPhase({ state, uid }: { state: ReturnType<typeof useDailyLesson>; uid?: string }) {
   const { phase, errorMessage, actions } = state;
   if (phase === "loading") return <LoadingView text="Setting things up" />;
   if (phase === "generating") return <LoadingView text="Researching and checking today’s lesson" />;
   if (phase === "error") return <ErrorView message={errorMessage ?? "Unknown error"} onRetry={actions.retry} />;
-  return <LoadedLesson state={state} />;
+  return <LoadedLesson state={state} uid={uid} />;
 }
 
-function LoadedLesson({ state }: { state: ReturnType<typeof useDailyLesson> }) {
+function LoadedLesson({ state, uid }: { state: ReturnType<typeof useDailyLesson>; uid?: string }) {
   const { phase, date, lesson, progress, quiz, preReview, actions } = state;
   if (!lesson) return null;
   if (phase === "prereview") return <PreReviewView lesson={lesson} preReview={preReview} onAnswer={actions.answerPreReview} onSkip={actions.skipPreReview} />;
   if (phase === "lesson") return <LessonView lesson={lesson} date={date} onStartQuiz={actions.startQuiz} />;
   if (phase === "quiz") return <QuizView lesson={lesson} quiz={quiz} onSelect={actions.selectOption} onNext={actions.nextQuestion} />;
   if (phase !== "done" || !progress) return null;
-  return <DoneView lesson={lesson} date={date} progress={progress}
+  return <DoneView lesson={lesson} date={date} progress={progress} uid={uid} earnedXp={state.earnedXp} rewardError={state.rewardError}
     onMore={() => actions.adjustWeight(lesson.category, 4)}
     onLess={() => actions.adjustWeight(lesson.category, -4)} />;
 }

@@ -2,6 +2,7 @@ import { Linking, StyleSheet, Text, View } from "react-native";
 import { plainMath } from "@random-knowledge/shared/math";
 import type { Lesson } from "@random-knowledge/shared/types";
 import { useTheme } from "../lib/theme";
+import { DiagramView } from "./DiagramView";
 
 export function LessonBody({ lesson }: { lesson: Lesson }) {
   const theme = useTheme();
@@ -28,6 +29,7 @@ export function LessonBody({ lesson }: { lesson: Lesson }) {
           </Text>
         ))}
       </View>
+      {lesson.diagram && <DiagramView diagram={lesson.diagram} />}
       {lesson.sources?.length ? (
         <View style={[styles.sources, { borderColor: theme.border }]}>
           <Text style={[styles.sourcesTitle, { color: theme.fgMuted }]}>Sources</Text>
@@ -51,7 +53,7 @@ export function LessonBody({ lesson }: { lesson: Lesson }) {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 24, fontWeight: "700", lineHeight: 30, marginBottom: 14 },
+  title: { fontSize: 24, fontWeight: "800", lineHeight: 30, marginBottom: 14 },
   body: { marginBottom: 4 },
   paragraph: { fontSize: 16, lineHeight: 24, marginBottom: 14 },
   sources: { borderTopWidth: 1, paddingTop: 12, marginVertical: 16 },

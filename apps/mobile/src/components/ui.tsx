@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
-import { useTheme } from "../lib/theme";
+import { radius, useTheme } from "../lib/theme";
 
 export function Button({
   title,
@@ -16,6 +16,7 @@ export function Button({
   const primary = variant === "primary";
   return (
     <Pressable
+      accessibilityRole="button"
       onPress={onPress}
       disabled={disabled}
       style={({ pressed }) => [
@@ -44,7 +45,7 @@ export function LinkText({ title, onPress }: { title: string; onPress: () => voi
 export function Card({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
   const theme = useTheme();
   return (
-    <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }, style]}>
+    <View style={[styles.card, { backgroundColor: theme.surface, shadowColor: theme.accent }, style]}>
       {children}
     </View>
   );
@@ -52,20 +53,22 @@ export function Card({ children, style }: { children: React.ReactNode; style?: V
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 6,
-    borderWidth: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    borderRadius: radius.pill,
+    borderWidth: 2,
+    paddingVertical: 13,
+    paddingHorizontal: 22,
     alignItems: "center",
   },
   buttonText: {
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "800",
     textAlign: "center",
   },
   card: {
-    borderRadius: 10,
-    borderWidth: 1,
-    padding: 20,
+    borderRadius: radius.md,
+    padding: 22,
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 },
   },
 });

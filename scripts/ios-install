@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Builds the mobile app in Release (standalone JS bundle, no Metro needed) and
+# installs it on a connected iPhone. Uses this machine's Xcode, not EAS cloud.
+#
+# Usage: scripts/ios-install [device name or UDID]
+# With no argument, Expo asks which connected device to use.
+#
+# Needs: the phone connected (or on the same network) with Developer Mode on and
+# trusted, Xcode signed in to your Apple Developer team, and apps/mobile/.env.local
+# with the EXPO_PUBLIC_* values (API base URL must be the deployed site, not localhost).
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+MOBILE_DIR="$REPO_ROOT/apps/mobile"
+cd "$MOBILE_DIR"
+
+if [[ ! -f .env.local && ! -f .env.production ]]; then
+  echo "error: apps/mobile/.env.local not found (see .env.local.example); the app would crash at launch without its Firebase config." >&2
+  exit 1
+fi
+if grep -Eq '^EXPO_PUBLIC_API_BASE_URL=.*(localhost|127\.0\.0\.1)' .env.local 2>/dev/null; then
+  echo "error: EXPO_PUBLIC_API_BASE_URL in .env.local points at localhost; a phone can't reach that." >&2
+  exit 1
+fi
+
+echo "==> Installing dependencies"
+(cd "$REPO_ROOT" && npm install)
+
+echo "==> Building a Release build and installing it on your iPhone"
+if [[ $# -gt 0 ]]; then
+  npx expo run:ios --device "$1" --configuration Release
+else
+  npx expo run:ios --device --configuration Release
+fi
+echo "==> Done. If the app won't open, trust your developer certificate in Settings > General > VPN & Device Management."

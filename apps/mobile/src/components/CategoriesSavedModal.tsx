@@ -41,7 +41,7 @@ export function CategoriesSavedModal({
 
 const styles = StyleSheet.create({
   root: { flex: 1, justifyContent: "center", padding: 24, backgroundColor: "rgba(0, 0, 0, 0.4)" },
-  dialog: { borderRadius: 10, borderWidth: 1, padding: 20, maxHeight: "70%" },
+  dialog: { borderRadius: 24, borderWidth: 1, padding: 20, maxHeight: "70%" },
   list: { flexGrow: 0 },
   action: { marginTop: 16 },
 });

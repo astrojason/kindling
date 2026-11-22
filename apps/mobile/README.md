@@ -12,7 +12,8 @@ The Expo/React Native client for the same single-user daily micro-learning app a
 
 1. Copy `.env.local.example` to `.env.local` and fill in the values (same Firebase project as apps/web).
 2. `npm install`
-3. `./../../scripts/ios-dev` (or `npm run ios` from this directory) to build and run the iOS dev client — this can't run in plain Expo Go because of the native Google Sign-In module.
+3. To install a standalone Release build on your own iPhone: `../../scripts/ios-install [device name]`.
+4. `./../../scripts/ios-dev` (or `npm run ios` from this directory) to build and run the iOS dev client — this can't run in plain Expo Go because of the native Google Sign-In module.
 
 ## Distribution
 

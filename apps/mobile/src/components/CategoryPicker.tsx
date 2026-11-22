@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   container: { borderBottomWidth: 1, paddingBottom: 20, marginBottom: 20 },
   title: { fontSize: 22, fontWeight: "700" },
   linkRow: { flexDirection: "row", gap: 16, marginBottom: 10 },
-  row: { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 6, borderWidth: 1, padding: 12, marginBottom: 8 },
+  row: { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 14, borderWidth: 1, padding: 12, marginBottom: 8 },
   checkbox: { width: 18, height: 18, borderRadius: 4, borderWidth: 1.5, alignItems: "center", justifyContent: "center" },
   actions: { marginTop: 12 },
 });

@@ -72,7 +72,7 @@ export function QuizView({
           <button
             type="button"
             onClick={onNext}
-            className="mt-5 rounded-sm bg-accent px-5 py-2.5 text-sm font-semibold text-accent-fg transition-opacity hover:opacity-85"
+            className="mt-5 rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-accent-fg transition-opacity hover:opacity-85"
           >
             Continue
           </button>

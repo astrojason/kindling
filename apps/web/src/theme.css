@@ -1,28 +1,42 @@
 /* Design tokens follow the OS light/dark preference via light-dark(); there is
  * no in-app override — the device's own appearance setting is the theme.
+ * The look follows the "Brightly" reference: lavender canvas, white rounded cards,
+ * a purple hero gradient and a dark blueprint panel for diagrams.
  */
 
 :root {
   color-scheme: light dark;
-  --color-bg: light-dark(#e9e1cc, #141b22);
-  --color-surface: light-dark(#f2ecdd, #1c2730);
-  --color-border: light-dark(#e3dac2, #2c3944);
-  --color-fg: light-dark(#2a2a28, #dcd6c8);
-  --color-fg-strong: light-dark(#1c2b39, #f2ecdd);
-  --color-fg-muted: light-dark(#6b6357, #8b9199);
-  --color-accent: light-dark(#2f6e68, #5fb3aa);
-  --color-accent-fg: light-dark(#f2ecdd, #10201d);
-  --color-accent-soft: light-dark(rgb(47 110 104 / 0.09), rgb(95 179 170 / 0.14));
-  --color-rust: light-dark(#b8622e, #e08a55);
-  --color-rust-fg: light-dark(#f2ecdd, #201209);
-  --color-rust-soft: light-dark(rgb(184 98 46 / 0.1), rgb(224 138 85 / 0.14));
-  --color-correct: light-dark(rgb(47 110 104 / 0.12), rgb(95 179 170 / 0.16));
-  --color-incorrect: light-dark(rgb(184 98 46 / 0.1), rgb(224 138 85 / 0.14));
+  --color-bg: light-dark(#f5f2ff, #14112b);
+  --color-surface: light-dark(#ffffff, #1f1b3d);
+  --color-surface-raised: light-dark(#faf8ff, #272250);
+  --color-border: light-dark(#e5e0f7, #35305f);
+  --color-fg: light-dark(#2d2754, #e3def8);
+  --color-fg-strong: light-dark(#1c1640, #f6f3ff);
+  --color-fg-muted: light-dark(#7c76a0, #9d98c4);
+  --color-accent: light-dark(#5b45d6, #a898ff);
+  --color-accent-fg: light-dark(#ffffff, #19133a);
+  --color-accent-soft: light-dark(rgb(91 69 214 / 0.1), rgb(168 152 255 / 0.16));
+  --color-rust: light-dark(#d63f68, #ff7d9f);
+  --color-rust-fg: light-dark(#ffffff, #2d0b16);
+  --color-rust-soft: light-dark(rgb(214 63 104 / 0.1), rgb(255 125 159 / 0.16));
+  --color-correct: light-dark(rgb(34 160 107 / 0.14), rgb(80 210 150 / 0.18));
+  --color-incorrect: light-dark(rgb(214 63 104 / 0.1), rgb(255 125 159 / 0.16));
+  --color-success: light-dark(#1f9d68, #54d29b);
+  --color-gold: light-dark(#e0a21b, #ffc857);
+  --color-hero-from: light-dark(#7d68ee, #5a45d6);
+  --color-hero-to: light-dark(#4a33c0, #3a2894);
+  --color-hero-fg: #ffffff;
+  --color-blueprint: #0d1017;
+  --color-blueprint-line: rgb(255 255 255 / 0.06);
+  --color-blueprint-fg: #f2f4f8;
+  --color-blueprint-muted: #a8afbf;
+  --color-blueprint-tag: #b3261e;
 }
 
 @theme inline {
   --color-bg: var(--color-bg);
   --color-surface: var(--color-surface);
+  --color-surface-raised: var(--color-surface-raised);
   --color-border: var(--color-border);
   --color-fg: var(--color-fg);
   --color-fg-strong: var(--color-fg-strong);
@@ -35,7 +49,22 @@
   --color-rust-soft: var(--color-rust-soft);
   --color-correct: var(--color-correct);
   --color-incorrect: var(--color-incorrect);
-  --font-sans: var(--font-inter);
-  --font-heading: var(--font-lora);
-  --font-serif: var(--font-lora);
+  --color-success: var(--color-success);
+  --color-gold: var(--color-gold);
+  --color-hero-from: var(--color-hero-from);
+  --color-hero-to: var(--color-hero-to);
+  --color-hero-fg: var(--color-hero-fg);
+  --color-blueprint: var(--color-blueprint);
+  --color-blueprint-line: var(--color-blueprint-line);
+  --color-blueprint-fg: var(--color-blueprint-fg);
+  --color-blueprint-muted: var(--color-blueprint-muted);
+  --color-blueprint-tag: var(--color-blueprint-tag);
+  --font-sans: var(--font-nunito);
+  --font-heading: var(--font-nunito);
+  --font-serif: var(--font-nunito);
+  --radius-sm: 0.875rem;
+  --radius-md: 1.5rem;
+  --radius-lg: 2rem;
+  --shadow-sm: 0 2px 10px rgb(70 50 160 / 0.08);
+  --shadow-lg: 0 10px 30px rgb(70 50 160 / 0.18);
 }

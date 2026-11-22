@@ -1,5 +1,10 @@
 # TODO
 
+## Brightly UI + features (shipped, needs verification)
+
+- [ ] Try the new Today / Explore / Review / Profile UI with a real account on web, and on mobile after a new local `eas build` (mobile has no gradient or SVG ring: the goal ring is a ring of ticks, the hero card is solid purple). Existing lessons have no diagram or games until new ones are generated; check one fresh lesson shows the diagram and a bonus game, and that the fact-check pass keeps accepting the larger draft (max_tokens raised to 4500).
+- [ ] Mobile Explore only lists past lessons (no stash / shared lessons yet)
+
 ## Follow-up
 
 - [ ] Lessons are now stored with LaTeX and rendered with KaTeX on web (plain-text fallback on mobile, plain text for read-aloud): check a fresh lesson with math on web; regenerate audio for already-stored lessons that contain `\(` since their saved narration read the raw markup; mobile could render real math later (needs a native-capable renderer and a new `eas build`)

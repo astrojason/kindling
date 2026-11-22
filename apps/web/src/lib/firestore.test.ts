@@ -14,10 +14,11 @@ vi.mock("firebase/firestore", () => ({
   orderBy: vi.fn(),
   limit: vi.fn(),
   startAfter: vi.fn(),
+  increment: vi.fn((n: number) => ({ __increment: n })),
 }));
 
 import { deleteDoc, doc, getDoc, getDocs, limit, orderBy, runTransaction, setDoc, startAfter } from "firebase/firestore";
-import { listCronRunLog, listGenerationLog, addToStash, completeDailyLesson, createShare, getLesson, getPreReviewEnabled, setPreReviewEnabled, getShare, getStash, removeFromStash, getSelectedCategories, setLesson, setPushToken, setSelectedCategories } from "./firestore";
+import { addReviewCards, addStats, getStats, setGoalMinutes, listCronRunLog, listGenerationLog, addToStash, completeDailyLesson, createShare, getLesson, getPreReviewEnabled, setPreReviewEnabled, getShare, getStash, removeFromStash, getSelectedCategories, setLesson, setPushToken, setSelectedCategories } from "./firestore";
 import type { Lesson } from "./types";
 
 /** Firestore's setDoc() rejects any value where an array directly contains another array. */
@@ -259,5 +260,37 @@ describe("sharing lessons", () => {
   it("removes a stashed lesson", async () => {
     await removeFromStash("user-b", "abc");
     expect(deleteDoc).toHaveBeenCalledWith("users/user-b/stash/abc");
+  });
+});
+
+describe("stats and review cards", () => {
+  it("falls back to default stats for a new user", async () => {
+    vi.mocked(getDoc).mockResolvedValue({ exists: () => false } as unknown as Awaited<ReturnType<typeof getDoc>>);
+    expect(await getStats("user-a")).toEqual({ xp: 0, goalMinutes: 15, seconds: {} });
+  });
+
+  it("adds points and seconds with atomic increments under meta/stats", async () => {
+    await addStats("user-a", "2026-11-21", { xp: 45, seconds: 120 });
+    expect(setDoc).toHaveBeenCalledWith(
+      "users/user-a/meta/stats",
+      { xp: { __increment: 45 }, seconds: { "2026-11-21": { __increment: 120 } } },
+      { merge: true },
+    );
+  });
+
+  it("saves the daily goal", async () => {
+    await setGoalMinutes("user-a", 10);
+    expect(setDoc).toHaveBeenCalledWith("users/user-a/meta/stats", { goalMinutes: 10 }, { merge: true });
+  });
+
+  it("adds review cards without resetting ones that already exist", async () => {
+    vi.mocked(getDoc).mockResolvedValueOnce({ exists: () => true } as never).mockResolvedValueOnce({ exists: () => false } as never);
+    const lesson: Lesson = {
+      category: "nature", title: "T", body: ["a", "b", "c"], wikiQuery: "w", youtubeQuery: "y",
+      quiz: [0, 1].map((i) => ({ question: `Q${i}`, options: ["a", "b", "c", "d"], correctIndex: 0, explanation: "e" })),
+    };
+    await addReviewCards("user-a", lesson, "2026-11-21");
+    expect(setDoc).toHaveBeenCalledTimes(1);
+    expect(setDoc).toHaveBeenCalledWith("users/user-a/reviewCards/2026-11-21-1", expect.objectContaining({ id: "2026-11-21-1", box: 1 }));
   });
 });
