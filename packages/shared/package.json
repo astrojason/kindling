@@ -1,6 +1,6 @@
 {
   "name": "@random-knowledge/shared",
-  "version": "1.17.0",
+  "version": "1.18.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -33,7 +33,9 @@
     "./session-protocol": "./src/session-protocol.ts",
     "./discover": "./src/discover.ts",
     "./pending-requests": "./src/pending-requests.ts",
-    "./notification-link": "./src/notification-link.ts"
+    "./notification-link": "./src/notification-link.ts",
+    "./api-client": "./src/api-client.ts",
+    "./chat-stream-reader": "./src/chat-stream-reader.ts"
   },
   "peerDependencies": {
     "firebase": "^12.18.0"
