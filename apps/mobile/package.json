@@ -20,6 +20,7 @@
     "firebase": "^12.19.0",
     "react": "19.3.0",
     "react-native": "0.88.1",
+    "react-native-markdown-display": "^7.0.2",
     "react-native-safe-area-context": "~5.10.1"
   },
   "devDependencies": {

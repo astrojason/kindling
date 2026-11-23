@@ -2,11 +2,12 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SymbolView, type SFSymbol } from "expo-symbols";
 import { useTheme } from "../lib/theme";
 
-export type Tab = "today" | "explore" | "review" | "profile";
+export type Tab = "today" | "explore" | "notes" | "review" | "profile";
 
 const TABS: { key: Tab; label: string; icon: SFSymbol }[] = [
   { key: "today", label: "Today", icon: "sun.max.fill" },
   { key: "explore", label: "Explore", icon: "safari" },
+  { key: "notes", label: "Notes", icon: "note.text" },
   { key: "review", label: "Review", icon: "rectangle.stack" },
   { key: "profile", label: "Profile", icon: "person.fill" },
 ];

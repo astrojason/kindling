@@ -3,10 +3,11 @@ import { View } from "react-native";
 import { TabBar, type Tab } from "../components/TabBar";
 import { DailyLessonScreen } from "./DailyLessonScreen";
 import { ExploreScreen } from "./ExploreScreen";
+import { NotesScreen } from "./NotesScreen";
 import { ProfileScreen } from "./ProfileScreen";
 import { ReviewScreen } from "./ReviewScreen";
 
-/** The signed-in app: four tabs under a bottom bar. Today stays mounted so a lesson in progress survives tab switches. */
+/** The signed-in app: five tabs under a bottom bar. Today stays mounted so a lesson in progress survives tab switches. */
 export function MainScreen() {
   const [tab, setTab] = useState<Tab>("today");
   const [inLesson, setInLesson] = useState(false);
@@ -24,6 +25,7 @@ export function MainScreen() {
         <DailyLessonScreen onFlowChange={setInLesson} refreshKey={todayShown} onOpenReview={() => changeTab("review")} />
       </View>
       {tab === "explore" && <ExploreScreen />}
+      {tab === "notes" && <NotesScreen />}
       {tab === "review" && <ReviewScreen />}
       {tab === "profile" && <ProfileScreen />}
       {showTabBar && <TabBar active={tab} onChange={changeTab} />}
