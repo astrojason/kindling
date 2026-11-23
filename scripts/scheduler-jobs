@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Creates (or updates) the two Cloud Scheduler jobs that generate the nightly lessons:
-# 00:00 and a 03:00 retry, Pacific time, each POSTing /api/cron/generate-daily-lesson with the
-# CRON_SECRET bearer token. Safe to re-run.
+# Creates (or updates) the Cloud Scheduler jobs, Pacific time, each POSTing with the CRON_SECRET bearer
+# token: the nightly lesson run (00:00, plus a 03:00 retry) on /api/cron/generate-daily-lesson, and an
+# hourly /api/cron/refresh-badges that keeps the phone's icon badge in step as reviews fall due. Safe to re-run.
 #
 #   CRON_SECRET=... scripts/scheduler-jobs https://<your-app-hosting-url>
 #
@@ -25,7 +25,7 @@ fi
 BASE_URL="${BASE_URL%/}"
 
 upsert_job() {
-  local name="$1" schedule="$2" verb headers_flag
+  local name="$1" schedule="$2" path="$3" verb headers_flag
   if gcloud scheduler jobs describe "$name" --project "$PROJECT_ID" --location "$LOCATION" >/dev/null 2>&1; then
     verb="update"; headers_flag="--update-headers"   # `update` and `create` name this flag differently
   else
@@ -35,13 +35,14 @@ upsert_job() {
   gcloud scheduler jobs "$verb" http "$name" \
     --project "$PROJECT_ID" --location "$LOCATION" \
     --schedule "$schedule" --time-zone "$TIME_ZONE" \
-    --uri "$BASE_URL/api/cron/generate-daily-lesson" --http-method POST \
+    --uri "$BASE_URL$path" --http-method POST \
     "$headers_flag" "Authorization=Bearer ${CRON_SECRET}" \
     --format=none   # gcloud otherwise echoes the whole job, bearer token included
 }
 
-upsert_job generate-daily-lesson "0 0 * * *"
-upsert_job generate-daily-lesson-retry "0 3 * * *"
+upsert_job generate-daily-lesson "0 0 * * *" /api/cron/generate-daily-lesson
+upsert_job generate-daily-lesson-retry "0 3 * * *" /api/cron/generate-daily-lesson
+upsert_job refresh-badges "5 * * * *" /api/cron/refresh-badges
 
 echo "==> Jobs in ${PROJECT_ID}:"
 gcloud scheduler jobs list --project "$PROJECT_ID" --location "$LOCATION"

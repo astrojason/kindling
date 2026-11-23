@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import { refreshBadge } from "@/lib/badge-push";
+import { authorizeCron } from "@/lib/cron-auth";
 import { pickCategory } from "@/lib/categories";
 import { todayStr } from "@/lib/date";
-import { getBadgeCountAdmin, getDailyGenerationContextAdmin, getPushTokenAdmin, listGrantedUserIds, listPausedUserIds, listPrivilegedUserIds, logCronRunAdmin, logGenerationAdmin, saveDailyLessonAdmin } from "@/lib/firebase-admin";
+import { getDailyGenerationContextAdmin, listGrantedUserIds, listPausedUserIds, listPrivilegedUserIds, logCronRunAdmin, logGenerationAdmin, saveDailyLessonAdmin } from "@/lib/firebase-admin";
 import { attachLessonAudio } from "@/lib/lesson-audio";
 import { generateSourcedLesson } from "@/lib/lesson-generation";
 import { isOutOfCredits } from "@/lib/openai-errors";
-import { sendBadgePush } from "@/lib/push";
 import { DAILY_TOKEN_LIMIT, getTokensUsedToday, reportTokensUsed, TokenTrackerError } from "@/lib/token-budget";
 import type { CronRunResult, Lesson } from "@/lib/types";
 
@@ -27,18 +28,6 @@ function getOpenAI(): OpenAI {
   return openai;
 }
 
-function authorizeRequest(request: Request): NextResponse | null {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    console.error("CRON_SECRET is not configured; refusing to run the daily-lesson cron.");
-    return NextResponse.json({ error: "Cron is not configured" }, { status: 500 });
-  }
-  if (request.headers.get("authorization") !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  return null;
-}
-
 /** Throws TokenTrackerError when usage can't be read: an unenforceable budget stops the run rather than being assumed unspent. */
 async function tokenLimitReached(): Promise<boolean> {
   return (await getTokensUsedToday()) >= DAILY_TOKEN_LIMIT;
@@ -51,9 +40,7 @@ async function tokenLimitReached(): Promise<boolean> {
  */
 async function notifyMobileBadge(uid: string, date: string): Promise<void> {
   try {
-    const pushToken = await getPushTokenAdmin(uid);
-    if (!pushToken) return;
-    await sendBadgePush(pushToken.token, await getBadgeCountAdmin(uid, date));
+    await refreshBadge(uid, date);
   } catch (err) {
     console.error(`Failed to badge the app for ${uid}`, err);
   }
@@ -74,7 +61,7 @@ async function notifyMobileBadge(uid: string, date: string): Promise<void> {
  * never a wrong lesson served to a user.
  */
 export async function POST(request: Request) {
-  const denied = authorizeRequest(request);
+  const denied = authorizeCron(request, "the daily-lesson cron");
   if (denied) return denied;
 
   const date = todayStr("UTC");
