@@ -7,6 +7,7 @@ import { useTheme } from "../../lib/theme";
 import { ErrorBox } from "../ErrorBox";
 import { Button, LinkText } from "../ui";
 import { MarkdownBody } from "./MarkdownBody";
+import { PastSessions } from "./PastSessions";
 import { SpeedReader } from "./SpeedReader";
 import { StrengthBar } from "./StrengthBar";
 
@@ -82,6 +83,7 @@ export function NoteDetail({ uid, note, onBack, onEdit, onQuiz, onDeleted }: { u
       <Section title="What did it say?"><MarkdownBody>{note.what_it_said}</MarkdownBody></Section>
       <Section title="Why does it matter?"><MarkdownBody>{note.why_it_matters}</MarkdownBody></Section>
       <Section title="How would you explain it?"><MarkdownBody>{note.application}</MarkdownBody></Section>
+      <PastSessions uid={uid} noteId={note.id} />
     </View>
   );
 }

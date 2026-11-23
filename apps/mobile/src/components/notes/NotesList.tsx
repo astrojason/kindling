@@ -5,13 +5,13 @@ import { ageLabel, filterNotes, reviewedLabel, sortNotes, type NoteSort } from "
 import { getUniqueTags } from "@random-knowledge/shared/tags";
 import { radius, useTheme } from "../../lib/theme";
 import { ErrorBox } from "../ErrorBox";
-import { Button } from "../ui";
+import { Button, LinkText } from "../ui";
 import { StrengthBar } from "./StrengthBar";
 
 const SORTS: NoteSort[] = ["recent", "strength", "tag"];
 
 /** The notes archive: search, tag chips and sort over a list that opens each note. */
-export function NotesList({ notes, error, notice, onOpen, onCapture }: { notes: Note[]; error: string | null; notice: string | null; onOpen: (id: string) => void; onCapture: () => void }) {
+export function NotesList({ notes, error, notice, onOpen, onCapture, onDiscover }: { notes: Note[]; error: string | null; notice: string | null; onOpen: (id: string) => void; onCapture: () => void; onDiscover: () => void }) {
   const theme = useTheme();
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState("all");
@@ -28,7 +28,10 @@ export function NotesList({ notes, error, notice, onOpen, onCapture }: { notes: 
           <Text style={[styles.title, { color: theme.fgStrong }]}>Notes</Text>
           <Text style={{ color: theme.fgMuted, fontSize: 12 }}>{visible.length === notes.length ? `${notes.length} notes` : `${visible.length} of ${notes.length}`}</Text>
         </View>
-        <View style={{ width: 120 }}><Button title="Capture" onPress={onCapture} /></View>
+        <View style={{ alignItems: "flex-end", gap: 8 }}>
+          <LinkText title="Discover" onPress={onDiscover} />
+          <View style={{ width: 120 }}><Button title="Capture" onPress={onCapture} /></View>
+        </View>
       </View>
 
       {notice && <Text accessibilityRole="alert" style={[styles.notice, { backgroundColor: theme.accentSoft, color: theme.accent }]}>{notice}</Text>}

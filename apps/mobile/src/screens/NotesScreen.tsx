@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text } from "react-native";
+import { DiscoverFeed } from "../components/discover/DiscoverFeed";
 import { ErrorBox } from "../components/ErrorBox";
 import { LoadingView } from "../components/LoadingView";
 import { EditNote } from "../components/notes/EditNote";
@@ -13,7 +14,7 @@ import { useNotes } from "../hooks/useNotes";
 import { useAuth } from "../lib/auth-context";
 import { useTheme } from "../lib/theme";
 
-export type NotesRoute = { name: "list" } | { name: "new" } | { name: "detail"; id: string } | { name: "edit"; id: string } | { name: "quiz"; id: string };
+export type NotesRoute = { name: "list" } | { name: "new" } | { name: "detail"; id: string } | { name: "edit"; id: string } | { name: "quiz"; id: string } | { name: "discover" };
 
 /** The Notes tab: the library, and from it a note, its editor and the capture form. */
 export function NotesScreen({ initialRoute = { name: "list" } }: { initialRoute?: NotesRoute }) {
@@ -32,9 +33,10 @@ export function NotesScreen({ initialRoute = { name: "list" } }: { initialRoute?
   return (
     <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
       <Card>
-        {route.name === "list" && <ListRoute uid={uid} notice={notice} onOpen={(id) => go({ name: "detail", id })} onCapture={() => go({ name: "new" })} />}
+        {route.name === "list" && <ListRoute uid={uid} notice={notice} onOpen={(id) => go({ name: "detail", id })} onCapture={() => go({ name: "new" })} onDiscover={() => go({ name: "discover" })} />}
         {route.name === "new" && <NewNote uid={uid} getToken={getToken} onSaved={(id, message) => go({ name: "detail", id }, message)} onCancel={() => go({ name: "list" })} />}
         {route.name === "detail" && <DetailRoute uid={uid} id={route.id} notice={notice} onBack={() => go({ name: "list" })} onEdit={() => go({ name: "edit", id: route.id })} onQuiz={() => go({ name: "quiz", id: route.id })} onDeleted={(message) => go({ name: "list" }, message)} />}
+        {route.name === "discover" && <DiscoverFeed uid={uid} getToken={getToken} onBack={() => go({ name: "list" })} onSaved={(id, message) => go({ name: "detail", id }, message)} />}
         {route.name === "quiz" && <QuizRoute uid={uid} id={route.id} getToken={getToken} onBack={() => go({ name: "detail", id: route.id })} onFinished={(message) => go({ name: "detail", id: route.id }, message)} />}
         {route.name === "edit" && <EditRoute uid={uid} id={route.id} onSaved={(message) => go({ name: "detail", id: route.id }, message)} onCancel={() => go({ name: "detail", id: route.id })} />}
       </Card>
@@ -42,10 +44,10 @@ export function NotesScreen({ initialRoute = { name: "list" } }: { initialRoute?
   );
 }
 
-function ListRoute({ uid, notice, onOpen, onCapture }: { uid: string; notice: string | null; onOpen: (id: string) => void; onCapture: () => void }) {
+function ListRoute({ uid, notice, onOpen, onCapture, onDiscover }: { uid: string; notice: string | null; onOpen: (id: string) => void; onCapture: () => void; onDiscover: () => void }) {
   const { notes, error } = useNotes(uid);
   if (notes === null && !error) return <LoadingView text="Loading notes" />;
-  return <NotesList notes={notes ?? []} error={error} notice={notice} onOpen={onOpen} onCapture={onCapture} />;
+  return <NotesList notes={notes ?? []} error={error} notice={notice} onOpen={onOpen} onCapture={onCapture} onDiscover={onDiscover} />;
 }
 
 function useLoadedNote(uid: string, id: string) {

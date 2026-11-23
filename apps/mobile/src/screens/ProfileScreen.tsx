@@ -7,10 +7,12 @@ import { GOAL_CHOICES, levelFor, xpIntoLevel, XP_PER_LEVEL } from "@random-knowl
 import { DeleteAccountLink } from "../components/DeleteAccountLink";
 import { ErrorBox } from "../components/ErrorBox";
 import { LoadingView } from "../components/LoadingView";
+import { DiscoverSettings } from "../components/settings/DiscoverSettings";
 import { Button, Card } from "../components/ui";
 import { useAuth } from "../lib/auth-context";
 import { getStats, getStreak, setGoalMinutes } from "../lib/firestore";
 import { radius, useTheme } from "../lib/theme";
+import { canManageAccess } from "@random-knowledge/shared/auth-guard";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const LINKS = [
@@ -21,7 +23,7 @@ const LINKS = [
 
 export function ProfileScreen() {
   const theme = useTheme();
-  const { user, signOut } = useAuth();
+  const { user, claims, signOut } = useAuth();
   const [data, setData] = useState<{ stats: StatsData; streak: StreakData } | null>(null);
   const [goal, setGoal] = useState<number | null>(null);
   const [savingGoal, setSavingGoal] = useState<number | null>(null);
@@ -120,9 +122,10 @@ export function ProfileScreen() {
             </View>
           </>
         )}
+        {user && <DiscoverSettings uid={user.uid} />}
         {API_BASE_URL && (
           <View style={{ gap: 8 }}>
-            {LINKS.map((link) => (
+            {[...(canManageAccess(claims) ? [{ title: "Manage access", path: "/admin/access" }] : []), ...LINKS].map((link) => (
               <Pressable key={link.path} accessibilityRole="link" onPress={() => void Linking.openURL(`${API_BASE_URL}${link.path}`).catch((err) => setError(err instanceof Error ? err.message : `Could not open ${link.title}.`))}
                 style={[styles.link, { backgroundColor: theme.surfaceRaised }]}>
                 <Text style={{ color: theme.fgStrong, fontWeight: "700", fontSize: 14 }}>{link.title}</Text>
