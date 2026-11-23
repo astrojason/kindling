@@ -2,13 +2,16 @@
 
 import Link from "next/link";
 import { PendingBanner } from "@/components/admin/PendingBanner";
+import { DueNotes } from "@/components/review/DueNotes";
 import { GoalCard } from "@/components/today/GoalCard";
 import { PlanCard } from "@/components/today/PlanCard";
 import { ReviewRow } from "@/components/today/ReviewRow";
 import { StatChips } from "@/components/today/StatChips";
 import { LoadingView } from "@/components/lesson/LoadingView";
+import { dueNotes } from "@random-knowledge/shared/notes-view";
 import { getStreakStatus } from "@/lib/streak";
 import { dueCards } from "@/lib/srs";
+import { useNotes } from "@/lib/useNotes";
 import { useProgressData } from "@/lib/useProgressData";
 import type { PlanItem } from "@/lib/lesson-plan";
 import type { StreakData } from "@/lib/types";
@@ -30,6 +33,7 @@ export function TodayHome({
   onEditCategories: () => void;
 }) {
   const progress = useProgressData(uid);
+  const { notes, error: notesError } = useNotes(uid);
   return (
     <div className="flex flex-col gap-4">
       <header className="flex items-start justify-between gap-3">
@@ -48,7 +52,11 @@ export function TodayHome({
 
       <PlanCard plan={plan} onStart={onStart} onOpen={onOpen} onRetry={onRetry} />
 
-      {progress.data && <ReviewRow dueCount={dueCards(progress.data.cards, date).length} totalCount={progress.data.cards.length} />}
+      {/* Judge "nothing due" only once the notes have loaded (or failed), so it never flashes while they are still coming. */}
+      {progress.data && (notes || notesError) && (
+        <ReviewRow dueCards={dueCards(progress.data.cards, date).length} totalCards={progress.data.cards.length} dueNotes={notes ? dueNotes(notes).length : 0} totalNotes={notes?.length ?? 0} />
+      )}
+      <DueNotes notes={notes ?? []} error={notesError} />
 
       <section aria-label="Keep exploring">
         <h2 className="mb-3 text-lg font-extrabold text-fg-strong">Keep exploring</h2>

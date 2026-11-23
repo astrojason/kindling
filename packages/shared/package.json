@@ -1,6 +1,6 @@
 {
   "name": "@random-knowledge/shared",
-  "version": "1.21.0",
+  "version": "1.22.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -36,7 +36,9 @@
     "./notification-link": "./src/notification-link.ts",
     "./api-client": "./src/api-client.ts",
     "./chat-stream-reader": "./src/chat-stream-reader.ts",
-    "./review-empty": "./src/review-empty.ts"
+    "./review-empty": "./src/review-empty.ts",
+    "./review-summary": "./src/review-summary.ts",
+    "./study-timer": "./src/study-timer.ts"
   },
   "peerDependencies": {
     "firebase": "^12.18.0"

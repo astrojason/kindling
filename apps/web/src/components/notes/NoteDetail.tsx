@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Note } from "@random-knowledge/shared/notes";
@@ -8,10 +8,14 @@ import { dueLabel } from "@random-knowledge/shared/notes-view";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import { decrementNoteCount, softDeleteNote } from "@/lib/notes-firestore";
+import { useStudyTimer } from "@/lib/useStudyTimer";
 import { MarkdownBody } from "./MarkdownBody";
 import { PastSessions } from "./PastSessions";
 import { SpeedReader } from "./SpeedReader";
 import { StrengthBar } from "./StrengthBar";
+
+/** One reading stretch counts at most this long, so a note left open does not count as hours of study. */
+const MAX_READING_SECONDS = 10 * 60;
 
 const actionClass = "rounded-full border-2 border-border px-4 py-2 text-sm font-extrabold text-fg-muted hover:border-accent";
 
@@ -32,6 +36,27 @@ export function NoteDetail({ uid, note }: { uid: string; note: Note }) {
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const { timer, flush } = useStudyTimer(uid, MAX_READING_SECONDS);
+
+  // Time on the note (reading, speed reading) counts toward the learning goal: counted while the tab is visible,
+  // saved when it is hidden or the page is left.
+  useEffect(() => {
+    function onVisibility() {
+      if (document.visibilityState === "hidden") {
+        timer.pause();
+        void flush();
+      } else {
+        timer.start();
+      }
+    }
+    if (document.visibilityState !== "hidden") timer.start();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      timer.pause();
+      void flush();
+    };
+  }, [timer, flush]);
 
   async function remove() {
     setDeleting(true);

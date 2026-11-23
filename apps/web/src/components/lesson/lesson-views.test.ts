@@ -14,6 +14,7 @@ vi.mock("@/lib/useDailyLesson", () => ({ useDailyLesson: vi.fn() }));
 vi.mock("@/lib/firestore", () => ({ createShare: vi.fn() }));
 vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user: null, claims: null, signOut: vi.fn() }) }));
 vi.mock("@/lib/usePendingRequests", () => ({ usePendingRequests: () => ({ count: null, error: null }) }));
+vi.mock("@/lib/useNotes", () => ({ useNotes: () => ({ notes: [], error: null }) }));
 
 const lesson: Lesson = {
   preQuiz: [{ question: "Which would you guess?", options: ["Red", "Green", "Blue"], correctIndex: 1, explanation: "Green." }],

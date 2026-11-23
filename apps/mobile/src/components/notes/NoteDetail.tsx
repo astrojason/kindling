@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from "react";
-import { Alert, Linking, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState, type ReactNode } from "react";
+import { Alert, AppState, Linking, StyleSheet, Text, View } from "react-native";
 import type { Note } from "@random-knowledge/shared/notes";
 import { dueLabel } from "@random-knowledge/shared/notes-view";
+import { useStudyTimer } from "../../hooks/useStudyTimer";
 import { decrementNoteCount, softDeleteNote } from "../../lib/notes-firestore";
 import { useTheme } from "../../lib/theme";
 import { ErrorBox } from "../ErrorBox";
@@ -10,6 +11,9 @@ import { MarkdownBody } from "./MarkdownBody";
 import { PastSessions } from "./PastSessions";
 import { SpeedReader } from "./SpeedReader";
 import { StrengthBar } from "./StrengthBar";
+
+/** One reading stretch counts at most this long, so a note left open does not count as hours of study. */
+const MAX_READING_SECONDS = 10 * 60;
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   const theme = useTheme();
@@ -27,6 +31,26 @@ export function NoteDetail({ uid, note, onBack, onEdit, onQuiz, onDeleted }: { u
   const [speedReading, setSpeedReading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { timer, flush } = useStudyTimer(uid, MAX_READING_SECONDS);
+
+  // Time on the note (reading, speed reading) counts toward the learning goal: counted while the app is in the
+  // foreground, saved when it goes to the background or the screen is left.
+  useEffect(() => {
+    if (AppState.currentState === "active") timer.start();
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state === "active") {
+        timer.start();
+      } else {
+        timer.pause();
+        void flush();
+      }
+    });
+    return () => {
+      subscription.remove();
+      timer.pause();
+      void flush();
+    };
+  }, [timer, flush]);
 
   async function remove() {
     setDeleting(true);

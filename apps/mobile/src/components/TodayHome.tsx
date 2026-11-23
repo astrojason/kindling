@@ -2,6 +2,8 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-nati
 import { SymbolView } from "expo-symbols";
 import { CATEGORIES } from "@random-knowledge/shared/categories";
 import type { PlanItem } from "@random-knowledge/shared/lesson-plan";
+import { dueNotes } from "@random-knowledge/shared/notes-view";
+import { reviewSummary } from "@random-knowledge/shared/review-summary";
 import { dueCards } from "@random-knowledge/shared/srs";
 import { getStreakStatus } from "@random-knowledge/shared/streak";
 import type { StatsData, StreakData } from "@random-knowledge/shared/types";
@@ -9,8 +11,10 @@ import { goalFraction, levelFor, minutesOn, weekDays } from "@random-knowledge/s
 import { useProgressData } from "../hooks/useProgressData";
 import { radius, useTheme } from "../lib/theme";
 import { ErrorBox } from "./ErrorBox";
+import { DueNotes } from "./notes/DueNotes";
 import { GoalRing } from "./GoalRing";
 import { LoadingView } from "./LoadingView";
+import { useNotes } from "../hooks/useNotes";
 
 function rowStatus(item: PlanItem): string {
   if (item.status === "ready") return item.done ? "Done" : `${item.minutes} min`;
@@ -22,7 +26,7 @@ const WEEKDAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
 
 /** The Today tab: greeting, streak and points, daily goal, today's lesson, review and shortcuts. */
 export function TodayHome({
-  uid, date, plan, streak, categoryCount, refreshKey, onStart, onOpen, onRetry, onEditCategories, onOpenReview,
+  uid, date, plan, streak, categoryCount, refreshKey, onStart, onOpen, onRetry, onEditCategories, onOpenReview, onOpenNote,
 }: {
   uid: string;
   date: string;
@@ -36,11 +40,14 @@ export function TodayHome({
   onRetry: () => void;
   onEditCategories: () => void;
   onOpenReview: () => void;
+  onOpenNote: (id: string) => void;
 }) {
   const theme = useTheme();
   const progress = useProgressData(uid, refreshKey);
   const stats = progress.data?.stats;
-  const dueCount = progress.data ? dueCards(progress.data.cards, date).length : 0;
+  const { notes, error: notesError } = useNotes(uid);
+  const review = progress.data ? reviewSummary({ dueCards: dueCards(progress.data.cards, date).length, totalCards: progress.data.cards.length, dueNotes: notes ? dueNotes(notes).length : 0, totalNotes: notes?.length ?? 0 }) : null;
+  const dueCount = review?.count ?? 0;
   const doneCount = plan.filter((item) => item.done).length;
   const totalMinutes = plan.reduce((sum, item) => sum + (item.minutes ?? 0), 0);
   const next = plan.find((item) => item.status === "ready" && !item.done);
@@ -108,7 +115,8 @@ export function TodayHome({
         </Pressable>
       </View>
 
-      {progress.data && (
+      {/* Judge "nothing due" only once the notes have loaded (or failed), so it never flashes while they are still coming. */}
+      {progress.data && (notes || notesError) && (
         <View style={[styles.card, { backgroundColor: theme.surface }]}>
           <View style={[styles.dueBadge, { backgroundColor: theme.accentSoft }]}>
             <Text style={{ color: theme.accent, fontSize: 18, fontWeight: "800" }}>{dueCount}</Text>
@@ -116,7 +124,7 @@ export function TodayHome({
           <View style={styles.flex}>
             <Text style={[styles.cardTitle, { color: theme.fgStrong }]}>Review</Text>
             <Text style={{ color: theme.fgMuted, fontSize: 14 }}>
-              {progress.data.cards.length === 0 ? "Finish a lesson to unlock" : dueCount === 0 ? "Nothing due right now" : `${dueCount} ${dueCount === 1 ? "card" : "cards"} due`}
+              {review?.hint}
             </Text>
           </View>
           {dueCount > 0 ? (
@@ -130,6 +138,7 @@ export function TodayHome({
           )}
         </View>
       )}
+      <DueNotes notes={notes ?? []} error={notesError ? `Could not load your notes for review: ${notesError}` : null} onOpen={onOpenNote} />
 
       <Pressable accessibilityRole="button" onPress={onEditCategories} style={[styles.card, { backgroundColor: theme.surface }]}>
         <View style={styles.flex}>

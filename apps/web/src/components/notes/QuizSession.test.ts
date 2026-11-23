@@ -2,10 +2,13 @@
 
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Note, NoteSession } from "@random-knowledge/shared/notes";
 import { computeSM2 } from "@random-knowledge/shared/sm2";
 import { streamChat } from "@/lib/chat-stream";
+import { nowMs } from "@/lib/clock";
+import { addStats } from "@/lib/firestore";
+import { todayStr } from "@/lib/date";
 import { createSession, getCompletedSessions, getIncompleteSession, incrementNotesStats, updateNoteAfterRating, updateSession } from "@/lib/notes-firestore";
 import { QuizSession } from "./QuizSession";
 
@@ -14,6 +17,8 @@ const toast = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 vi.mock("@/components/Toast", () => ({ useToast: () => toast }));
 vi.mock("@/lib/chat-stream", () => ({ streamChat: vi.fn() }));
+vi.mock("@/lib/clock", () => ({ nowMs: vi.fn() }));
+vi.mock("@/lib/firestore", () => ({ addStats: vi.fn() }));
 vi.mock("@/lib/notes-firestore", () => ({
   createSession: vi.fn(), getIncompleteSession: vi.fn(), getCompletedSessions: vi.fn(),
   updateSession: vi.fn(), updateNoteAfterRating: vi.fn(), incrementNotesStats: vi.fn(),
@@ -35,6 +40,8 @@ beforeEach(() => {
   vi.mocked(updateSession).mockResolvedValue(undefined);
   vi.mocked(updateNoteAfterRating).mockResolvedValue(undefined);
   vi.mocked(incrementNotesStats).mockResolvedValue(undefined);
+  vi.mocked(addStats).mockResolvedValue(undefined);
+  vi.mocked(nowMs).mockReturnValue(0);
   vi.mocked(streamChat).mockResolvedValue("What is a black hole?");
   container = document.createElement("div");
   root = createRoot(container);
@@ -218,4 +225,52 @@ it("shows a failure to open the session in full", async () => {
   vi.mocked(getIncompleteSession).mockRejectedValue(new Error("Missing or insufficient permissions."));
   await render();
   expect(container.querySelector("[role='alert']")?.textContent).toContain("Missing or insufficient permissions.");
+});
+
+describe("time spent", () => {
+  it("counts the time spent answering and rating toward today's learning time", async () => {
+    vi.mocked(nowMs).mockReturnValue(1_000); // the opening question appears
+    await render();
+    vi.mocked(nowMs).mockReturnValue(31_000); // 30 s later the answer is sent
+    vi.mocked(streamChat).mockResolvedValue(CLOSING);
+    await answer("My answer");
+    vi.mocked(nowMs).mockReturnValue(40_000); // the closing assessment appeared at 31 s: 9 s before the rating is saved
+    await click(button("Save rating"));
+
+    expect(addStats).toHaveBeenCalledWith("u1", todayStr(), { seconds: 39 });
+  });
+
+  it("caps one slow turn, so a tab left open does not count as study time", async () => {
+    vi.mocked(nowMs).mockReturnValue(0);
+    await render();
+    vi.mocked(nowMs).mockReturnValue(60 * 60 * 1000); // an hour away
+    vi.mocked(streamChat).mockResolvedValue(CLOSING);
+    await answer("My answer");
+    await click(button("Save rating"));
+
+    const { seconds } = vi.mocked(addStats).mock.calls[0][2] as { seconds: number };
+    expect(seconds).toBeLessThanOrEqual(180 + 180);
+    expect(seconds).toBeGreaterThanOrEqual(180);
+  });
+
+  it("records no time when none was spent", async () => {
+    vi.mocked(getCompletedSessions).mockResolvedValue([session({ completed_at: {} as never, suggested_rating: 4 })]);
+    await render();
+    await click(button("Save rating"));
+    expect(addStats).not.toHaveBeenCalled();
+  });
+
+  it("says so when the time could not be recorded, and still returns to the note", async () => {
+    vi.mocked(nowMs).mockReturnValue(0);
+    await render();
+    vi.mocked(nowMs).mockReturnValue(20_000);
+    vi.mocked(streamChat).mockResolvedValue(CLOSING);
+    await answer("My answer");
+    vi.mocked(addStats).mockRejectedValue(new Error("stats down"));
+    await click(button("Save rating"));
+
+    expect(toast).toHaveBeenCalledWith(expect.stringContaining("stats down"));
+    expect(toast).not.toHaveBeenCalledWith("Recall saved.");
+    expect(push).toHaveBeenCalledWith("/notes/n1");
+  });
 });

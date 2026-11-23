@@ -19,7 +19,7 @@ import { StreakStatus } from "../components/StreakStatus";
 import { TodayHome } from "../components/TodayHome";
 import { Button, Card } from "../components/ui";
 
-export function DailyLessonScreen({ onFlowChange, onOpenReview, refreshKey }: { onFlowChange: (inFlow: boolean) => void; onOpenReview: () => void; refreshKey: number }) {
+export function DailyLessonScreen({ onFlowChange, onOpenReview, onOpenNote, refreshKey }: { onFlowChange: (inFlow: boolean) => void; onOpenReview: () => void; onOpenNote: (id: string) => void; refreshKey: number }) {
   const theme = useTheme();
   const { user, signOut } = useAuth();
   const state = useDailyLesson(user);
@@ -100,6 +100,7 @@ export function DailyLessonScreen({ onFlowChange, onOpenReview, refreshKey }: { 
               setCategoriesSaved(false);
             }}
             onOpenReview={onOpenReview}
+            onOpenNote={onOpenNote}
           />
         )}
         <View style={[styles.footer, { borderColor: theme.border }]}>

@@ -98,3 +98,12 @@ it("offers a way to capture a note", async () => {
   await render();
   expect(container.querySelector("a[href='/notes/new']")).not.toBeNull();
 });
+
+it("marks the notes whose review is due", async () => {
+  await render({ notes: [note({ id: "due", title: "Overdue note", next_review_at: at(-3) }), note({ id: "later", title: "Later note", next_review_at: at(5) })] });
+  const rows = [...container.querySelectorAll("li a")];
+  const text = (title: string) => rows.find((r) => r.textContent?.includes(title))?.textContent ?? "";
+  expect(text("Overdue note")).toContain("due now");
+  expect(text("Later note")).not.toContain("due now");
+  expect(text("Later note")).toContain("in 5d");
+});

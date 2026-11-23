@@ -2,8 +2,11 @@
 
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Note } from "@random-knowledge/shared/notes";
+import { nowMs } from "@/lib/clock";
+import { todayStr } from "@/lib/date";
+import { addStats } from "@/lib/firestore";
 import { decrementNoteCount, getCompletedSessions, softDeleteNote } from "@/lib/notes-firestore";
 import { NoteDetail } from "./NoteDetail";
 
@@ -12,6 +15,8 @@ const toast = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 vi.mock("next/link", () => ({ default: ({ href, children, className }: { href: string; children: unknown; className?: string }) => createElement("a", { href, className }, children as never) }));
 vi.mock("@/components/Toast", () => ({ useToast: () => toast }));
+vi.mock("@/lib/clock", () => ({ nowMs: vi.fn() }));
+vi.mock("@/lib/firestore", () => ({ addStats: vi.fn() }));
 vi.mock("@/lib/notes-firestore", () => ({ softDeleteNote: vi.fn(), decrementNoteCount: vi.fn(), getCompletedSessions: vi.fn() }));
 
 const at = (days: number) => ({ toDate: () => new Date(Date.now() + days * 86_400_000) }) as unknown as Note["created_at"];
@@ -30,6 +35,8 @@ beforeEach(() => {
   vi.mocked(softDeleteNote).mockResolvedValue(undefined);
   vi.mocked(decrementNoteCount).mockResolvedValue(undefined);
   vi.mocked(getCompletedSessions).mockResolvedValue([]);
+  vi.mocked(addStats).mockResolvedValue(undefined);
+  vi.mocked(nowMs).mockReturnValue(0);
   container = document.createElement("div");
   root = createRoot(container);
 });
@@ -117,4 +124,56 @@ it("reports a failed count update instead of hiding it, and still returns to the
   expect(toast).toHaveBeenCalledWith(expect.stringContaining("quota exceeded"));
   expect(toast).not.toHaveBeenCalledWith("Note deleted.");
   expect(push).toHaveBeenCalledWith("/notes");
+});
+
+describe("reading time", () => {
+  const setVisibility = (state: "visible" | "hidden") => {
+    Object.defineProperty(document, "visibilityState", { value: state, configurable: true });
+    return act(async () => { document.dispatchEvent(new Event("visibilitychange")); });
+  };
+  afterEach(() => setVisibility("visible"));
+
+  it("counts the time spent on the note toward today's learning time when the page is left", async () => {
+    await render();
+    vi.mocked(nowMs).mockReturnValue(45_000);
+    await act(async () => root.unmount());
+    root = createRoot(container);
+
+    expect(addStats).toHaveBeenCalledWith("u1", todayStr(), { seconds: 45 });
+  });
+
+  it("stops counting while the tab is hidden, saving what was read, and starts again when it is back", async () => {
+    await render();
+    vi.mocked(nowMs).mockReturnValue(20_000);
+    await setVisibility("hidden");
+    expect(addStats).toHaveBeenLastCalledWith("u1", todayStr(), { seconds: 20 });
+
+    vi.mocked(nowMs).mockReturnValue(100_000); // away for 80 s
+    await setVisibility("visible");
+    vi.mocked(nowMs).mockReturnValue(110_000);
+    await act(async () => root.unmount());
+    root = createRoot(container);
+
+    expect(addStats).toHaveBeenLastCalledWith("u1", todayStr(), { seconds: 10 });
+    expect(addStats).toHaveBeenCalledTimes(2);
+  });
+
+  it("records nothing for a glance of under a second", async () => {
+    await render();
+    vi.mocked(nowMs).mockReturnValue(400);
+    await act(async () => root.unmount());
+    root = createRoot(container);
+    expect(addStats).not.toHaveBeenCalled();
+  });
+
+  it("tells the user when the time could not be recorded", async () => {
+    vi.mocked(addStats).mockRejectedValue(new Error("stats down"));
+    await render();
+    vi.mocked(nowMs).mockReturnValue(30_000);
+    await act(async () => root.unmount());
+    root = createRoot(container);
+
+    expect(toast).toHaveBeenCalledWith(expect.stringContaining("stats down"));
+    expect(console.error).toHaveBeenCalled();
+  });
 });

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import type { Note } from "@random-knowledge/shared/notes";
-import { ageLabel, filterNotes, reviewedLabel, sortNotes, type NoteSort } from "@random-knowledge/shared/notes-view";
+import { ageLabel, dueLabel, filterNotes, reviewedLabel, sortNotes, type NoteSort } from "@random-knowledge/shared/notes-view";
 import { getUniqueTags } from "@random-knowledge/shared/tags";
 import { radius, useTheme } from "../../lib/theme";
 import { ErrorBox } from "../ErrorBox";
@@ -73,7 +73,7 @@ export function NotesList({ notes, error, notice, onOpen, onCapture, onDiscover 
               <Pressable key={n.id} accessibilityRole="button" onPress={() => onOpen(n.id)} style={[styles.row, { borderColor: theme.border }]}>
                 <Text style={{ color: theme.accent, fontSize: 11, fontWeight: "800", letterSpacing: 0.5 }}>{n.tag.toUpperCase()}</Text>
                 <Text style={{ color: theme.fgStrong, fontSize: 15, fontWeight: "700", marginTop: 2 }}>{n.title}</Text>
-                <Text style={{ color: theme.fgMuted, fontSize: 12, marginTop: 4 }}>added {ageLabel(n.created_at, now)} · reviewed {reviewedLabel(n.last_reviewed_at, now)}</Text>
+                <Text style={{ color: theme.fgMuted, fontSize: 12, marginTop: 4 }}>added {ageLabel(n.created_at, now)} · reviewed {reviewedLabel(n.last_reviewed_at, now)} · <Text style={dueLabel(n.next_review_at, now) === "due now" ? { color: theme.rust, fontWeight: "800" } : undefined}>{dueLabel(n.next_review_at, now)}</Text></Text>
                 {n.last_rating != null && <View style={{ marginTop: 8 }}><StrengthBar value={n.last_rating} /></View>}
               </Pressable>
             ))

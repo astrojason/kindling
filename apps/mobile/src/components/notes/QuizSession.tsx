@@ -3,7 +3,10 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { Note, NoteMessage, NoteSession } from "@random-knowledge/shared/notes";
 import { parseSessionReply, ratingFromStoredReplies, RATING_LABELS } from "@random-knowledge/shared/session-protocol";
 import { computeSM2 } from "@random-knowledge/shared/sm2";
+import { todayStr } from "@random-knowledge/shared/date";
+import { useStudyTimer } from "../../hooks/useStudyTimer";
 import { streamChat } from "../../lib/chat";
+import { addStats } from "../../lib/firestore";
 import { createSession, getCompletedSessions, getIncompleteSession, incrementNotesStats, updateNoteAfterRating, updateSession } from "../../lib/notes-firestore";
 import { radius, useTheme } from "../../lib/theme";
 import { ErrorBox } from "../ErrorBox";
@@ -11,6 +14,9 @@ import { LoadingView } from "../LoadingView";
 import { Button, LinkText } from "../ui";
 import { Field } from "./Field";
 import { MarkdownBody } from "./MarkdownBody";
+
+/** Time spent on one turn (reading the coach, thinking, answering) counts at most this long. */
+const MAX_TURN_SECONDS = 3 * 60;
 
 const message = (err: unknown) => (err instanceof Error ? err.message : String(err));
 
@@ -33,9 +39,19 @@ export function QuizSession({ uid, note, getToken, onBack, onFinished }: { uid: 
   const [chosen, setChosen] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const started = useRef(false);
+  const { timer, flush } = useStudyTimer(uid, MAX_TURN_SECONDS);
+
+  // Time on the quiz counts toward the learning goal; what is left when the screen is left (an abandoned quiz) is saved then.
+  useEffect(() => {
+    return () => {
+      timer.pause();
+      void flush();
+    };
+  }, [timer, flush]);
 
   /** One coach turn: `previous` is the conversation so far, `userText` the answer being sent (none for the opener). */
   async function takeTurn(current: NoteSession, previous: NoteMessage[], userText?: string) {
+    timer.pause(); // the coach is working now: waiting for it is not study time
     const outgoing: NoteMessage[] = userText === undefined ? previous : [...previous, { role: "user", content: userText }];
     setMessages(outgoing);
     setStreaming(true);
@@ -66,6 +82,7 @@ export function QuizSession({ uid, note, getToken, onBack, onFinished }: { uid: 
     setMessages(final);
     setStreamText("");
     setStreaming(false);
+    timer.start(); // the reply is on screen: reading it and answering count
     try {
       await updateSession(uid, current.id, {
         messages: final,
@@ -101,6 +118,7 @@ export function QuizSession({ uid, note, getToken, onBack, onFinished }: { uid: 
         setMessages(current.messages);
         setPhase("chat");
         if (current.messages.length === 0) await takeTurn(current, []);
+        else timer.start();
       } catch (err) {
         console.error("Failed to open the quiz session", err);
         setError(message(err));
@@ -131,14 +149,25 @@ export function QuizSession({ uid, note, getToken, onBack, onFinished }: { uid: 
       setSaving(false);
       return;
     }
+    // The rating itself is saved; whatever else could not be, the user is told rather than left to wonder.
+    timer.pause();
+    const seconds = timer.take();
+    const failures: string[] = [];
     try {
       await incrementNotesStats(uid, { total_sessions: 1, ...(rating >= 3 ? { passing_sessions: 1 } : {}) });
-      onFinished("Recall saved.");
     } catch (err) {
-      // The rating itself is saved; only the running totals are stale, and that must be said, not hidden.
       console.error("Failed to update the notes stats", err);
-      onFinished(`Recall saved, but its stats could not be updated: ${message(err)}`);
+      failures.push(`its stats could not be updated: ${message(err)}`);
     }
+    if (seconds > 0) {
+      try {
+        await addStats(uid, todayStr(), { seconds });
+      } catch (err) {
+        console.error("Failed to record study time", err);
+        failures.push(`its study time could not be recorded: ${message(err)}`);
+      }
+    }
+    onFinished(failures.length > 0 ? `Recall saved, but ${failures.join(" and ")}` : "Recall saved.");
   }
 
   const rating = chosen ?? suggested ?? null;

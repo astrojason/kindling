@@ -30,7 +30,7 @@ export function MainScreen() {
   return (
     <View style={{ flex: 1 }}>
       <View style={{ flex: 1, display: tab === "today" ? "flex" : "none" }}>
-        <DailyLessonScreen onFlowChange={setInLesson} refreshKey={todayShown} onOpenReview={() => changeTab("review")} />
+        <DailyLessonScreen onFlowChange={setInLesson} refreshKey={todayShown} onOpenReview={() => changeTab("review")} onOpenNote={openNoteQuiz} />
       </View>
       {tab === "explore" && <ExploreScreen />}
       {tab === "notes" && <NotesScreen key={quizNote?.nonce ?? 0} initialRoute={quizNote ? { name: "quiz", id: quizNote.id } : undefined} />}

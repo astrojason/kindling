@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Note } from "@random-knowledge/shared/notes";
-import { ageLabel, filterNotes, reviewedLabel, sortNotes, type NoteSort } from "@random-knowledge/shared/notes-view";
+import { ageLabel, dueLabel, filterNotes, reviewedLabel, sortNotes, type NoteSort } from "@random-knowledge/shared/notes-view";
 import { getUniqueTags } from "@random-knowledge/shared/tags";
 import { StrengthBar } from "./StrengthBar";
 
@@ -74,7 +74,7 @@ export function NotesLibrary({ notes, error = null, now = new Date() }: { notes:
                     <span className="text-[11px] font-extrabold uppercase tracking-wide text-accent">{n.tag}</span>
                     <span data-title className="block text-sm font-semibold text-fg-strong">{n.title}</span>
                     <span className="mt-1 block text-xs text-fg-muted">
-                      added {ageLabel(n.created_at, now)} · reviewed {reviewedLabel(n.last_reviewed_at, now)}
+                      added {ageLabel(n.created_at, now)} · reviewed {reviewedLabel(n.last_reviewed_at, now)} · <span className={dueLabel(n.next_review_at, now) === "due now" ? "font-extrabold text-rust" : undefined}>{dueLabel(n.next_review_at, now)}</span>
                     </span>
                     {n.last_rating != null && <span className="mt-2 block"><StrengthBar value={n.last_rating} /></span>}
                   </Link>
