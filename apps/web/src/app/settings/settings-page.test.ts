@@ -4,10 +4,12 @@ import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { getPreReviewEnabled, setPreReviewEnabled } from "@/lib/firestore";
+import { getNoteSettings } from "@/lib/notes-firestore";
 import { ToastProvider } from "@/components/Toast";
 import SettingsPage from "./page";
 
 vi.mock("@/lib/firestore", () => ({ getPreReviewEnabled: vi.fn(), setPreReviewEnabled: vi.fn() }));
+vi.mock("@/lib/notes-firestore", () => ({ getNoteSettings: vi.fn(), updateNoteSettings: vi.fn() }));
 vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user: { uid: "reader" } }) }));
 vi.mock("@/components/AccessGate", () => ({ AccessGate: ({ children }: { children: unknown }) => children }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/settings" }));
@@ -20,6 +22,7 @@ beforeEach(() => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.mocked(getPreReviewEnabled).mockResolvedValue(false);
   vi.mocked(setPreReviewEnabled).mockResolvedValue(undefined);
+  vi.mocked(getNoteSettings).mockResolvedValue({ articlesAppUid: null, interestKeywords: [] });
   vi.spyOn(console, "error").mockImplementation(() => {});
   container = document.createElement("div");
   root = createRoot(container);
@@ -63,5 +66,13 @@ it("shows a load failure instead of a switch", async () => {
   vi.mocked(getPreReviewEnabled).mockRejectedValue(new Error("Missing permissions"));
   await render();
   expect(container.querySelector('[role="alert"]')?.textContent).toContain("Missing permissions");
-  expect(container.querySelector("input")).toBeNull();
+  expect(checkbox()).toBeNull();
+});
+
+it("also offers the Discover settings", async () => {
+  vi.mocked(getNoteSettings).mockResolvedValue({ articlesAppUid: "art-1", interestKeywords: ["woodworking"] });
+  await render();
+  expect(getNoteSettings).toHaveBeenCalledWith("reader");
+  expect(container.textContent).toContain("Discover");
+  expect(container.querySelector("input[aria-label='Articles account uid']")).not.toBeNull();
 });

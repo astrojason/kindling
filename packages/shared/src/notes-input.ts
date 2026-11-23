@@ -19,3 +19,10 @@ export function validateNoteInput(raw: RawNoteInput): NoteInputResult {
   }
   return { ok: true, input: { title, tag, source_url: source || null, what_it_said: what, why_it_matters: why, application } };
 }
+
+/** The keywords plus a new one: trimmed, and skipped when blank or already present in any letter case. */
+export function addKeyword(keywords: string[], input: string): string[] {
+  const keyword = input.trim();
+  if (!keyword || keywords.some((k) => k.toLowerCase() === keyword.toLowerCase())) return keywords;
+  return [...keywords, keyword];
+}
