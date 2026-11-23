@@ -40,6 +40,11 @@
       "expo-status-bar",
       "expo-font"
     ],
-    "owner": "astrojason"
+    "owner": "astrojason",
+    "extra": {
+      "eas": {
+        "projectId": "237b3996-de8c-43aa-990f-fb172cfc8ce0"
+      }
+    }
   }
 }
