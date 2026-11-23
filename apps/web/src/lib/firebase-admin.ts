@@ -97,6 +97,16 @@ export async function getDailyGenerationContextAdmin(uid: string, date: string):
   };
 }
 
+/** The Discover settings on the user's own users/{uid} doc: which articles-app account to read, and the keywords to match. */
+export async function getNoteSettingsAdmin(uid: string): Promise<{ articlesAppUid: string | null; interestKeywords: string[] }> {
+  const snap = await getFirestore(getAdminApp()).collection("users").doc(uid).get();
+  const data = snap.exists ? snap.data() ?? {} : {};
+  return {
+    articlesAppUid: typeof data.articlesAppUid === "string" && data.articlesAppUid ? data.articlesAppUid : null,
+    interestKeywords: Array.isArray(data.interestKeywords) ? data.interestKeywords.filter((k: unknown): k is string => typeof k === "string") : [],
+  };
+}
+
 /** The mobile device (if any) registered to receive a badge push when this user's lesson is ready. */
 export async function getPushTokenAdmin(uid: string): Promise<PushToken | null> {
   const snap = await getFirestore(getAdminApp()).collection("users").doc(uid).collection("meta").doc("pushToken").get();
