@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CreateNoteInput } from "@random-knowledge/shared/notes";
 import { getUniqueTags } from "@random-knowledge/shared/tags";
 import { useToast } from "@/components/Toast";
-import { createNote, incrementNotesStats, subscribeToNotes } from "@/lib/notes-firestore";
+import { createNote, incrementNotesStats } from "@/lib/notes-firestore";
+import { useNotes } from "@/lib/useNotes";
 import { DraftFromArticle } from "./DraftFromArticle";
 import { NoteForm } from "./NoteForm";
 
@@ -13,22 +14,9 @@ import { NoteForm } from "./NoteForm";
 export function NewNote({ uid, getToken }: { uid: string; getToken: () => Promise<string> }) {
   const router = useRouter();
   const toast = useToast();
-  const [tags, setTags] = useState<string[]>([]);
-  const [tagsError, setTagsError] = useState<string | null>(null);
+  const { notes, error: tagsError } = useNotes(uid);
+  const tags = notes ? getUniqueTags(notes) : [];
   const [draft, setDraft] = useState<{ values: Partial<CreateNoteInput>; version: number } | null>(null);
-
-  useEffect(
-    () =>
-      subscribeToNotes(
-        uid,
-        (notes) => setTags(getUniqueTags(notes)),
-        (err) => {
-          console.error("Failed to load existing tags", err);
-          setTagsError(err.message);
-        },
-      ),
-    [uid],
-  );
 
   async function save(input: CreateNoteInput) {
     const id = await createNote(uid, input);

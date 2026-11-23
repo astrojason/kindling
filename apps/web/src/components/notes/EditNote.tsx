@@ -1,32 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CreateNoteInput, Note } from "@random-knowledge/shared/notes";
 import { getUniqueTags } from "@random-knowledge/shared/tags";
 import { useToast } from "@/components/Toast";
-import { subscribeToNotes, updateNote } from "@/lib/notes-firestore";
+import { updateNote } from "@/lib/notes-firestore";
+import { useNotes } from "@/lib/useNotes";
 import { NoteForm } from "./NoteForm";
 
 /** Edit an existing note's text, tag and source; its review schedule is untouched. */
 export function EditNote({ uid, note }: { uid: string; note: Note }) {
   const router = useRouter();
   const toast = useToast();
-  const [tags, setTags] = useState<string[]>([]);
-  const [tagsError, setTagsError] = useState<string | null>(null);
-
-  useEffect(
-    () =>
-      subscribeToNotes(
-        uid,
-        (notes) => setTags(getUniqueTags(notes)),
-        (err) => {
-          console.error("Failed to load existing tags", err);
-          setTagsError(err.message);
-        },
-      ),
-    [uid],
-  );
+  const { notes, error: tagsError } = useNotes(uid);
+  const tags = notes ? getUniqueTags(notes) : [];
 
   async function save(input: CreateNoteInput) {
     await updateNote(uid, note.id, input);
