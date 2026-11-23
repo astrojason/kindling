@@ -22,3 +22,4 @@ export * from "./notes-firestore";
 export * from "./notes-view";
 export * from "./notes-input";
 export * from "./session-protocol";
+export * from "./discover";

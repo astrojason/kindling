@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { requestJson } from "./api-client";
+import { ApiError, requestJson } from "./api-client";
 
 let fetchMock: ReturnType<typeof vi.fn>;
 beforeEach(() => {
@@ -31,5 +31,15 @@ describe("requestJson", () => {
   it("falls back to the status when the error body is not JSON", async () => {
     fetchMock.mockResolvedValue(new Response("<html>bad gateway</html>", { status: 502 }));
     await expect(requestJson("/api/x", "tok")).rejects.toThrow("HTTP 502");
+  });
+
+  it("throws an ApiError that carries the status and the whole response body", async () => {
+    fetchMock.mockResolvedValue(Response.json({ error: "Could not fetch", failures: ["a", "b"] }, { status: 422 }));
+    const err = await requestJson("/api/x", "tok").catch((e) => e);
+
+    expect(err).toBeInstanceOf(ApiError);
+    expect(err.status).toBe(422);
+    expect(err.data.failures).toEqual(["a", "b"]);
+    expect(err.message).toBe("Could not fetch");
   });
 });

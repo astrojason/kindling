@@ -1,4 +1,7 @@
 import { createClient, type Client, type InValue, type Row } from "@libsql/client";
+import type { DiscoverArticle } from "@random-knowledge/shared/discover";
+
+export type { DiscoverArticle };
 
 // Direct read/write access to articles.astrojason.com's shared Turso database (tables: article,
 // user_article_read, user_article_category, user_article_category_article). Every function takes the
@@ -20,18 +23,6 @@ function getClient(): Client {
   if (!url) throw new Error("TURSO_DATABASE_URL is not set: Discover cannot reach the articles database.");
   client = createClient({ url, authToken: process.env.TURSO_AUTH_TOKEN });
   return client;
-}
-
-export interface DiscoverArticle {
-  id: number;
-  title: string;
-  url: string;
-  summary: string;
-  readingTime: number;
-  keywords: string[];
-  categories: string[];
-  content: string;
-  createdAt: number;
 }
 
 export interface DiscoverFilterOptions {

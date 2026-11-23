@@ -27,9 +27,12 @@ export function NotesLibrary({ notes, error = null, now = new Date() }: { notes:
           <h1 className="font-heading text-xl font-bold text-fg-strong">Notes</h1>
           <p className="text-xs text-fg-muted">{visible.length === notes.length ? `${notes.length} notes` : `${visible.length} of ${notes.length}`}</p>
         </div>
-        <Link href="/notes/new" className="rounded-full bg-accent px-4 py-2 text-sm font-extrabold text-accent-fg hover:opacity-85">
-          Capture
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/discover" className="text-sm font-bold text-fg-muted hover:text-fg">Discover</Link>
+          <Link href="/notes/new" className="rounded-full bg-accent px-4 py-2 text-sm font-extrabold text-accent-fg hover:opacity-85">
+            Capture
+          </Link>
+        </div>
       </div>
 
       {error && <pre role="alert" className="mb-4 whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all">{error}</pre>}
