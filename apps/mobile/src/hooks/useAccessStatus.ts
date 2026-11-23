@@ -1,6 +1,6 @@
 import type { User } from "@firebase/auth";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { isSuperadmin, resolveAccess, type AuthClaims, type ResolvedAccess } from "@random-knowledge/shared/auth-guard";
+import { canManageAccess, resolveAccess, type AuthClaims, type ResolvedAccess } from "@random-knowledge/shared/auth-guard";
 import { getAccessRequest, recordAccessRequest } from "../lib/firestore";
 
 export function useAccessStatus(user: User | null, claims: AuthClaims | null) {
@@ -20,8 +20,8 @@ export function useAccessStatus(user: User | null, claims: AuthClaims | null) {
       setLoading(false);
       return;
     }
-    if (isSuperadmin(claims)) {
-      setStatus("superadmin");
+    if (canManageAccess(claims)) {
+      setStatus(resolveAccess(user.uid, claims, null));
       setLoading(false);
       return;
     }

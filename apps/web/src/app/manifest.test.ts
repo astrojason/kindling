@@ -5,7 +5,7 @@ it("describes an installable standalone app with required icons", () => {
   const value = manifest();
 
   expect(value).toMatchObject({
-    name: "Random Knowledge",
+    name: "Kindling",
     start_url: "/",
     scope: "/",
     display: "standalone",

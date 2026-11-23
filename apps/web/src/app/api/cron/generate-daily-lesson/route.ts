@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { pickCategory } from "@/lib/categories";
 import { todayStr } from "@/lib/date";
-import { getDailyGenerationContextAdmin, getPushTokenAdmin, listGrantedUserIds, listPausedUserIds, listSuperadminUserIds, logCronRunAdmin, logGenerationAdmin, saveDailyLessonAdmin } from "@/lib/firebase-admin";
+import { getDailyGenerationContextAdmin, getPushTokenAdmin, listGrantedUserIds, listPausedUserIds, listPrivilegedUserIds, logCronRunAdmin, logGenerationAdmin, saveDailyLessonAdmin } from "@/lib/firebase-admin";
 import { attachLessonAudio } from "@/lib/lesson-audio";
 import { generateSourcedLesson } from "@/lib/lesson-generation";
 import { isOutOfCredits } from "@/lib/openai-errors";
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
   const date = todayStr("UTC");
   const [granted, superadmins, pausedUids] = await Promise.all([
     listGrantedUserIds(),
-    listSuperadminUserIds(),
+    listPrivilegedUserIds(),
     listPausedUserIds().then((ids) => new Set(ids)),
   ]);
   const uids = [...new Set([...granted, ...superadmins])];

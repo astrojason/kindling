@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAccessRequestAdmin, verifyIdToken } from "@/lib/firebase-admin";
-import { hasAppAccess, isSuperadmin, resolveAccess, type AccessRequest } from "@/lib/auth-guard";
+import { canManageAccess, hasAppAccess, resolveAccess, type AccessRequest } from "@/lib/auth-guard";
 
 /** Verifies the Bearer ID token and that the account has app access; otherwise returns the error response to send. */
 export async function authorizeAppUser(request: Request): Promise<NextResponse | { uid: string; accessRequest: AccessRequest | null }> {
@@ -19,8 +19,8 @@ export async function authorizeAppUser(request: Request): Promise<NextResponse |
     );
   }
 
-  const claims = { superadmin: decoded.superadmin === true };
-  const accessRequest = isSuperadmin(claims) ? null : await getAccessRequestAdmin(decoded.uid);
+  const claims = { superadmin: decoded.superadmin === true, admin: decoded.admin === true };
+  const accessRequest = canManageAccess(claims) ? null : await getAccessRequestAdmin(decoded.uid);
   if (!hasAppAccess(resolveAccess(decoded.uid, claims, accessRequest))) {
     return NextResponse.json({ error: "Access not granted for this account" }, { status: 403 });
   }

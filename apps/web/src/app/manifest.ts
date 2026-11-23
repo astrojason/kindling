@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "Random Knowledge",
+    name: "Kindling",
     short_name: "Knowledge",
     description: "One short lesson a day, with a quick comprehension check.",
     start_url: "/",

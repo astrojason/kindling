@@ -1,29 +1,20 @@
 {
   "expo": {
-    "name": "Random Knowledge",
-    "slug": "random-knowledge",
-    "scheme": "randomknowledge",
+    "name": "Kindling",
+    "slug": "kindling",
+    "scheme": "kindling",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "bundleIdentifier": "com.astrojason.random-knowledge",
+      "bundleIdentifier": "com.astrojason.kindling",
       "supportsTablet": false,
       "googleServicesFile": "./GoogleService-Info.plist",
       "usesAppleSignIn": true,
       "config": {
         "usesNonExemptEncryption": false
       }
-    },
-    "android": {
-      "package": "com.astrojason.randomknowledge",
-      "adaptiveIcon": {
-        "backgroundColor": "#5b45d6",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
-      },
-      "predictiveBackGestureEnabled": false
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -49,11 +40,6 @@
       "expo-status-bar",
       "expo-font"
     ],
-    "extra": {
-      "eas": {
-        "projectId": "e7edc8f8-0478-4d22-b6c6-8d3cac66fb9e"
-      }
-    },
     "owner": "astrojason"
   }
 }

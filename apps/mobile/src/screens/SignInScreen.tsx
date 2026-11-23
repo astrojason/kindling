@@ -24,7 +24,7 @@ const FEATURES = [
   },
   {
     title: "Your streak, tracked",
-    body: "Come back daily and Random Knowledge keeps count, so your learning habit builds visible momentum.",
+    body: "Come back daily and Kindling keeps count, so your learning habit builds visible momentum.",
   },
 ];
 
@@ -38,7 +38,7 @@ export function SignInScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.scroll}>
-      <Text style={[styles.title, { color: theme.fgStrong }]}>Random Knowledge</Text>
+      <Text style={[styles.title, { color: theme.fgStrong }]}>Kindling</Text>
       <Text style={{ color: theme.fgMuted, fontSize: 16, textAlign: "center", marginTop: 12, marginBottom: 28 }}>
         One short, AI-generated lesson a day — plus a quick quiz to check what stuck — so a five-minute habit
         turns into real, remembered knowledge.
@@ -53,7 +53,7 @@ export function SignInScreen() {
 
       <Card style={styles.signIn}>
         <Text style={{ color: theme.fgMuted, fontSize: 13, textAlign: "center", marginBottom: 20 }}>
-          Random Knowledge is currently invite-only. Sign in to request access — you&apos;ll be
+          Kindling is currently invite-only. Sign in to request access — you&apos;ll be
           able to use the app as soon as it&apos;s approved.
         </Text>
         <AppleAuthentication.AppleAuthenticationButton

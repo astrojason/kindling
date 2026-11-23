@@ -1,6 +1,6 @@
 {
   "name": "web",
-  "version": "1.13.1",
+  "version": "1.14.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,7 +10,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "grant-superadmin": "node --env-file=.env.local scripts/grant-superadmin.mjs",
-    "create-demo-account": "node --env-file=.env.local scripts/create-demo-account.mjs"
+    "create-demo-account": "node --env-file=.env.local scripts/create-demo-account.mjs",
+    "migrate": "node --env-file=.env.local scripts/migration/migrate.mjs",
+    "migrate:inventory": "node --env-file=.env.local scripts/migration/inventory.mjs"
   },
   "dependencies": {
     "@random-knowledge/shared": "*",

@@ -14,14 +14,25 @@ export interface AccessRequest {
   autoGeneration?: boolean;
 }
 
-export type ResolvedAccess = "superadmin" | "granted" | "pending" | "revoked" | "denied";
+export type ResolvedAccess = "superadmin" | "admin" | "granted" | "pending" | "revoked" | "denied";
 
 export interface AuthClaims {
   superadmin?: boolean;
+  /** Can approve or revoke access requests, and uses the app without one; cannot do superadmin-only things. */
+  admin?: boolean;
 }
 
 export function isSuperadmin(claims: AuthClaims | null | undefined): boolean {
   return claims?.superadmin === true;
+}
+
+export function isAdmin(claims: AuthClaims | null | undefined): boolean {
+  return claims?.admin === true;
+}
+
+/** Who sees pending-user notifications and may approve or revoke access requests. */
+export function canManageAccess(claims: AuthClaims | null | undefined): boolean {
+  return isSuperadmin(claims) || isAdmin(claims);
 }
 
 export function resolveAccess(
@@ -31,12 +42,13 @@ export function resolveAccess(
 ): ResolvedAccess {
   if (!uid) return "denied";
   if (isSuperadmin(claims)) return "superadmin";
+  if (isAdmin(claims)) return "admin";
   if (!request) return "pending";
   return request.status;
 }
 
 export function hasAppAccess(resolved: ResolvedAccess): boolean {
-  return resolved === "superadmin" || resolved === "granted";
+  return resolved === "superadmin" || resolved === "admin" || resolved === "granted";
 }
 
 /**

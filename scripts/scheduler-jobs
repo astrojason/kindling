@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Creates (or updates) the two Cloud Scheduler jobs that generate the nightly lessons:
+# 00:00 and a 03:00 retry, Pacific time, each POSTing /api/cron/generate-daily-lesson with the
+# CRON_SECRET bearer token. Safe to re-run.
+#
+#   CRON_SECRET=... scripts/scheduler-jobs https://<your-app-hosting-url>
+#
+# CRON_SECRET must equal the value of the `cron-secret` App Hosting secret. Needs Blaze and the
+# Cloud Scheduler API (gcloud offers to enable it).
+set -euo pipefail
+
+PROJECT_ID="kindling-505ce"   # always explicit: gcloud's default project may be a different one
+LOCATION="us-central1"
+TIME_ZONE="America/Los_Angeles"
+
+BASE_URL="${1:-}"
+if [ -z "$BASE_URL" ]; then
+  echo "Usage: CRON_SECRET=... $0 <base URL of the deployed app, e.g. https://kindling.astrojason.com>" >&2
+  exit 1
+fi
+if [ -z "${CRON_SECRET:-}" ]; then
+  echo "CRON_SECRET is not set." >&2
+  exit 1
+fi
+BASE_URL="${BASE_URL%/}"
+
+upsert_job() {
+  local name="$1" schedule="$2" verb headers_flag
+  if gcloud scheduler jobs describe "$name" --project "$PROJECT_ID" --location "$LOCATION" >/dev/null 2>&1; then
+    verb="update"; headers_flag="--update-headers"   # `update` and `create` name this flag differently
+  else
+    verb="create"; headers_flag="--headers"
+  fi
+  echo "==> ${verb} ${name} (${schedule} ${TIME_ZONE})"
+  gcloud scheduler jobs "$verb" http "$name" \
+    --project "$PROJECT_ID" --location "$LOCATION" \
+    --schedule "$schedule" --time-zone "$TIME_ZONE" \
+    --uri "$BASE_URL/api/cron/generate-daily-lesson" --http-method POST \
+    "$headers_flag" "Authorization=Bearer ${CRON_SECRET}"
+}
+
+upsert_job generate-daily-lesson "0 0 * * *"
+upsert_job generate-daily-lesson-retry "0 3 * * *"
+
+echo "==> Jobs in ${PROJECT_ID}:"
+gcloud scheduler jobs list --project "$PROJECT_ID" --location "$LOCATION"

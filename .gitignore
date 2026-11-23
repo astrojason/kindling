@@ -9,3 +9,6 @@ ui-debug.log
 .DS_Store
 .fallow
 .claude
+
+# Firebase native config (per-environment; EAS local builds get it via .easignore)
+apps/mobile/GoogleService-Info.plist

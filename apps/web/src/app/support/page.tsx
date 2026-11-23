@@ -3,8 +3,8 @@ import Link from "next/link";
 import { CONTACT_EMAIL, LegalLayout, LegalSection } from "@/components/legal/LegalLayout";
 
 export const metadata: Metadata = {
-  title: "Support — Random Knowledge",
-  description: "Get help with Random Knowledge, including access, sign-in, streaks, and your data.",
+  title: "Support — Kindling",
+  description: "Get help with Kindling, including access, sign-in, streaks, and your data.",
 };
 
 function EmailLink() {
@@ -19,13 +19,13 @@ export default function SupportPage() {
   return (
     <LegalLayout title="Support">
       <p>
-        Random Knowledge is a small, independently run app. For any question, bug report, or
+        Kindling is a small, independently run app. For any question, bug report, or
         request, email <EmailLink /> and you&apos;ll get a reply from a real person.
       </p>
 
       <LegalSection heading="I signed in and see &ldquo;Access requested&rdquo;">
         <p>
-          Random Knowledge is invite-only. Signing in creates an access request that has to be
+          Kindling is invite-only. Signing in creates an access request that has to be
           approved before you can see your lesson. Once it&apos;s approved, reopen the app and
           today&apos;s lesson will appear. If you&apos;ve been waiting a while, email us from the
           address you signed in with.

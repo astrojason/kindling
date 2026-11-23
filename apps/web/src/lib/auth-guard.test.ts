@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasAppAccess, isSuperadmin, requestsForAdmin, resolveAccess, type AccessRequest } from "./auth-guard";
+import { canManageAccess, hasAppAccess, isAdmin, isSuperadmin, requestsForAdmin, resolveAccess, type AccessRequest } from "./auth-guard";
 
 describe("isSuperadmin", () => {
   it("is true when the superadmin claim is set", () => {
@@ -72,5 +72,37 @@ describe("hasAppAccess", () => {
     expect(hasAppAccess("pending")).toBe(false);
     expect(hasAppAccess("revoked")).toBe(false);
     expect(hasAppAccess("denied")).toBe(false);
+  });
+});
+
+describe("isAdmin", () => {
+  it("is true only for an explicit admin claim", () => {
+    expect(isAdmin({ admin: true })).toBe(true);
+    expect(isAdmin({ admin: false })).toBe(false);
+    expect(isAdmin({ superadmin: true })).toBe(false);
+    expect(isAdmin(null)).toBe(false);
+  });
+});
+
+describe("canManageAccess", () => {
+  it("is true for an admin or a superadmin and nobody else", () => {
+    expect(canManageAccess({ admin: true })).toBe(true);
+    expect(canManageAccess({ superadmin: true })).toBe(true);
+    expect(canManageAccess({})).toBe(false);
+    expect(canManageAccess(undefined)).toBe(false);
+  });
+});
+
+describe("admin access", () => {
+  it("resolves an admin claim to admin without needing an access request", () => {
+    expect(resolveAccess("u1", { admin: true }, null)).toBe("admin");
+  });
+
+  it("lets a superadmin who is also an admin stay a superadmin", () => {
+    expect(resolveAccess("u1", { superadmin: true, admin: true }, null)).toBe("superadmin");
+  });
+
+  it("gives an admin app access", () => {
+    expect(hasAppAccess("admin")).toBe(true);
   });
 });

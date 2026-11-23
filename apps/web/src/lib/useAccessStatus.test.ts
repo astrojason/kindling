@@ -71,4 +71,11 @@ describe("useAccessStatus", () => {
 
     expect(current.status).toBe("superadmin");
   });
+
+  it("resolves an admin claim to admin without touching the access request", async () => {
+    await render({ admin: true });
+
+    expect(current.status).toBe("admin");
+    expect(store.recordAccessRequest).not.toHaveBeenCalled();
+  });
 });

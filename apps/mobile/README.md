@@ -1,4 +1,4 @@
-# Random Knowledge (mobile)
+# Kindling (mobile)
 
 The Expo/React Native client for the same single-user daily micro-learning app as `../web`. Shares Firebase Auth, Firestore, and the lesson-generation API with the web app; see `../../TODO.md` for what's left.
 

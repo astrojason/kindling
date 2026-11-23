@@ -48,16 +48,16 @@ export async function listGrantedUserIds(): Promise<string[]> {
 }
 
 /**
- * Superadmins reach the app through their `superadmin` auth claim, not a granted access request, so
+ * Superadmins and admins reach the app through their auth claim, not a granted access request, so
  * listGrantedUserIds never includes them. Reads every Auth account, which is fine at this app's size.
  */
-export async function listSuperadminUserIds(): Promise<string[]> {
+export async function listPrivilegedUserIds(): Promise<string[]> {
   const auth = getAuth(getAdminApp());
   const uids: string[] = [];
   let pageToken: string | undefined;
   do {
     const page = await auth.listUsers(1000, pageToken);
-    uids.push(...page.users.filter((user) => user.customClaims?.superadmin === true).map((user) => user.uid));
+    uids.push(...page.users.filter((user) => user.customClaims?.superadmin === true || user.customClaims?.admin === true).map((user) => user.uid));
     pageToken = page.pageToken;
   } while (pageToken);
   return uids;

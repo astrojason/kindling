@@ -52,7 +52,7 @@ export function TodayHome({
       <View style={styles.header}>
         <View style={styles.flex}>
           <Text style={[styles.greeting, { color: theme.fgMuted }]}>Ready for today’s spark?</Text>
-          <Text style={[styles.appName, { color: theme.fgStrong }]}>Random Knowledge</Text>
+          <Text style={[styles.appName, { color: theme.fgStrong }]}>Kindling</Text>
         </View>
         <Chip icon="flame.fill" tint={theme.gold} value={getStreakStatus(streak, date).count} label="day streak" />
         <Chip icon="star.fill" tint={theme.accent} value={stats?.xp ?? 0} label={`points, level ${levelFor(stats?.xp ?? 0)}`} />

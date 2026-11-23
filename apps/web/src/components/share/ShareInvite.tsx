@@ -35,7 +35,7 @@ export function ShareInvite({ id }: { id: string }) {
         )}
         {previewError && <p role="alert" className="mb-4 text-[13px] text-rust">{previewError}</p>}
         <p className="mb-6 text-sm text-fg-muted">
-          Random Knowledge is an invite-only daily lesson with a quick quiz. Sign in with Google to read this lesson —
+          Kindling is an invite-only daily lesson with a quick quiz. Sign in with Google to read this lesson —
           if you&apos;re new, your access request goes out at the same time and you&apos;ll see the lesson once it&apos;s approved.
         </p>
         <button

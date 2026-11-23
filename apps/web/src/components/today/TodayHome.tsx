@@ -34,7 +34,7 @@ export function TodayHome({
       <header className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-fg-muted">Ready for today&apos;s spark?</p>
-          <h1 className="text-3xl font-extrabold leading-tight text-fg-strong">Random Knowledge</h1>
+          <h1 className="text-3xl font-extrabold leading-tight text-fg-strong">Kindling</h1>
         </div>
         <StatChips streakCount={getStreakStatus(streak, date).count} xp={progress.data?.stats.xp ?? 0} />
       </header>

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { CONTACT_EMAIL, LegalLayout, LegalList, LegalSection } from "@/components/legal/LegalLayout";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Random Knowledge",
-  description: "How Random Knowledge collects, uses, and protects your data.",
+  title: "Privacy Policy — Kindling",
+  description: "How Kindling collects, uses, and protects your data.",
 };
 
 const EFFECTIVE_DATE = "September 9, 2026";
@@ -12,9 +12,9 @@ export default function PrivacyPolicyPage() {
   return (
     <LegalLayout title="Privacy Policy" effectiveDate={EFFECTIVE_DATE}>
       <p>
-        Random Knowledge (&ldquo;the app,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;) is a small,
+        Kindling (&ldquo;the app,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;) is a small,
         invite-only web app at{" "}
-        <span className="font-medium text-fg-strong">random-knowledge.astrojason.com</span> that
+        <span className="font-medium text-fg-strong">kindling.astrojason.com</span> that
         delivers a short AI-generated lesson and comprehension quiz each day. It is operated by
         Jason Sylvester. This policy explains what information the app collects, how it is used,
         and the choices you have.
@@ -114,7 +114,7 @@ export default function PrivacyPolicyPage() {
 
       <LegalSection heading="Children's privacy">
         <p>
-          Random Knowledge is not directed at children under 13, and we do not knowingly collect
+          Kindling is not directed at children under 13, and we do not knowingly collect
           personal information from children under 13. If you believe a child has provided us with
           personal information, contact us and we will delete it.
         </p>
@@ -131,7 +131,7 @@ export default function PrivacyPolicyPage() {
               </a>
               .
             </>,
-            "You can revoke Random Knowledge's access to your Google account at any time from your Google Account settings, under Third-party apps & services.",
+            "You can revoke Kindling's access to your Google account at any time from your Google Account settings, under Third-party apps & services.",
           ]}
         />
       </LegalSection>

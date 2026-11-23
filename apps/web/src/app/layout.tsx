@@ -11,12 +11,12 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "Random Knowledge",
+  title: "Kindling",
   description: "One short lesson a day, with a quick comprehension check.",
-  applicationName: "Random Knowledge",
+  applicationName: "Kindling",
   appleWebApp: {
     capable: true,
-    title: "Random Knowledge",
+    title: "Kindling",
     statusBarStyle: "black-translucent",
   },
   formatDetection: {

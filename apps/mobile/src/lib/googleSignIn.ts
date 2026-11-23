@@ -5,7 +5,7 @@ import { auth } from "./firebase";
 // CLIENT_ID from GoogleService-Info.plist (apps/mobile's Firebase iOS app
 // registration) — the OAuth client Google issues for this bundle ID.
 GoogleSignin.configure({
-  iosClientId: "900940305507-vo39nj40o999uqiefubod9vt6k9eelgp.apps.googleusercontent.com",
+  iosClientId: "660038712756-0ajronk5kqotapt7m39l2vlobqc615eh.apps.googleusercontent.com",
 });
 
 /** Shows the native Google sheet and returns a Firebase credential. Null if the user cancelled it. */
