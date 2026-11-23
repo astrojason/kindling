@@ -1,6 +1,6 @@
 {
   "name": "@random-knowledge/shared",
-  "version": "1.16.0",
+  "version": "1.17.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -32,7 +32,8 @@
     "./notes-input": "./src/notes-input.ts",
     "./session-protocol": "./src/session-protocol.ts",
     "./discover": "./src/discover.ts",
-    "./pending-requests": "./src/pending-requests.ts"
+    "./pending-requests": "./src/pending-requests.ts",
+    "./notification-link": "./src/notification-link.ts"
   },
   "peerDependencies": {
     "firebase": "^12.18.0"

@@ -24,3 +24,4 @@ export * from "./notes-input";
 export * from "./session-protocol";
 export * from "./discover";
 export * from "./pending-requests";
+export * from "./notification-link";

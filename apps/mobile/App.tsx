@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -5,6 +6,7 @@ import { hasAppAccess } from "@random-knowledge/shared/auth-guard";
 import { AuthProvider, useAuth } from "./src/lib/auth-context";
 import { useTheme } from "./src/lib/theme";
 import { useAccessStatus } from "./src/hooks/useAccessStatus";
+import { configureAdminAlerts } from "./src/lib/adminAlerts";
 import { AccessPendingScreen } from "./src/screens/AccessPendingScreen";
 import { MainScreen } from "./src/screens/MainScreen";
 import { LoadingView } from "./src/components/LoadingView";
@@ -39,6 +41,7 @@ function Body({
 }
 
 export default function App() {
+  useEffect(() => configureAdminAlerts(), []);
   return (
     <SafeAreaProvider>
       <AuthProvider>
