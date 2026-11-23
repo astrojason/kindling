@@ -48,33 +48,39 @@ export function TodayHome({
 
       {progress.loading && <LoadingView text="Loading your progress" />}
       {progress.error && <pre role="alert" className="whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all">{progress.error}</pre>}
-      {progress.data && <GoalCard stats={progress.data.stats} date={date} />}
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
+        <div className="flex flex-col gap-4">
+          {progress.data && <GoalCard stats={progress.data.stats} date={date} />}
 
-      <PlanCard plan={plan} onStart={onStart} onOpen={onOpen} onRetry={onRetry} />
+          <PlanCard plan={plan} onStart={onStart} onOpen={onOpen} onRetry={onRetry} />
 
-      {/* Judge "nothing due" only once the notes have loaded (or failed), so it never flashes while they are still coming. */}
-      {progress.data && (notes || notesError) && (
-        <ReviewRow dueCards={dueCards(progress.data.cards, date).length} totalCards={progress.data.cards.length} dueNotes={notes ? dueNotes(notes).length : 0} totalNotes={notes?.length ?? 0} />
-      )}
-      <DueNotes notes={notes ?? []} error={notesError} />
-
-      <section aria-label="Keep exploring">
-        <h2 className="mb-3 text-lg font-extrabold text-fg-strong">Keep exploring</h2>
-        <div className="grid grid-cols-3 gap-3">
-          <button type="button" onClick={onEditCategories} className={tileClass}>
-            <span className="text-xs font-bold text-fg-muted">{categoryCount} selected</span>
-            My categories ({categoryCount})
-          </button>
-          <Link href="/library" className={tileClass}>
-            <span className="text-xs font-bold text-fg-muted">Past lessons</span>
-            Library
-          </Link>
-          <Link href="/library" className={tileClass}>
-            <span className="text-xs font-bold text-fg-muted">From friends</span>
-            Shared
-          </Link>
         </div>
-      </section>
+        <div className="flex flex-col gap-4">
+          {/* Judge "nothing due" only once the notes have loaded (or failed), so it never flashes while they are still coming. */}
+          {progress.data && (notes || notesError) && (
+            <ReviewRow dueCards={dueCards(progress.data.cards, date).length} totalCards={progress.data.cards.length} dueNotes={notes ? dueNotes(notes).length : 0} totalNotes={notes?.length ?? 0} />
+          )}
+          <DueNotes notes={notes ?? []} error={notesError} />
+
+          <section aria-label="Keep exploring">
+            <h2 className="mb-3 text-lg font-extrabold text-fg-strong">Keep exploring</h2>
+            <div className="grid grid-cols-3 gap-3">
+              <button type="button" onClick={onEditCategories} className={tileClass}>
+                <span className="text-xs font-bold text-fg-muted">{categoryCount} selected</span>
+                My categories ({categoryCount})
+              </button>
+              <Link href="/library" className={tileClass}>
+                <span className="text-xs font-bold text-fg-muted">Past lessons</span>
+                Library
+              </Link>
+              <Link href="/library" className={tileClass}>
+                <span className="text-xs font-bold text-fg-muted">From friends</span>
+                Shared
+              </Link>
+            </div>
+          </section>
+        </div>
+      </div>
     </div>
   );
 }

@@ -18,7 +18,7 @@ export function PagedLinkList({ items }: { items: LinkItem[] }) {
 
   return (
     <div>
-      <ul className="space-y-2">
+      <ul className="space-y-2 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
         {visible.map((item) => (
           <li key={item.key}>
             <Link href={item.href} className="block rounded-sm border border-border px-3.5 py-2.5 text-sm hover:border-accent">

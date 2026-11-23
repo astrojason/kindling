@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { LoadingView } from "@/components/lesson/LoadingView";
+import { AppColumn } from "@/components/nav/AppColumn";
 import { TabBar } from "@/components/nav/TabBar";
 import { useAuth } from "@/lib/auth-context";
 
@@ -10,9 +11,9 @@ export function PageFrame({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   return (
     <>
-      <div className="mx-auto w-full max-w-[560px] px-4 pb-28 pt-8">
-        <div className="rounded-md bg-surface px-6 pb-7 pt-6 shadow-sm">{children}</div>
-      </div>
+      <AppColumn sidebar={Boolean(user)}>
+        <div className="rounded-md bg-surface px-6 pb-7 pt-6 shadow-sm lg:px-8 lg:pt-8">{children}</div>
+      </AppColumn>
       {user && <TabBar />}
     </>
   );

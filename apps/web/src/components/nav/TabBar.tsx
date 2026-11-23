@@ -35,16 +35,17 @@ export function TabBar() {
   const { user, claims } = useAuth();
   const { count: waiting } = usePendingRequests(user?.uid, claims);
   return (
-    <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface">
-      <ul className="mx-auto flex w-full max-w-[560px] justify-around px-2">
+    <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface lg:inset-y-0 lg:right-auto lg:flex lg:w-60 lg:flex-col lg:border-r lg:border-t-0 lg:px-3 lg:py-8">
+      <p className="hidden px-3 pb-6 font-heading text-2xl font-extrabold text-fg-strong lg:block">Kindling</p>
+      <ul className="mx-auto flex w-full max-w-[560px] justify-around px-2 lg:mx-0 lg:max-w-none lg:flex-col lg:justify-start lg:gap-1 lg:px-0">
         {TABS.map((tab) => {
           const active = isActive(pathname, tab.match);
           return (
-            <li key={tab.href} className="flex-1">
+            <li key={tab.href} className="flex-1 lg:flex-none">
               <Link
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-bold ${active ? "text-accent" : "text-fg-muted hover:text-fg"}`}
+                className={`flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-bold lg:flex-row lg:gap-3 lg:rounded-sm lg:px-3 lg:text-sm ${active ? "text-accent lg:bg-accent-soft" : "text-fg-muted hover:text-fg lg:hover:bg-accent-soft"}`}
               >
                 <span className="relative">
                   {tab.icon}
@@ -60,7 +61,7 @@ export function TabBar() {
           );
         })}
       </ul>
-      <p className="pb-[max(0.25rem,env(safe-area-inset-bottom))] text-center text-[9px] leading-none text-fg-muted">v{packageJson.version}</p>
+      <p className="pb-[max(0.25rem,env(safe-area-inset-bottom))] text-center text-[9px] leading-none text-fg-muted lg:mt-auto lg:px-3 lg:pb-0 lg:text-left lg:text-[11px]">v{packageJson.version}</p>
     </nav>
   );
 }

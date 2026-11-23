@@ -11,6 +11,7 @@ import { LessonView } from "@/components/lesson/LessonView";
 import { LoadingView } from "@/components/lesson/LoadingView";
 import { PreReviewView } from "@/components/lesson/PreReviewView";
 import { QuizView } from "@/components/lesson/QuizView";
+import { AppColumn } from "@/components/nav/AppColumn";
 import { TabBar } from "@/components/nav/TabBar";
 import { TodayHome } from "@/components/today/TodayHome";
 import { StreakStatus } from "@/components/lesson/StreakStatus";
@@ -64,7 +65,7 @@ export function DailyLesson() {
   if (showHome) {
     return (
       <>
-        <div className="mx-auto w-full max-w-[560px] px-4 pb-28 pt-8">
+        <AppColumn>
           {editingCategories ? <Card>{picker}</Card> : (
             <TodayHome
               uid={user.uid} date={date} plan={state.plan} streak={streak}
@@ -79,14 +80,14 @@ export function DailyLesson() {
             />
           )}
           {resetLink}
-        </div>
+        </AppColumn>
         <TabBar />
       </>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-[560px] px-4 pb-10 pt-8">
+    <AppColumn sidebar={false} reading>
       <Card>
         <Header
           date={date}
@@ -114,7 +115,7 @@ export function DailyLesson() {
 
         {resetLink}
       </Card>
-    </div>
+    </AppColumn>
   );
 }
 

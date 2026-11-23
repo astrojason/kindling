@@ -63,7 +63,7 @@ export function DiscoverFeed({ uid, getToken }: { uid: string; getToken: () => P
         </div>
       )}
       {!feed.loading && !feed.error && articles.length === 0 && <p className="py-6 text-center text-sm text-fg-muted">No unread articles match your keywords right now.</p>}
-      <div className="space-y-3">
+      <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
         {articles.map((article) => (
           <ArticleCard key={article.id} article={article} uid={uid} getToken={getToken} onDone={(id) => setRemoved((prev) => new Set(prev).add(id))} />
         ))}

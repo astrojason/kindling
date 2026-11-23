@@ -18,7 +18,7 @@ export function AdminFrame({ children }: { children: ReactNode }) {
   const { claims } = useAuth();
   const sections = SECTIONS.filter((s) => !s.superadminOnly || isSuperadmin(claims));
   return (
-    <div className="mx-auto w-full max-w-[640px] px-4 py-10">
+    <div className="mx-auto w-full max-w-[640px] px-4 py-10 lg:max-w-3xl">
       <Card>
         <nav className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border pb-3.5 text-xs font-medium">
           <Link href="/" className="text-fg-muted underline decoration-border decoration-1 underline-offset-2 hover:text-accent">
