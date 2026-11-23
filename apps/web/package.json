@@ -1,6 +1,6 @@
 {
   "name": "web",
-  "version": "1.22.0",
+  "version": "1.23.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,7 +9,9 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "grant-superadmin": "node --env-file=.env.local scripts/grant-superadmin.mjs",
+    "grant-superadmin": "node --env-file=.env.local scripts/set-role.mjs grant superadmin",
+    "grant-admin": "node --env-file=.env.local scripts/set-role.mjs grant admin",
+    "revoke-admin": "node --env-file=.env.local scripts/set-role.mjs revoke admin",
     "create-demo-account": "node --env-file=.env.local scripts/create-demo-account.mjs",
     "migrate": "node --env-file=.env.local scripts/migration/migrate.mjs",
     "migrate:inventory": "node --env-file=.env.local scripts/migration/inventory.mjs"

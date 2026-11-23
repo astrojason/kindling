@@ -6,9 +6,9 @@ import { LandingPage } from "@/components/LandingPage";
 import { AdminFrame } from "@/components/admin/AdminFrame";
 import { LoadingView } from "@/components/lesson/LoadingView";
 import { useAuth } from "@/lib/auth-context";
-import { isSuperadmin } from "@/lib/auth-guard";
+import { canManageAccess } from "@/lib/auth-guard";
 
-/** Every page under /admin renders only for a superadmin; everyone else sees what they would anywhere else. */
+/** Every page under /admin renders only for a superadmin or an admin (the log pages narrow that to superadmins); everyone else sees what they would anywhere else. */
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user, claims, loading } = useAuth();
 
@@ -20,6 +20,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
   if (!user) return <LandingPage />;
-  if (!isSuperadmin(claims)) return <AccessPending status="pending" />;
+  if (!canManageAccess(claims)) return <AccessPending status="pending" />;
   return <AdminFrame>{children}</AdminFrame>;
 }

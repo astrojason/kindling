@@ -7,6 +7,7 @@ import type { AccessRequest } from "@/lib/auth-guard";
 import { CATEGORY_KEYS, defaultWeights, type CategoryKey, type Weights } from "@/lib/categories";
 import { fromFirestoreLesson, toFirestoreLesson } from "@/lib/lesson-storage";
 import type { CronRunLogEntry, CronRunResult, GenerationLogEntry, GenerationSource, HistoryEntry, Lesson, PushToken, SharePreview } from "@/lib/types";
+import { mergeRoleClaim } from "@/lib/claims";
 
 const STORAGE_BUCKET = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 
@@ -61,6 +62,31 @@ export async function listPrivilegedUserIds(): Promise<string[]> {
     pageToken = page.pageToken;
   } while (pageToken);
   return uids;
+}
+
+/** Every account holding the `admin` claim, for the superadmin's role screen. */
+export async function listAdminUserIds(): Promise<string[]> {
+  const auth = getAuth(getAdminApp());
+  const uids: string[] = [];
+  let pageToken: string | undefined;
+  do {
+    const page = await auth.listUsers(1000, pageToken);
+    uids.push(...page.users.filter((user) => user.customClaims?.admin === true).map((user) => user.uid));
+    pageToken = page.pageToken;
+  } while (pageToken);
+  return uids;
+}
+
+/** An account's custom claims; throws (code auth/user-not-found) when the account does not exist. */
+export async function getCustomClaimsAdmin(uid: string): Promise<Record<string, unknown>> {
+  return (await getAuth(getAdminApp()).getUser(uid)).customClaims ?? {};
+}
+
+/** Switches the `admin` claim on or off, keeping the account's other claims. */
+export async function setAdminClaimAdmin(uid: string, enabled: boolean): Promise<void> {
+  const auth = getAuth(getAdminApp());
+  const user = await auth.getUser(uid);
+  await auth.setCustomUserClaims(uid, mergeRoleClaim(user.customClaims, "admin", enabled));
 }
 
 /** Granted accounts a superadmin has paused auto generation for; the cron skips them and they keep seeing their last lesson. */

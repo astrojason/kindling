@@ -16,7 +16,7 @@ service cloud.firestore {
 
     match /accessRequests/{uid} {
       // Superadmin (the `superadmin` custom claim, set via
-      // scripts/grant-superadmin.mjs) can read and write any request.
+      // scripts/set-role.mjs) can read and write any request.
       allow read, write: if isSuperadmin();
 
       // An admin can read every request and approve or revoke one, but cannot change who it

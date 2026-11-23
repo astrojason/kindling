@@ -8,13 +8,17 @@ import { grantAccess, listAccessRequests, revokeAccess, setAutoGeneration } from
 import AdminAccessPage from "./access/page";
 
 vi.mock("@/lib/firestore", () => ({ listAccessRequests: vi.fn(), grantAccess: vi.fn(), revokeAccess: vi.fn(), setAutoGeneration: vi.fn() }));
-vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user: { uid: "admin" } }) }));
+let claims: { superadmin?: boolean; admin?: boolean } = { superadmin: true };
+// One stable user object, as the real auth context provides, so effects that depend on it run once.
+const signedIn = vi.hoisted(() => ({ uid: "admin", getIdToken: async () => "tok" }));
+vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user: signedIn, claims }) }));
 
 const person = (status: "pending" | "granted") => ({ uid: "reader", email: "r@example.com", displayName: "Reader", status, firstSeenAt: "2026-09-01", lastSeenAt: "2026-09-01" });
 let container: HTMLElement;
 let root: Root;
 
 beforeEach(() => {
+  claims = { superadmin: true };
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.spyOn(console, "error").mockImplementation(() => {});
   vi.mocked(grantAccess).mockResolvedValue(undefined);
@@ -58,4 +62,43 @@ it("shows the error, and no toast, when a change fails", async () => {
   await click("Grant");
   expect(container.querySelector('[role="alert"]')?.textContent).toContain("Missing permissions");
   expect(toasts()).toBe("");
+});
+
+it("shows an admin the requests and grant/revoke, but not the auto lessons switch", async () => {
+  claims = { admin: true };
+  vi.mocked(listAccessRequests).mockResolvedValue([person("granted")]);
+  await act(async () => root.render(createElement(ToastProvider, null, createElement(AdminAccessPage))));
+
+  const labels = [...container.querySelectorAll("button")].map((b) => b.textContent);
+  expect(labels).toContain("Revoke");
+  expect(labels.some((l) => l?.startsWith("Auto lessons"))).toBe(false);
+});
+
+it("lets a superadmin make a granted user an admin, with a confirmation", async () => {
+  const fetchMock = vi.fn(async (url: string) => (url === "/api/admin/roles" ? Response.json({ admins: [] }) : Response.json({ ok: true, admin: true })));
+  vi.stubGlobal("fetch", fetchMock);
+  await render("granted");
+  await click("Make admin");
+
+  const call = fetchMock.mock.calls.find(([url]) => url === "/api/admin/set-admin") as unknown as [string, RequestInit];
+  expect(JSON.parse(String(call[1].body))).toEqual({ uid: "reader", admin: true });
+  expect((call[1].headers as Record<string, string>).Authorization).toBe("Bearer tok");
+  expect(toasts()).toContain("is now an admin");
+  expect([...container.querySelectorAll("button")].some((b) => b.textContent === "Remove admin")).toBe(true);
+});
+
+it("shows a failed role change in full", async () => {
+  vi.stubGlobal("fetch", vi.fn(async (url: string) => (url === "/api/admin/roles" ? Response.json({ admins: [] }) : Response.json({ error: "No account has that uid" }, { status: 404 }))));
+  await render("granted");
+  await click("Make admin");
+  expect(container.querySelector("[role='alert']")?.textContent).toContain("No account has that uid");
+});
+
+it("does not offer roles to an admin", async () => {
+  claims = { admin: true };
+  const fetchMock = vi.fn();
+  vi.stubGlobal("fetch", fetchMock);
+  await render("granted");
+  expect([...container.querySelectorAll("button")].some((b) => b.textContent === "Make admin")).toBe(false);
+  expect(fetchMock).not.toHaveBeenCalled();
 });

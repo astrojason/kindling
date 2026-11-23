@@ -15,7 +15,7 @@ import { TabBar } from "@/components/nav/TabBar";
 import { TodayHome } from "@/components/today/TodayHome";
 import { StreakStatus } from "@/components/lesson/StreakStatus";
 import { useAuth } from "@/lib/auth-context";
-import { isSuperadmin } from "@/lib/auth-guard";
+import { canManageAccess } from "@/lib/auth-guard";
 import { getStreakStatus } from "@/lib/streak";
 import { useDailyLesson } from "@/lib/useDailyLesson";
 
@@ -92,7 +92,7 @@ export function DailyLesson() {
           date={date}
           streakCount={getStreakStatus(streak, date).count}
           category={lesson?.category}
-          showAdminLink={isSuperadmin(claims)}
+          showAdminLink={canManageAccess(claims)}
           showCategoriesSetting={canEditCategories && !editingCategories}
           categoryCount={selectedCategories.length}
           onEditCategories={() => {

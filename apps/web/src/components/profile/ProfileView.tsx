@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { GoalSetting } from "@/components/profile/GoalSetting";
 import { useAuth } from "@/lib/auth-context";
-import { isSuperadmin } from "@/lib/auth-guard";
+import { canManageAccess } from "@/lib/auth-guard";
 import { getStats, getStreak } from "@/lib/firestore";
 import { getStreakStatus } from "@/lib/streak";
 import { todayStr } from "@/lib/date";
@@ -57,7 +57,7 @@ export function ProfileView({ uid }: { uid: string }) {
           <GoalSetting uid={uid} initial={stats.goalMinutes} />
           <nav className="flex flex-col gap-2">
             <Link href="/settings" className={linkClass}>Settings</Link>
-            {isSuperadmin(claims) && <Link href="/admin" className={linkClass}>Admin</Link>}
+            {canManageAccess(claims) && <Link href="/admin" className={linkClass}>Admin</Link>}
             <Link href="/support" className={linkClass}>Support</Link>
             <Link href="/privacy" className={linkClass}>Privacy policy</Link>
             <Link href="/terms" className={linkClass}>Terms of service</Link>

@@ -9,6 +9,7 @@ import GenerationLogPage from "./generation-log/page";
 import CronLogPage from "./cron-log/page";
 
 vi.mock("@/lib/firestore", () => ({ listAccessRequests: vi.fn(), listGenerationLog: vi.fn(), listCronRunLog: vi.fn() }));
+vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ claims: { superadmin: true } }) }));
 
 let container: HTMLElement;
 let root: Root;

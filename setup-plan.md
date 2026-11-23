@@ -83,7 +83,7 @@ Firebase CLI cannot toggle sign-in providers. This has to be done manually:
 1. Go to https://console.firebase.google.com → select the project.
 2. Authentication → Get Started.
 3. Enable **Google** sign-in.
-4. Access is controlled by a grant system, not a hardcoded UID: anyone who signs in without access is recorded as a pending `accessRequests/{uid}` doc, and the superadmin (Jason) grants or revokes access from the app's `/admin` page. Superadmin status itself is a Firebase Auth custom claim, bootstrapped by running `npm run grant-superadmin -- <email>` locally (see `apps/web/scripts/grant-superadmin.mjs`) — do this once after Authentication is enabled.
+4. Access is controlled by a grant system, not a hardcoded UID: anyone who signs in without access is recorded as a pending `accessRequests/{uid}` doc, and the superadmin (Jason) grants or revokes access from the app's `/admin` page. Superadmin status itself is a Firebase Auth custom claim, bootstrapped by running `npm run grant-superadmin -- <email>` locally (see `apps/web/scripts/set-role.mjs`) — do this once after Authentication is enabled.
 
 ## 6. Create the Firestore database
 

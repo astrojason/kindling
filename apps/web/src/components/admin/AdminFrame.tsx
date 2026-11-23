@@ -4,15 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { Card } from "@/components/lesson/Card";
+import { useAuth } from "@/lib/auth-context";
+import { isSuperadmin } from "@/lib/auth-guard";
 
 const SECTIONS = [
-  { href: "/admin/access", label: "Manage access" },
-  { href: "/admin/generation-log", label: "Generation log" },
-  { href: "/admin/cron-log", label: "Cron run log" },
+  { href: "/admin/access", label: "Manage access", superadminOnly: false },
+  { href: "/admin/generation-log", label: "Generation log", superadminOnly: true },
+  { href: "/admin/cron-log", label: "Cron run log", superadminOnly: true },
 ];
 
 export function AdminFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { claims } = useAuth();
+  const sections = SECTIONS.filter((s) => !s.superadminOnly || isSuperadmin(claims));
   return (
     <div className="mx-auto w-full max-w-[640px] px-4 py-10">
       <Card>
@@ -20,7 +24,7 @@ export function AdminFrame({ children }: { children: ReactNode }) {
           <Link href="/" className="text-fg-muted underline decoration-border decoration-1 underline-offset-2 hover:text-accent">
             Today&apos;s lesson
           </Link>
-          {SECTIONS.map(({ href, label }) => (
+          {sections.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
