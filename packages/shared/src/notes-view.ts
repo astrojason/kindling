@@ -41,3 +41,13 @@ export function dueNotes(notes: Note[], now: Date = new Date()): Note[] {
     .filter((n) => n.next_review_at.toDate().getTime() <= now.getTime())
     .sort((a, b) => a.next_review_at.toDate().getTime() - b.next_review_at.toDate().getTime());
 }
+
+/** When a note is next due, in words: "due now", "tomorrow", "in 3d" or "in 2w". */
+export function dueLabel(ts: HasDate, now: Date = new Date()): string {
+  const ms = ts.toDate().getTime() - now.getTime();
+  if (ms <= 0) return "due now";
+  const days = Math.ceil(ms / DAY_MS);
+  if (days === 1) return "tomorrow";
+  if (days < 7) return `in ${days}d`;
+  return `in ${Math.floor(days / 7)}w`;
+}

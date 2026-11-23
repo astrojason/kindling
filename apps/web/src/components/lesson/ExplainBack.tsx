@@ -4,17 +4,11 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import type { Lesson } from "@/lib/types";
 import { useLoad } from "@/lib/useLoad";
+import { requestJson } from "@/lib/api-client";
 
 const MIN_LENGTH = 20;
 const MAX_LENGTH = 1500;
 const buttonClass = "rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-accent-fg transition-opacity hover:opacity-85 disabled:opacity-50";
-
-async function requestJson(path: string, token: string, init?: RequestInit) {
-  const res = await fetch(path, { ...init, headers: { Authorization: `Bearer ${token}`, ...(init?.body && { "Content-Type": "application/json" }) } });
-  const data = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
-  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-  return data;
-}
 
 /** Offered only while the server says enough of the day's tokens remain; otherwise it renders nothing. */
 export function ExplainBack({ lesson }: { lesson: Lesson }) {

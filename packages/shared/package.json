@@ -1,6 +1,6 @@
 {
   "name": "@random-knowledge/shared",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -28,7 +28,8 @@
     "./prose": "./src/prose.ts",
     "./tags": "./src/tags.ts",
     "./notes-firestore": "./src/notes-firestore.ts",
-    "./notes-view": "./src/notes-view.ts"
+    "./notes-view": "./src/notes-view.ts",
+    "./notes-input": "./src/notes-input.ts"
   },
   "peerDependencies": {
     "firebase": "^12.18.0"

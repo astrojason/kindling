@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Note } from "@random-knowledge/shared/notes";
-import { ageLabel, dueNotes, filterNotes, reviewedLabel, sortNotes } from "@random-knowledge/shared/notes-view";
+import { ageLabel, dueLabel, dueNotes, filterNotes, reviewedLabel, sortNotes } from "@random-knowledge/shared/notes-view";
 
 const NOW = new Date(2026, 10, 22, 12, 0);
 const day = (offset: number) => ({ toDate: () => new Date(2026, 10, 22 + offset, 8, 0) }) as unknown as Note["created_at"];
@@ -97,5 +97,19 @@ describe("dueNotes", () => {
       note({ id: "tomorrow", next_review_at: day(1) }),
     ];
     expect(dueNotes(notes, NOW).map((n) => n.id)).toEqual(["overdue", "today"]);
+  });
+});
+
+describe("dueLabel", () => {
+  it.each([
+    [-3, "due now"],
+    [0, "due now"],
+    [1, "tomorrow"],
+    [2, "in 2d"],
+    [6, "in 6d"],
+    [7, "in 1w"],
+    [15, "in 2w"],
+  ])("labels a review %i days away as %s", (days, label) => {
+    expect(dueLabel(day(days), NOW)).toBe(label);
   });
 });

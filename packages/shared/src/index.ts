@@ -20,3 +20,4 @@ export * from "./prose";
 export * from "./tags";
 export * from "./notes-firestore";
 export * from "./notes-view";
+export * from "./notes-input";
