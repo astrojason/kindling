@@ -6,24 +6,25 @@ import { EditNote } from "../components/notes/EditNote";
 import { NewNote } from "../components/notes/NewNote";
 import { NoteDetail } from "../components/notes/NoteDetail";
 import { NotesList } from "../components/notes/NotesList";
+import { QuizSession } from "../components/notes/QuizSession";
 import { Card } from "../components/ui";
 import { useNote } from "../hooks/useNote";
 import { useNotes } from "../hooks/useNotes";
 import { useAuth } from "../lib/auth-context";
 import { useTheme } from "../lib/theme";
 
-type Route = { name: "list" } | { name: "new" } | { name: "detail"; id: string } | { name: "edit"; id: string };
+export type NotesRoute = { name: "list" } | { name: "new" } | { name: "detail"; id: string } | { name: "edit"; id: string } | { name: "quiz"; id: string };
 
 /** The Notes tab: the library, and from it a note, its editor and the capture form. */
-export function NotesScreen() {
+export function NotesScreen({ initialRoute = { name: "list" } }: { initialRoute?: NotesRoute }) {
   const { user } = useAuth();
-  const [route, setRoute] = useState<Route>({ name: "list" });
+  const [route, setRoute] = useState<NotesRoute>(initialRoute);
   const [notice, setNotice] = useState<string | null>(null);
   if (!user) return null;
   const uid = user.uid;
   const getToken = () => user.getIdToken();
 
-  function go(next: Route, message: string | null = null) {
+  function go(next: NotesRoute, message: string | null = null) {
     setNotice(message);
     setRoute(next);
   }
@@ -33,7 +34,8 @@ export function NotesScreen() {
       <Card>
         {route.name === "list" && <ListRoute uid={uid} notice={notice} onOpen={(id) => go({ name: "detail", id })} onCapture={() => go({ name: "new" })} />}
         {route.name === "new" && <NewNote uid={uid} getToken={getToken} onSaved={(id, message) => go({ name: "detail", id }, message)} onCancel={() => go({ name: "list" })} />}
-        {route.name === "detail" && <DetailRoute uid={uid} id={route.id} notice={notice} onBack={() => go({ name: "list" })} onEdit={() => go({ name: "edit", id: route.id })} onDeleted={(message) => go({ name: "list" }, message)} />}
+        {route.name === "detail" && <DetailRoute uid={uid} id={route.id} notice={notice} onBack={() => go({ name: "list" })} onEdit={() => go({ name: "edit", id: route.id })} onQuiz={() => go({ name: "quiz", id: route.id })} onDeleted={(message) => go({ name: "list" }, message)} />}
+        {route.name === "quiz" && <QuizRoute uid={uid} id={route.id} getToken={getToken} onBack={() => go({ name: "detail", id: route.id })} onFinished={(message) => go({ name: "detail", id: route.id }, message)} />}
         {route.name === "edit" && <EditRoute uid={uid} id={route.id} onSaved={(message) => go({ name: "detail", id: route.id }, message)} onCancel={() => go({ name: "detail", id: route.id })} />}
       </Card>
     </ScrollView>
@@ -53,16 +55,22 @@ function useLoadedNote(uid: string, id: string) {
   return { note, status };
 }
 
-function DetailRoute({ uid, id, notice, onBack, onEdit, onDeleted }: { uid: string; id: string; notice: string | null; onBack: () => void; onEdit: () => void; onDeleted: (message: string) => void }) {
+function DetailRoute({ uid, id, notice, onBack, onEdit, onQuiz, onDeleted }: { uid: string; id: string; notice: string | null; onBack: () => void; onEdit: () => void; onQuiz: () => void; onDeleted: (message: string) => void }) {
   const theme = useTheme();
   const { note, status } = useLoadedNote(uid, id);
   if (!note) return status;
   return (
     <>
       {notice && <Text accessibilityRole="alert" style={[styles.notice, { backgroundColor: theme.accentSoft, color: theme.accent }]}>{notice}</Text>}
-      <NoteDetail uid={uid} note={note} onBack={onBack} onEdit={onEdit} onDeleted={onDeleted} />
+      <NoteDetail uid={uid} note={note} onBack={onBack} onEdit={onEdit} onQuiz={onQuiz} onDeleted={onDeleted} />
     </>
   );
+}
+
+function QuizRoute({ uid, id, getToken, onBack, onFinished }: { uid: string; id: string; getToken: () => Promise<string>; onBack: () => void; onFinished: (message: string) => void }) {
+  const { note, status } = useLoadedNote(uid, id);
+  if (!note) return status;
+  return <QuizSession uid={uid} note={note} getToken={getToken} onBack={onBack} onFinished={onFinished} />;
 }
 
 function EditRoute({ uid, id, onSaved, onCancel }: { uid: string; id: string; onSaved: (message: string) => void; onCancel: () => void }) {

@@ -1,6 +1,6 @@
 {
   "name": "@random-knowledge/shared",
-  "version": "1.19.0",
+  "version": "1.20.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -35,7 +35,8 @@
     "./pending-requests": "./src/pending-requests.ts",
     "./notification-link": "./src/notification-link.ts",
     "./api-client": "./src/api-client.ts",
-    "./chat-stream-reader": "./src/chat-stream-reader.ts"
+    "./chat-stream-reader": "./src/chat-stream-reader.ts",
+    "./review-empty": "./src/review-empty.ts"
   },
   "peerDependencies": {
     "firebase": "^12.18.0"
