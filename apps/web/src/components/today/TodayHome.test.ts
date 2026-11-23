@@ -31,15 +31,15 @@ afterEach(async () => {
 });
 const render = async (state: typeof notesState) => {
   notesState = state;
-  await act(async () => root.render(createElement(TodayHome, { uid: "u1", date: "2026-11-22", plan: [], streak: { streak: 0, longest: 0, lastDate: null }, categoryCount: 3, onStart: vi.fn(), onOpen: vi.fn(), onRetry: vi.fn(), onEditCategories: vi.fn() })));
+  await act(async () => root.render(createElement(TodayHome, { uid: "u1", date: "2026-11-22", plan: [], streak: { streak: 0, longest: 0, lastDate: null }, onStart: vi.fn(), onOpen: vi.fn(), onRetry: vi.fn() })));
 };
 
-it("counts the notes that are due in the Review row and lists them on Today, each opening its quiz", async () => {
+it("counts the notes that are due in the Review row and lists them on Today, each opening the note", async () => {
   await render({ notes: [note("a", "Overdue note", -5), note("b", "Due today", -1), note("c", "Later", 7)], error: null });
 
   expect(container.querySelector("section[aria-label='Review']")?.textContent).toContain("2 notes due");
-  const links = [...container.querySelectorAll("a[href$='/session']")];
-  expect(links.map((a) => a.getAttribute("href"))).toEqual(["/notes/a/session", "/notes/b/session"]);
+  const links = [...container.querySelectorAll("a[href^='/notes/']")];
+  expect(links.map((a) => a.getAttribute("href"))).toEqual(["/notes/a", "/notes/b"]);
   expect(container.textContent).toContain("2 notes to recall");
   expect(container.textContent).not.toContain("Later");
 });
@@ -47,7 +47,7 @@ it("counts the notes that are due in the Review row and lists them on Today, eac
 it("says nothing is due, and lists nothing, when no note is due", async () => {
   await render({ notes: [note("c", "Later", 7)], error: null });
   expect(container.querySelector("section[aria-label='Review']")?.textContent).toContain("Nothing due right now");
-  expect(container.querySelector("a[href$='/session']")).toBeNull();
+  expect(container.querySelector("a[href^='/notes/']")).toBeNull();
 });
 
 it("does not claim nothing is due while the notes are still loading", async () => {
@@ -60,4 +60,11 @@ it("shows a failure to load the notes in full", async () => {
   const alert = container.querySelector("[role='alert']");
   expect(alert?.textContent).toContain("Missing or insufficient permissions.");
   expect(alert?.className).toContain("select-all");
+});
+
+it("no longer offers category editing on Today (it lives in Settings), but keeps the other shortcuts", async () => {
+  await render({ notes: [], error: null });
+  expect(container.textContent).not.toContain("My categories");
+  expect(container.textContent).toContain("Library");
+  expect(container.textContent).toContain("Shared");
 });

@@ -3,12 +3,12 @@
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { getPreReviewEnabled, setPreReviewEnabled } from "@/lib/firestore";
+import { getPreReviewEnabled, getSelectedCategories, setPreReviewEnabled } from "@/lib/firestore";
 import { getNoteSettings } from "@/lib/notes-firestore";
 import { ToastProvider } from "@/components/Toast";
 import SettingsPage from "./page";
 
-vi.mock("@/lib/firestore", () => ({ getPreReviewEnabled: vi.fn(), setPreReviewEnabled: vi.fn() }));
+vi.mock("@/lib/firestore", () => ({ getPreReviewEnabled: vi.fn(), setPreReviewEnabled: vi.fn(), getSelectedCategories: vi.fn(), setSelectedCategories: vi.fn() }));
 vi.mock("@/lib/notes-firestore", () => ({ getNoteSettings: vi.fn(), updateNoteSettings: vi.fn() }));
 vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user: { uid: "reader" } }) }));
 vi.mock("@/lib/usePendingRequests", () => ({ usePendingRequests: () => ({ count: null, error: null }) }));
@@ -23,6 +23,7 @@ beforeEach(() => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.mocked(getPreReviewEnabled).mockResolvedValue(false);
   vi.mocked(setPreReviewEnabled).mockResolvedValue(undefined);
+  vi.mocked(getSelectedCategories).mockResolvedValue(null);
   vi.mocked(getNoteSettings).mockResolvedValue({ articlesAppUid: null, interestKeywords: [] });
   vi.spyOn(console, "error").mockImplementation(() => {});
   container = document.createElement("div");
@@ -35,7 +36,8 @@ afterEach(async () => {
   vi.restoreAllMocks();
 });
 
-const checkbox = () => container.querySelector('input[type="checkbox"]') as HTMLInputElement;
+// The pre-review switch: the only checkbox that is not one of the category choices.
+const checkbox = () => container.querySelector('input[type="checkbox"]:not([name="categories"])') as HTMLInputElement;
 const render = () => act(async () => root.render(createElement(ToastProvider, null, createElement(SettingsPage))));
 
 it("shows the saved pre-review choice and explains it", async () => {
@@ -76,4 +78,10 @@ it("also offers the Discover settings", async () => {
   expect(getNoteSettings).toHaveBeenCalledWith("reader");
   expect(container.textContent).toContain("Discover");
   expect(container.querySelector("input[aria-label='Articles account uid']")).not.toBeNull();
+});
+
+it("also offers the category choice", async () => {
+  await render();
+  expect(container.textContent).toContain("Categories");
+  expect(getSelectedCategories).toHaveBeenCalledWith("reader");
 });

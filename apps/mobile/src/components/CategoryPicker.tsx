@@ -8,10 +8,16 @@ export function CategoryPicker({
   selectedCategories,
   onSave,
   onCancel,
+  editing = Boolean(onCancel),
+  compact = false,
 }: {
   selectedCategories: CategoryKey[];
   onSave: (categories: CategoryKey[]) => Promise<void>;
   onCancel?: () => void;
+  /** Changing an existing choice (not the first-run one): different wording and button. Defaults to true when there is a cancel. */
+  editing?: boolean;
+  /** Sits inside a settings screen: a section-sized heading and no divider under it. */
+  compact?: boolean;
 }) {
   const theme = useTheme();
   const [selected, setSelected] = useState(selectedCategories);
@@ -36,11 +42,11 @@ export function CategoryPicker({
   }
 
   return (
-    <View style={[styles.container, { borderColor: theme.border }]}>
-      <Text style={[styles.title, { color: theme.fgStrong }]}>What would you like to learn?</Text>
+    <View style={compact ? undefined : [styles.container, { borderColor: theme.border }]}>
+      <Text style={[styles.title, compact && styles.compactTitle, { color: theme.fgStrong }]}>What would you like to learn?</Text>
       <Text style={{ color: theme.fgMuted, fontSize: 13, marginTop: 8, marginBottom: 14 }}>
         Choose at least one category.{" "}
-        {onCancel ? "Changes apply to future lessons; today’s lesson stays the same." : "Your daily lessons will come from your selections. You can change them anytime."}
+        {editing ? "Changes apply to future lessons; today’s lesson stays the same." : "Your daily lessons will come from your selections. You can change them anytime."}
       </Text>
       <View style={styles.linkRow}>
         <LinkText title="Select all" onPress={() => setSelected([...CATEGORY_KEYS])} />
@@ -69,7 +75,7 @@ export function CategoryPicker({
       </Text>
       {error && <Text style={{ color: theme.rust, fontSize: 14, marginTop: 8 }}>{error}</Text>}
       <View style={styles.actions}>
-        <Button title={saving ? "Saving…" : onCancel ? "Save categories" : "Start learning"} onPress={save} disabled={saving || !selected.length} />
+        <Button title={saving ? "Saving…" : editing ? "Save categories" : "Start learning"} onPress={save} disabled={saving || !selected.length} />
         {onCancel && (
           <View style={{ marginTop: 10 }}>
             <LinkText title="Cancel" onPress={onCancel} />
@@ -83,6 +89,7 @@ export function CategoryPicker({
 const styles = StyleSheet.create({
   container: { borderBottomWidth: 1, paddingBottom: 20, marginBottom: 20 },
   title: { fontSize: 22, fontWeight: "700" },
+  compactTitle: { fontSize: 16, fontWeight: "800" },
   linkRow: { flexDirection: "row", gap: 16, marginBottom: 10 },
   row: { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 14, borderWidth: 1, padding: 12, marginBottom: 8 },
   checkbox: { width: 18, height: 18, borderRadius: 4, borderWidth: 1.5, alignItems: "center", justifyContent: "center" },

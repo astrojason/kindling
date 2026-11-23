@@ -20,17 +20,15 @@ const tileClass = "flex flex-col items-start gap-1 rounded-md bg-surface p-4 tex
 
 /** The Today tab: greeting, streak and points, daily goal, today's lesson, review and shortcuts. */
 export function TodayHome({
-  uid, date, plan, streak, categoryCount, onStart, onOpen, onRetry, onEditCategories,
+  uid, date, plan, streak, onStart, onOpen, onRetry,
 }: {
   uid: string;
   date: string;
   plan: PlanItem[];
   streak: StreakData;
-  categoryCount: number;
   onStart: () => void;
   onOpen: (key: string) => void;
   onRetry: () => void;
-  onEditCategories: () => void;
 }) {
   const progress = useProgressData(uid);
   const { notes, error: notesError } = useNotes(uid);
@@ -64,11 +62,7 @@ export function TodayHome({
 
           <section aria-label="Keep exploring">
             <h2 className="mb-3 text-lg font-extrabold text-fg-strong">Keep exploring</h2>
-            <div className="grid grid-cols-3 gap-3">
-              <button type="button" onClick={onEditCategories} className={tileClass}>
-                <span className="text-xs font-bold text-fg-muted">{categoryCount} selected</span>
-                My categories ({categoryCount})
-              </button>
+            <div className="grid grid-cols-2 gap-3">
               <Link href="/library" className={tileClass}>
                 <span className="text-xs font-bold text-fg-muted">Past lessons</span>
                 Library

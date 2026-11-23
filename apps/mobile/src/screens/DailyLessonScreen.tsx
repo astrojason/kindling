@@ -87,7 +87,6 @@ export function DailyLessonScreen({ onFlowChange, onOpenReview, onOpenNote, refr
             date={date}
             plan={state.plan}
             streak={streak}
-            categoryCount={selectedCategories.length}
             refreshKey={refreshKey}
             onStart={() => {
               const next = state.plan.find((item) => item.status === "ready" && !item.done);
@@ -95,10 +94,6 @@ export function DailyLessonScreen({ onFlowChange, onOpenReview, onOpenNote, refr
             }}
             onOpen={(key) => void actions.openLesson(key).then(() => setStarted(true))}
             onRetry={actions.retryPlan}
-            onEditCategories={() => {
-              setEditingCategories(true);
-              setCategoriesSaved(false);
-            }}
             onOpenReview={onOpenReview}
             onOpenNote={onOpenNote}
           />

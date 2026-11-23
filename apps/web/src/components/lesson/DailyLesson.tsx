@@ -69,14 +69,12 @@ export function DailyLesson() {
           {editingCategories ? <Card>{picker}</Card> : (
             <TodayHome
               uid={user.uid} date={date} plan={state.plan} streak={streak}
-              categoryCount={selectedCategories.length}
               onStart={() => {
                 const next = state.plan.find((item) => item.status === "ready" && !item.done);
                 if (next) void actions.openLesson(next.key).then(() => setStarted(true));
               }}
               onOpen={(key) => void actions.openLesson(key).then(() => setStarted(true))}
               onRetry={actions.retryPlan}
-              onEditCategories={() => setEditingCategories(true)}
             />
           )}
           {resetLink}

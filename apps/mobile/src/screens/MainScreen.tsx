@@ -12,17 +12,17 @@ export function MainScreen() {
   const [tab, setTab] = useState<Tab>("today");
   const [inLesson, setInLesson] = useState(false);
   const [todayShown, setTodayShown] = useState(0);
-  // A note opened from Review: the Notes tab starts on its quiz, and remounts (new nonce) for each one.
-  const [quizNote, setQuizNote] = useState<{ id: string; nonce: number } | null>(null);
+  // A note opened from Today or Review: the Notes tab starts on that note, and remounts (new nonce) for each one.
+  const [openedNote, setOpenedNote] = useState<{ id: string; nonce: number } | null>(null);
 
   function changeTab(next: Tab) {
     if (next === "today" && tab !== "today") setTodayShown((n) => n + 1);
-    setQuizNote(null);
+    setOpenedNote(null);
     setTab(next);
   }
 
-  function openNoteQuiz(id: string) {
-    setQuizNote({ id, nonce: Date.now() });
+  function openNote(id: string) {
+    setOpenedNote({ id, nonce: Date.now() });
     setTab("notes");
   }
   const showTabBar = !(tab === "today" && inLesson);
@@ -30,11 +30,11 @@ export function MainScreen() {
   return (
     <View style={{ flex: 1 }}>
       <View style={{ flex: 1, display: tab === "today" ? "flex" : "none" }}>
-        <DailyLessonScreen onFlowChange={setInLesson} refreshKey={todayShown} onOpenReview={() => changeTab("review")} onOpenNote={openNoteQuiz} />
+        <DailyLessonScreen onFlowChange={setInLesson} refreshKey={todayShown} onOpenReview={() => changeTab("review")} onOpenNote={openNote} />
       </View>
       {tab === "explore" && <ExploreScreen />}
-      {tab === "notes" && <NotesScreen key={quizNote?.nonce ?? 0} initialRoute={quizNote ? { name: "quiz", id: quizNote.id } : undefined} />}
-      {tab === "review" && <ReviewScreen onOpenNote={openNoteQuiz} />}
+      {tab === "notes" && <NotesScreen key={openedNote?.nonce ?? 0} initialRoute={openedNote ? { name: "detail", id: openedNote.id } : undefined} />}
+      {tab === "review" && <ReviewScreen onOpenNote={openNote} />}
       {tab === "profile" && <ProfileScreen />}
       {showTabBar && <TabBar active={tab} onChange={changeTab} />}
     </View>

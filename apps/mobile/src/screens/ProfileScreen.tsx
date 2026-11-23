@@ -7,6 +7,7 @@ import { GOAL_CHOICES, levelFor, xpIntoLevel, XP_PER_LEVEL } from "@random-knowl
 import { DeleteAccountLink } from "../components/DeleteAccountLink";
 import { ErrorBox } from "../components/ErrorBox";
 import { LoadingView } from "../components/LoadingView";
+import { CategorySettings } from "../components/settings/CategorySettings";
 import { DiscoverSettings } from "../components/settings/DiscoverSettings";
 import { Button, Card } from "../components/ui";
 import { useAuth } from "../lib/auth-context";
@@ -122,6 +123,7 @@ export function ProfileScreen() {
             </View>
           </>
         )}
+        {user && <CategorySettings uid={user.uid} />}
         {user && <DiscoverSettings uid={user.uid} />}
         {API_BASE_URL && (
           <View style={{ gap: 8 }}>

@@ -26,19 +26,17 @@ const WEEKDAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
 
 /** The Today tab: greeting, streak and points, daily goal, today's lesson, review and shortcuts. */
 export function TodayHome({
-  uid, date, plan, streak, categoryCount, refreshKey, onStart, onOpen, onRetry, onEditCategories, onOpenReview, onOpenNote,
+  uid, date, plan, streak, refreshKey, onStart, onOpen, onRetry, onOpenReview, onOpenNote,
 }: {
   uid: string;
   date: string;
   plan: PlanItem[];
   streak: StreakData;
-  categoryCount: number;
   /** Changes whenever the tab is shown again, so goal and points edited elsewhere are re-read. */
   refreshKey: number;
   onStart: () => void;
   onOpen: (key: string) => void;
   onRetry: () => void;
-  onEditCategories: () => void;
   onOpenReview: () => void;
   onOpenNote: (id: string) => void;
 }) {
@@ -139,14 +137,6 @@ export function TodayHome({
         </View>
       )}
       <DueNotes notes={notes ?? []} error={notesError ? `Could not load your notes for review: ${notesError}` : null} onOpen={onOpenNote} />
-
-      <Pressable accessibilityRole="button" onPress={onEditCategories} style={[styles.card, { backgroundColor: theme.surface }]}>
-        <View style={styles.flex}>
-          <Text style={[styles.cardTitle, { color: theme.fgStrong }]}>My categories ({categoryCount})</Text>
-          <Text style={{ color: theme.fgMuted, fontSize: 14 }}>Choose what future lessons are about</Text>
-        </View>
-        <SymbolView name="chevron.right" size={16} tintColor={theme.fgMuted} />
-      </Pressable>
     </View>
   );
 }

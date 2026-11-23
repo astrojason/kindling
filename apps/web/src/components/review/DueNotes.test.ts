@@ -25,12 +25,13 @@ afterEach(async () => {
 });
 const render = (props: Partial<Parameters<typeof DueNotes>[0]> = {}) => act(async () => root.render(createElement(DueNotes, { notes: [], error: null, now: NOW, ...props })));
 
-it("lists the notes that are due, earliest first, each linking to its quiz", async () => {
+it("lists the notes that are due, earliest first, each linking to the note itself", async () => {
   await render({ notes: [note("b", "Later today", 0), note("a", "Overdue", -2), note("c", "Tomorrow", 1)] });
   const links = [...container.querySelectorAll("a")];
-  expect(links.map((a) => a.getAttribute("href"))).toEqual(["/notes/a/session", "/notes/b/session"]);
+  expect(links.map((a) => a.getAttribute("href"))).toEqual(["/notes/a", "/notes/b"]);
   expect(links[0].textContent).toContain("Overdue");
   expect(links[0].textContent).toContain("physics");
+  expect(links[0].textContent).not.toContain("quiz");
   expect(container.textContent).toContain("2 notes to recall");
 });
 

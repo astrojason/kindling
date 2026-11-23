@@ -3,10 +3,14 @@
 import { useState } from "react";
 import { CATEGORIES, CATEGORY_KEYS, type CategoryKey } from "@/lib/categories";
 
-export function CategoryPicker({ selectedCategories, onSave, onCancel }: {
+export function CategoryPicker({ selectedCategories, onSave, onCancel, editing = Boolean(onCancel), compact = false }: {
   selectedCategories: CategoryKey[];
   onSave: (categories: CategoryKey[]) => Promise<void>;
   onCancel?: () => void;
+  /** Changing an existing choice (not the first-run one): different wording and button. Defaults to true when there is a cancel. */
+  editing?: boolean;
+  /** Sits inside a settings page: a section-sized heading and no divider under it. */
+  compact?: boolean;
 }) {
   const [selected, setSelected] = useState(selectedCategories);
   const [saving, setSaving] = useState(false);
@@ -26,11 +30,11 @@ export function CategoryPicker({ selectedCategories, onSave, onCancel }: {
   }
 
   return (
-    <form onSubmit={(event) => { event.preventDefault(); void save(); }} className="mb-6 border-b border-border pb-6">
+    <form onSubmit={(event) => { event.preventDefault(); void save(); }} className={compact ? "" : "mb-6 border-b border-border pb-6"}>
       <fieldset disabled={saving} aria-describedby="category-help">
-        <legend className="font-heading text-2xl text-fg-strong">What would you like to learn?</legend>
+        <legend className={`font-heading text-fg-strong ${compact ? "text-lg font-bold" : "text-2xl"}`}>What would you like to learn?</legend>
         <p id="category-help" className="mb-4 mt-2 text-sm text-fg-muted">
-          Choose at least one category. {onCancel ? "Changes apply to future lessons; today’s lesson stays the same." : "Your daily lessons will come from your selections. You can change them anytime."}
+          Choose at least one category. {editing ? "Changes apply to future lessons; today’s lesson stays the same." : "Your daily lessons will come from your selections. You can change them anytime."}
         </p>
         <div className="mb-3 flex gap-4 text-xs font-semibold text-accent">
           <button type="button" onClick={() => setSelected([...CATEGORY_KEYS])} className="underline">Select all</button>
@@ -58,7 +62,7 @@ export function CategoryPicker({ selectedCategories, onSave, onCancel }: {
       {error && <p role="alert" className="mt-3 text-sm text-rust">{error}</p>}
       <div className="mt-4 flex items-center gap-4">
         <button type="submit" disabled={saving || !selected.length} className="rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-accent-fg disabled:opacity-60">
-          {saving ? "Saving…" : onCancel ? "Save categories" : "Start learning"}
+          {saving ? "Saving…" : editing ? "Save categories" : "Start learning"}
         </button>
         {onCancel && <button type="button" disabled={saving} onClick={onCancel} className="text-sm text-fg-muted underline disabled:opacity-60">Cancel</button>}
       </div>
