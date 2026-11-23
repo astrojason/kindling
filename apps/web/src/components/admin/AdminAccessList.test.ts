@@ -61,3 +61,15 @@ it("shows progress and locks the control while that account is being changed", a
   const button = text("Saving…") as HTMLButtonElement;
   expect(button.disabled).toBe(true);
 });
+
+it("shows why admins could not be notified about a request that is still waiting", async () => {
+  await render({ requests: [{ ...granted, status: "pending", notifyError: "No admin device is registered for push notifications yet." }] });
+  const note = container.querySelector("[data-notify-error]");
+  expect(note?.textContent).toContain("No admin device is registered");
+  expect(note?.className).toContain("select-all");
+});
+
+it("shows no notification warning for a request nobody failed to announce", async () => {
+  await render({ requests: [{ ...granted, status: "pending" }] });
+  expect(container.querySelector("[data-notify-error]")).toBeNull();
+});

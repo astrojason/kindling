@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { getApps, initializeApp, cert, type App } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
-import { getFirestore } from "firebase-admin/firestore";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import type { AccessRequest } from "@/lib/auth-guard";
 import { CATEGORY_KEYS, defaultWeights, type CategoryKey, type Weights } from "@/lib/categories";
@@ -62,6 +62,27 @@ export async function listPrivilegedUserIds(): Promise<string[]> {
     pageToken = page.pageToken;
   } while (pageToken);
   return uids;
+}
+
+/**
+ * Stamps a pending access request as announced (so admins are told once) and returns who it is, or null when
+ * it is missing, no longer pending, or already announced. Done in a transaction so two calls cannot both win.
+ */
+export async function claimAccessNotificationAdmin(uid: string): Promise<{ displayName: string | null; email: string | null } | null> {
+  const db = getFirestore(getAdminApp());
+  const ref = db.collection("accessRequests").doc(uid);
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const data = snap.data();
+    if (!data || data.status !== "pending" || data.notifiedAt) return null;
+    tx.update(ref, { notifiedAt: new Date().toISOString() });
+    return { displayName: data.displayName ?? null, email: data.email ?? null };
+  });
+}
+
+/** Undoes the announced stamp and records why, so the next time the person opens the app the announcement is tried again. */
+export async function releaseAccessNotificationAdmin(uid: string, reason: string): Promise<void> {
+  await getFirestore(getAdminApp()).collection("accessRequests").doc(uid).update({ notifiedAt: FieldValue.delete(), notifyError: reason });
 }
 
 /** Every account holding the `admin` claim, for the superadmin's role screen. */

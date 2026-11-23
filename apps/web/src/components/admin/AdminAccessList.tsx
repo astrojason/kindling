@@ -41,6 +41,9 @@ export function AdminAccessList({
             <p className="text-xs text-fg-muted">
               {req.email} · <span className="capitalize">{req.status}</span>
             </p>
+            {req.status === "pending" && req.notifyError && (
+              <p data-notify-error className="mt-1 text-xs text-rust select-all">Admins could not be notified: {req.notifyError}</p>
+            )}
           </div>
           {req.status === "granted" ? (
             <div className="flex items-center gap-2">

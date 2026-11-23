@@ -6,8 +6,10 @@ import type { User } from "firebase/auth";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useAccessStatus } from "./useAccessStatus";
 import * as store from "./firestore";
+import { notifyAdminsOfPending } from "./notify-admins";
 import type { AuthClaims } from "./auth-guard";
 
+vi.mock("./notify-admins", () => ({ notifyAdminsOfPending: vi.fn() }));
 vi.mock("./firestore", () => ({
   getAccessRequest: vi.fn(),
   recordAccessRequest: vi.fn(),
@@ -77,5 +79,23 @@ describe("useAccessStatus", () => {
 
     expect(current.status).toBe("admin");
     expect(store.recordAccessRequest).not.toHaveBeenCalled();
+  });
+
+  it("tells the admins when the person is still waiting for access", async () => {
+    vi.mocked(store.getAccessRequest).mockResolvedValue({ uid: "owner", email: null, displayName: null, status: "pending", firstSeenAt: "2026-09-01", lastSeenAt: "2026-09-01" });
+    await render({});
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+
+    expect(current.status).toBe("pending");
+    expect(notifyAdminsOfPending).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not bother the admins about someone who already has access", async () => {
+    vi.mocked(store.getAccessRequest).mockResolvedValue({ uid: "owner", email: null, displayName: null, status: "granted", firstSeenAt: "2026-09-01", lastSeenAt: "2026-09-01" });
+    await render({});
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+
+    expect(current.status).toBe("granted");
+    expect(notifyAdminsOfPending).not.toHaveBeenCalled();
   });
 });

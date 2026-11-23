@@ -12,6 +12,10 @@ export interface AccessRequest {
   revokedAt?: string;
   /** Set by a superadmin. Only an explicit `false` pauses nightly and on-demand generation for this user. */
   autoGeneration?: boolean;
+  /** Set by the server when admins were told this request is waiting (cleared if telling them failed). */
+  notifiedAt?: string;
+  /** Why the last attempt to tell admins failed, for the access page. */
+  notifyError?: string;
 }
 
 export type ResolvedAccess = "superadmin" | "admin" | "granted" | "pending" | "revoked" | "denied";

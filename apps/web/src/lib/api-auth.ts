@@ -43,3 +43,10 @@ export async function authorizeSuperadmin(request: Request): Promise<NextRespons
   }
   return { uid: decoded.uid };
 }
+
+/** Verifies the Bearer ID token for any signed-in account, with no access check (a new user is exactly who needs this). */
+export async function authorizeSignedIn(request: Request): Promise<NextResponse | { uid: string }> {
+  const decoded = await verifyCaller(request);
+  if (decoded instanceof NextResponse) return decoded;
+  return { uid: decoded.uid };
+}

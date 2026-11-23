@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { User } from "firebase/auth";
 import { getAccessRequest, recordAccessRequest } from "@/lib/firestore";
+import { notifyAdminsOfPending } from "@/lib/notify-admins";
 import { canManageAccess, resolveAccess, type AuthClaims, type ResolvedAccess } from "@/lib/auth-guard";
 
 export function useAccessStatus(user: User | null, claims: AuthClaims | null) {
@@ -33,7 +34,10 @@ export function useAccessStatus(user: User | null, claims: AuthClaims | null) {
       await recordAccessRequest(user);
       const req = await getAccessRequest(user.uid);
       if (requestId !== latestRequest.current) return;
-      setStatus(resolveAccess(user.uid, claims, req));
+      const resolved = resolveAccess(user.uid, claims, req);
+      setStatus(resolved);
+      // Still waiting: make sure the admins have been told (the server announces each request only once).
+      if (resolved === "pending") void notifyAdminsOfPending(() => user.getIdToken());
     } catch (err) {
       if (requestId !== latestRequest.current) return;
       console.error("Failed to resolve access status", err);
