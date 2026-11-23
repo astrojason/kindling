@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { pickCategory } from "@/lib/categories";
 import { todayStr } from "@/lib/date";
-import { getDailyGenerationContextAdmin, getPushTokenAdmin, listGrantedUserIds, listPausedUserIds, listPrivilegedUserIds, logCronRunAdmin, logGenerationAdmin, saveDailyLessonAdmin } from "@/lib/firebase-admin";
+import { getBadgeCountAdmin, getDailyGenerationContextAdmin, getPushTokenAdmin, listGrantedUserIds, listPausedUserIds, listPrivilegedUserIds, logCronRunAdmin, logGenerationAdmin, saveDailyLessonAdmin } from "@/lib/firebase-admin";
 import { attachLessonAudio } from "@/lib/lesson-audio";
 import { generateSourcedLesson } from "@/lib/lesson-generation";
 import { isOutOfCredits } from "@/lib/openai-errors";
@@ -45,22 +45,23 @@ async function tokenLimitReached(): Promise<boolean> {
 }
 
 /**
- * Badges the mobile app's icon for a freshly generated lesson, so it's visible
- * without opening the app. Best-effort: no registered device, or a failed
- * push (e.g. a stale token), never fails the lesson generation itself.
+ * Sets the mobile app's icon badge to what awaits the user (today's lesson plus due reviews), so it's
+ * visible without opening the app. Best-effort: no registered device, or a failed lookup or push
+ * (e.g. a stale token), never fails the run itself.
  */
-async function notifyMobileBadge(uid: string): Promise<void> {
-  const pushToken = await getPushTokenAdmin(uid).catch((err) => {
-    console.error(`Failed to look up push token for ${uid}`, err);
-    return null;
-  });
-  if (!pushToken) return;
-  await sendBadgePush(pushToken.token, 1).catch((err) => console.error(`Failed to send badge push for ${uid}`, err));
+async function notifyMobileBadge(uid: string, date: string): Promise<void> {
+  try {
+    const pushToken = await getPushTokenAdmin(uid);
+    if (!pushToken) return;
+    await sendBadgePush(pushToken.token, await getBadgeCountAdmin(uid, date));
+  } catch (err) {
+    console.error(`Failed to badge the app for ${uid}`, err);
+  }
 }
 
 /**
  * Pre-generates today's lesson for every user with granted access (and every superadmin), so it's
- * ready before they open the app, and badges the mobile app's icon for
+ * ready before they open the app, and badges the mobile app's icon (lesson plus due reviews) for
  * anyone with a registered device. Retries a user's generation (the research
  * + draft + source-review pipeline can fail transiently, e.g. a rejected
  * draft) up to MAX_ATTEMPTS_PER_USER times, but the whole run stops early
@@ -139,7 +140,6 @@ export async function POST(request: Request) {
         generated = await attachLessonAudio(`lesson-audio/${uid}/${date}.mp3`, generated);
         await saveDailyLessonAdmin(uid, date, generated, context.history);
         await logGenerationAdmin(uid, generated.title, "auto").catch((err) => console.error(`Failed to log lesson generation for ${uid}`, err));
-        await notifyMobileBadge(uid);
         results.push({ uid, status: "generated" });
       } else if (!stoppedForTokenLimit) {
         results.push({ uid, status: "failed", error: lastError instanceof Error ? lastError.message : "Unknown error" });
@@ -150,6 +150,9 @@ export async function POST(request: Request) {
     console.error("Daily-lesson cron: quitting the run", err);
     stopReason = err.message;
   }
+
+  // Everyone, not just users who got a new lesson: reviews fall due and earlier runs may have generated the lesson already.
+  await Promise.all(uids.map((uid) => notifyMobileBadge(uid, date)));
 
   await logCronRunAdmin(date, stoppedForTokenLimit, results, stopReason ?? undefined).catch((err) => console.error("Failed to log the cron run", err));
 

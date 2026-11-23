@@ -6,15 +6,16 @@ interface ExpoPushTicket {
 }
 
 /**
- * Sends a silent, badge-only push through Expo's push service, so the mobile
- * app's icon badge updates to reflect an unread lesson without the app being
- * open. No title/body/sound is set, so it never shows an alert or plays a sound.
+ * Sends a badge-only push through Expo's push service, so the mobile app's icon
+ * badge shows how many things await (lesson plus due reviews) without the app being
+ * open. No title/body/sound is set, so it never shows an alert or plays a sound. It is
+ * deliberately not a content-available (background) push: iOS ignores the badge on those.
  */
 export async function sendBadgePush(expoPushToken: string, badge: number): Promise<void> {
   const res = await fetch(EXPO_PUSH_URL, {
     method: "POST",
     headers: { "content-type": "application/json", accept: "application/json" },
-    body: JSON.stringify([{ to: expoPushToken, badge, _contentAvailable: true, priority: "normal" }]),
+    body: JSON.stringify([{ to: expoPushToken, badge, priority: "high" }]),
   });
   if (!res.ok) throw new Error(`Expo push request failed: ${res.status} ${await res.text()}`);
 

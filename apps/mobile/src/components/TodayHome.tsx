@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import * as Notifications from "expo-notifications";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { SymbolView } from "expo-symbols";
 import { CATEGORIES } from "@random-knowledge/shared/categories";
@@ -49,6 +51,13 @@ export function TodayHome({
   const doneCount = plan.filter((item) => item.done).length;
   const totalMinutes = plan.reduce((sum, item) => sum + (item.minutes ?? 0), 0);
   const next = plan.find((item) => item.status === "ready" && !item.done);
+  // Keep the icon badge in step with what's waiting (the server sets the same count by push while the app is closed).
+  const waitingCount = dueCount + (next ? 1 : 0);
+  const badgeReady = progress.data !== null && !!notes;
+  useEffect(() => {
+    if (!badgeReady) return;
+    Notifications.setBadgeCountAsync(waitingCount).catch((err) => console.error("Failed to update the app badge:", err));
+  }, [badgeReady, waitingCount]);
   const failed = plan.some((item) => item.status === "error");
   const preparing = plan.some((item) => item.status === "queued" || item.status === "generating");
 

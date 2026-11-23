@@ -3,6 +3,7 @@ import { POST } from "./route";
 import { defaultWeights } from "@/lib/categories";
 import {
   getDailyGenerationContextAdmin,
+  getBadgeCountAdmin,
   getPushTokenAdmin,
   listGrantedUserIds,
   listPausedUserIds,
@@ -22,6 +23,7 @@ vi.mock("@/lib/firebase-admin", () => ({
   listPrivilegedUserIds: vi.fn(),
   getDailyGenerationContextAdmin: vi.fn(),
   getPushTokenAdmin: vi.fn(),
+  getBadgeCountAdmin: vi.fn(),
   saveDailyLessonAdmin: vi.fn(),
   logGenerationAdmin: vi.fn(),
   logCronRunAdmin: vi.fn(),
@@ -51,6 +53,7 @@ beforeEach(() => {
   vi.mocked(logGenerationAdmin).mockResolvedValue(undefined);
   vi.mocked(logCronRunAdmin).mockResolvedValue(undefined);
   vi.mocked(getPushTokenAdmin).mockResolvedValue(null);
+  vi.mocked(getBadgeCountAdmin).mockResolvedValue(1);
   vi.mocked(sendBadgePush).mockResolvedValue(undefined);
 });
 
@@ -122,6 +125,25 @@ it("badges the mobile app for a user with a registered device", async () => {
   const body = await response.json();
   expect(body.results).toEqual([{ uid: "alice", status: "generated" }]);
   expect(sendBadgePush).toHaveBeenCalledWith("ExponentPushToken[abc]", 1);
+});
+
+it("badges the app with the full count of lesson plus due reviews, even when the lesson already existed", async () => {
+  vi.mocked(getDailyGenerationContextAdmin).mockResolvedValue({ ...emptyContext, existingLesson: { category: "nature" } as Lesson });
+  vi.mocked(getPushTokenAdmin).mockResolvedValue({ token: "ExponentPushToken[abc]", platform: "ios", updatedAt: "2026-09-01" });
+  vi.mocked(getBadgeCountAdmin).mockResolvedValue(7);
+  const response = await POST(request());
+  const body = await response.json();
+  expect(body.results).toEqual([{ uid: "alice", status: "already-had-lesson" }]);
+  expect(getBadgeCountAdmin).toHaveBeenCalledWith("alice", body.date);
+  expect(sendBadgePush).toHaveBeenCalledWith("ExponentPushToken[abc]", 7);
+});
+
+it("badges a user who has paused auto generation, since their reviews can still be due", async () => {
+  vi.mocked(listPausedUserIds).mockResolvedValue(["alice"]);
+  vi.mocked(getPushTokenAdmin).mockResolvedValue({ token: "ExponentPushToken[abc]", platform: "ios", updatedAt: "2026-09-01" });
+  vi.mocked(getBadgeCountAdmin).mockResolvedValue(3);
+  await (await POST(request())).json();
+  expect(sendBadgePush).toHaveBeenCalledWith("ExponentPushToken[abc]", 3);
 });
 
 it("does not send a push for a user with no registered device", async () => {

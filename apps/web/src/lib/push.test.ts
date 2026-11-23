@@ -3,7 +3,7 @@ import { sendAlertPush, sendBadgePush } from "./push";
 
 beforeEach(() => vi.resetAllMocks());
 
-it("sends a silent, badge-only push to Expo's push service", async () => {
+it("sends a badge-only push to Expo's push service", async () => {
   const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: [{ status: "ok" }] }), { status: 200 }));
   vi.stubGlobal("fetch", fetchMock);
 
@@ -15,7 +15,9 @@ it("sends a silent, badge-only push to Expo's push service", async () => {
   );
   const [, init] = fetchMock.mock.calls[0];
   const [message] = JSON.parse(init.body);
-  expect(message).toMatchObject({ to: "ExponentPushToken[abc]", badge: 1, _contentAvailable: true });
+  expect(message).toMatchObject({ to: "ExponentPushToken[abc]", badge: 1 });
+  // A background (silent) push ignores the badge on iOS, so the push must not be content-available only.
+  expect(message._contentAvailable).toBeUndefined();
   expect(message.title).toBeUndefined();
   expect(message.body).toBeUndefined();
   expect(message.sound).toBeUndefined();

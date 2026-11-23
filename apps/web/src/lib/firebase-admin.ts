@@ -161,6 +161,23 @@ export async function getPushTokenAdmin(uid: string): Promise<PushToken | null> 
 }
 
 /**
+ * What the app icon badge should read for this user: today's lesson if it exists and isn't finished,
+ * plus review cards and notes that are due. Mirrors what the Today screen shows as waiting.
+ */
+export async function getBadgeCountAdmin(uid: string, date: string): Promise<number> {
+  const userRef = getFirestore(getAdminApp()).collection("users").doc(uid);
+  const [lessonSnap, progressSnap, cardsSnap, notesSnap] = await Promise.all([
+    userRef.collection("lessons").doc(date).get(),
+    userRef.collection("progress").doc(date).get(),
+    userRef.collection("reviewCards").where("due", "<=", date).count().get(),
+    userRef.collection("notes").where("next_review_at", "<=", new Date()).get(),
+  ]);
+  const lessonPending = lessonSnap.exists && progressSnap.data()?.done !== true ? 1 : 0;
+  const dueNotes = notesSnap.docs.filter((d) => d.data().deleted_at == null).length;
+  return lessonPending + cardsSnap.data().count + dueNotes;
+}
+
+/**
  * Uploads narration audio to Cloud Storage at `path` and returns a stable download URL.
  * Uses the same firebaseStorageDownloadTokens convention as the client SDK's getDownloadURL
  * (rather than a V4 signed URL) since GCS caps signed URLs at 7 days.
