@@ -36,7 +36,8 @@ upsert_job() {
     --project "$PROJECT_ID" --location "$LOCATION" \
     --schedule "$schedule" --time-zone "$TIME_ZONE" \
     --uri "$BASE_URL/api/cron/generate-daily-lesson" --http-method POST \
-    "$headers_flag" "Authorization=Bearer ${CRON_SECRET}"
+    "$headers_flag" "Authorization=Bearer ${CRON_SECRET}" \
+    --format=none   # gcloud otherwise echoes the whole job, bearer token included
 }
 
 upsert_job generate-daily-lesson "0 0 * * *"

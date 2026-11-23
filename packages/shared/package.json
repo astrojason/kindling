@@ -1,6 +1,6 @@
 {
   "name": "@random-knowledge/shared",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -21,7 +21,14 @@
     "./games": "./src/games.ts",
     "./lesson-time": "./src/lesson-time.ts",
     "./clock": "./src/clock.ts",
-    "./lesson-plan": "./src/lesson-plan.ts"
+    "./lesson-plan": "./src/lesson-plan.ts",
+    "./notes": "./src/notes.ts",
+    "./sm2": "./src/sm2.ts",
+    "./rsvp": "./src/rsvp.ts",
+    "./prose": "./src/prose.ts",
+    "./tags": "./src/tags.ts",
+    "./notes-firestore": "./src/notes-firestore.ts",
+    "./notes-view": "./src/notes-view.ts"
   },
   "peerDependencies": {
     "firebase": "^12.18.0"
