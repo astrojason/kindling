@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { CATEGORIES } from "@/lib/categories";
@@ -29,6 +30,7 @@ export function LandingPage() {
   return (
     <div className="px-4 py-16 sm:py-20">
       <div className="mx-auto w-full max-w-2xl text-center">
+        <Image src="/icons/icon-192.png" alt="" width={88} height={88} unoptimized priority className="mx-auto mb-5 size-22 rounded-[22%] shadow-sm" />
         <h1 className="font-heading text-3xl font-bold text-fg-strong sm:text-4xl">
           Kindling
         </h1>

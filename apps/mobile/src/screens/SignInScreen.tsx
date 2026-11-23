@@ -1,6 +1,6 @@
 import * as AppleAuthentication from "expo-apple-authentication";
 import { useState } from "react";
-import { Linking, ScrollView, StyleSheet, Text, useColorScheme, View } from "react-native";
+import { Image, Linking, ScrollView, StyleSheet, Text, useColorScheme, View } from "react-native";
 import { CATEGORIES } from "@random-knowledge/shared/categories";
 import { useAuth } from "../lib/auth-context";
 import { useTheme } from "../lib/theme";
@@ -38,6 +38,7 @@ export function SignInScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.scroll}>
+      <Image source={require("../../assets/icon.png")} accessibilityIgnoresInvertColors style={styles.mark} />
       <Text style={[styles.title, { color: theme.fgStrong }]}>Kindling</Text>
       <Text style={{ color: theme.fgMuted, fontSize: 16, textAlign: "center", marginTop: 12, marginBottom: 28 }}>
         One short, AI-generated lesson a day — plus a quick quiz to check what stuck — so a five-minute habit
@@ -91,6 +92,7 @@ export function SignInScreen() {
 }
 
 const styles = StyleSheet.create({
+  mark: { width: 88, height: 88, borderRadius: 20, alignSelf: "center", marginBottom: 16 },
   scroll: { padding: 20, paddingTop: 48, paddingBottom: 48 },
   title: { fontSize: 30, fontWeight: "700", textAlign: "center" },
   feature: { marginBottom: 12 },

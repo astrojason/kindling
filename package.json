@@ -1,6 +1,6 @@
 {
   "name": "random-knowledge.astrojason.com",
-  "version": "1.24.0",
+  "version": "1.25.0",
   "private": true,
   "engines": {
     "node": ">=22.18"
@@ -14,6 +14,7 @@
     "build": "npm --prefix apps/web run build",
     "lint": "npm --prefix apps/web run lint",
     "test": "npm --prefix apps/web run test",
-    "mobile": "npm --prefix apps/mobile run start"
+    "mobile": "npm --prefix apps/mobile run start",
+    "icons": "node scripts/icons/generate.mjs"
   }
 }
