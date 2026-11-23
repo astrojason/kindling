@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Creates (or updates) the Cloud Scheduler jobs, Pacific time, each POSTing with the CRON_SECRET bearer
 # token: the nightly lesson run (00:00, plus a 03:00 retry) on /api/cron/generate-daily-lesson, and an
-# hourly /api/cron/refresh-badges that keeps the phone's icon badge in step as reviews fall due. Safe to re-run.
+# hourly (7am-10pm) /api/cron/refresh-badges that keeps the phone's icon badge in step as reviews fall due. Safe to re-run.
 #
 #   CRON_SECRET=... scripts/scheduler-jobs https://<your-app-hosting-url>
 #
@@ -42,7 +42,7 @@ upsert_job() {
 
 upsert_job generate-daily-lesson "0 0 * * *" /api/cron/generate-daily-lesson
 upsert_job generate-daily-lesson-retry "0 3 * * *" /api/cron/generate-daily-lesson
-upsert_job refresh-badges "5 * * * *" /api/cron/refresh-badges
+upsert_job refresh-badges "5 7-22 * * *" /api/cron/refresh-badges
 
 echo "==> Jobs in ${PROJECT_ID}:"
 gcloud scheduler jobs list --project "$PROJECT_ID" --location "$LOCATION"
