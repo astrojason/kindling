@@ -4,7 +4,7 @@ import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { Note } from "@random-knowledge/shared/notes";
-import { decrementNoteCount, softDeleteNote } from "@/lib/notes-firestore";
+import { decrementNoteCount, getCompletedSessions, softDeleteNote } from "@/lib/notes-firestore";
 import { NoteDetail } from "./NoteDetail";
 
 const push = vi.hoisted(() => vi.fn());
@@ -12,7 +12,7 @@ const toast = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 vi.mock("next/link", () => ({ default: ({ href, children, className }: { href: string; children: unknown; className?: string }) => createElement("a", { href, className }, children as never) }));
 vi.mock("@/components/Toast", () => ({ useToast: () => toast }));
-vi.mock("@/lib/notes-firestore", () => ({ softDeleteNote: vi.fn(), decrementNoteCount: vi.fn() }));
+vi.mock("@/lib/notes-firestore", () => ({ softDeleteNote: vi.fn(), decrementNoteCount: vi.fn(), getCompletedSessions: vi.fn() }));
 
 const at = (days: number) => ({ toDate: () => new Date(Date.now() + days * 86_400_000) }) as unknown as Note["created_at"];
 const note: Note = {
@@ -29,6 +29,7 @@ beforeEach(() => {
   vi.spyOn(console, "error").mockImplementation(() => {});
   vi.mocked(softDeleteNote).mockResolvedValue(undefined);
   vi.mocked(decrementNoteCount).mockResolvedValue(undefined);
+  vi.mocked(getCompletedSessions).mockResolvedValue([]);
   container = document.createElement("div");
   root = createRoot(container);
 });
