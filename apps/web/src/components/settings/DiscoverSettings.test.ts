@@ -9,6 +9,7 @@ import { DiscoverSettings } from "./DiscoverSettings";
 const toast = vi.hoisted(() => vi.fn());
 vi.mock("@/components/Toast", () => ({ useToast: () => toast }));
 vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user: null }) }));
+vi.mock("@/lib/usePendingRequests", () => ({ usePendingRequests: () => ({ count: null, error: null }) }));
 vi.mock("@/lib/notes-firestore", () => ({ getNoteSettings: vi.fn(), updateNoteSettings: vi.fn() }));
 
 let container: HTMLElement;

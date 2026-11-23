@@ -23,3 +23,4 @@ export * from "./notes-view";
 export * from "./notes-input";
 export * from "./session-protocol";
 export * from "./discover";
+export * from "./pending-requests";

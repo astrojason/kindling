@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { PendingBanner } from "@/components/admin/PendingBanner";
 import { GoalCard } from "@/components/today/GoalCard";
 import { PlanCard } from "@/components/today/PlanCard";
 import { ReviewRow } from "@/components/today/ReviewRow";
@@ -38,6 +39,8 @@ export function TodayHome({
         </div>
         <StatChips streakCount={getStreakStatus(streak, date).count} xp={progress.data?.stats.xp ?? 0} />
       </header>
+
+      <PendingBanner />
 
       {progress.loading && <LoadingView text="Loading your progress" />}
       {progress.error && <pre role="alert" className="whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all">{progress.error}</pre>}

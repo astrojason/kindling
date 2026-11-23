@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { usePendingRequests } from "@/lib/usePendingRequests";
 import packageJson from "../../../package.json";
 
 const ICON = "size-6";
@@ -30,6 +32,8 @@ function isActive(pathname: string, match: string[]): boolean {
 /** The bottom tab bar shared by every signed-in screen outside a lesson. */
 export function TabBar() {
   const pathname = usePathname();
+  const { user, claims } = useAuth();
+  const { count: waiting } = usePendingRequests(user?.uid, claims);
   return (
     <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface">
       <ul className="mx-auto flex w-full max-w-[560px] justify-around px-2">
@@ -42,7 +46,14 @@ export function TabBar() {
                 aria-current={active ? "page" : undefined}
                 className={`flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-bold ${active ? "text-accent" : "text-fg-muted hover:text-fg"}`}
               >
-                {tab.icon}
+                <span className="relative">
+                  {tab.icon}
+                  {tab.href === "/profile" && waiting ? (
+                    <span aria-label={`${waiting} waiting for access`} className="absolute -right-2 -top-1 flex min-w-4 items-center justify-center rounded-full bg-rust px-1 text-[10px] font-extrabold leading-4 text-accent-fg">
+                      {waiting}
+                    </span>
+                  ) : null}
+                </span>
                 {tab.label}
               </Link>
             </li>

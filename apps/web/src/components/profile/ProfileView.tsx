@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { GoalSetting } from "@/components/profile/GoalSetting";
 import { useAuth } from "@/lib/auth-context";
+import { usePendingRequests } from "@/lib/usePendingRequests";
 import { canManageAccess } from "@/lib/auth-guard";
 import { getStats, getStreak } from "@/lib/firestore";
 import { getStreakStatus } from "@/lib/streak";
@@ -16,6 +17,7 @@ const linkClass = "flex items-center justify-between rounded-sm bg-surface-raise
 
 export function ProfileView({ uid }: { uid: string }) {
   const { user, claims, signOut } = useAuth();
+  const { count: waiting } = usePendingRequests(user?.uid, claims);
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const state = useLoad(`profile-${uid}`, async () => {
@@ -57,7 +59,11 @@ export function ProfileView({ uid }: { uid: string }) {
           <GoalSetting uid={uid} initial={stats.goalMinutes} />
           <nav className="flex flex-col gap-2">
             <Link href="/settings" className={linkClass}>Settings</Link>
-            {canManageAccess(claims) && <Link href="/admin" className={linkClass}>Admin</Link>}
+            {canManageAccess(claims) && (
+              <Link href="/admin" className={linkClass}>
+                Admin{waiting ? <span aria-label={`${waiting} waiting for access`} className="ml-2 rounded-full bg-rust px-2 py-0.5 text-[11px] font-extrabold text-accent-fg">{waiting}</span> : null}
+              </Link>
+            )}
             <Link href="/support" className={linkClass}>Support</Link>
             <Link href="/privacy" className={linkClass}>Privacy policy</Link>
             <Link href="/terms" className={linkClass}>Terms of service</Link>
