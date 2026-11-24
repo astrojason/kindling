@@ -22,12 +22,13 @@ it("shows the public page while signed-out auth initializes", () => {
   vi.mocked(useAuth).mockReturnValue({ ...useAuth(), user: null, loading: true });
   const html = renderToStaticMarkup(createElement(Home));
   expect(html).toContain("Public landing page");
-  // A returning browser (html[data-auth-hint]) sees a spinner instead, so the landing page never flashes before it is redirected.
-  expect(html).toMatch(/data-auth-hint[^"]*:hidden[^>]*>Public landing page/);
+  // An overlay covers it until Firebase Auth reports, so a returning user never sees the landing page flash.
+  expect(html).toMatch(/role="status"|aria-busy="true"/);
+  expect(html).toContain("fixed inset-0");
   expect(html).toContain("Loading");
 });
 
-it("shows only the public page once auth has resolved to signed out", () => {
+it("shows only the public page, with no overlay, once auth has resolved to signed out", () => {
   vi.mocked(useAuth).mockReturnValue({ ...useAuth(), user: null, loading: false });
   expect(renderToStaticMarkup(createElement(Home))).toBe("Public landing page");
 });

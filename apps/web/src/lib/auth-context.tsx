@@ -16,7 +16,6 @@ import {
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import type { AuthClaims } from "@/lib/auth-guard";
-import { writeAuthHint } from "@/lib/auth-hint";
 
 interface AuthContextValue {
   user: User | null;
@@ -40,7 +39,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       auth,
       async (u) => {
         setUser(u);
-        writeAuthHint(u !== null);
         try {
           setClaims(u ? ((await u.getIdTokenResult()).claims as AuthClaims) : null);
         } catch (err) {
