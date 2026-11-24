@@ -13,12 +13,12 @@ export const TABS: { key: Tab; label: string; icon: SFSymbol }[] = [
   { key: "profile", label: "Profile", icon: "person.fill" },
 ];
 
-/** The bottom tab bar shown on every signed-in screen outside a lesson. */
+/** The bottom tab bar shown on every signed-in screen outside a lesson. It fills the home-indicator strip but only keeps part of its height as padding: the indicator sits low in it. */
 export function TabBar({ active, onChange }: { active: Tab; onChange: (tab: Tab) => void }) {
   const theme = useTheme();
   const { bottom } = useSafeAreaInsets();
   return (
-    <View style={[styles.bar, { backgroundColor: theme.surface, borderColor: theme.border, paddingBottom: Math.max(bottom, 4) }]} accessibilityRole="tablist">
+    <View style={[styles.bar, { backgroundColor: theme.surface, borderColor: theme.border, paddingBottom: Math.max(bottom - 14, 4) }]} accessibilityRole="tablist">
       {TABS.map((tab) => {
         const selected = tab.key === active;
         const color = selected ? theme.accent : theme.fgMuted;
@@ -40,6 +40,6 @@ export function TabBar({ active, onChange }: { active: Tab; onChange: (tab: Tab)
 }
 
 const styles = StyleSheet.create({
-  bar: { flexDirection: "row", borderTopWidth: 1, paddingTop: 8, paddingBottom: 4 },
+  bar: { flexDirection: "row", borderTopWidth: 1, paddingTop: 6, paddingBottom: 4 },
   tab: { flex: 1, alignItems: "center", gap: 3, paddingVertical: 4 },
 });
