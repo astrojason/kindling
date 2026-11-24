@@ -31,7 +31,7 @@ export function NotesScreen({ initialRoute = { name: "list" } }: { initialRoute?
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
       <Card>
         {route.name === "list" && <ListRoute uid={uid} notice={notice} onOpen={(id) => go({ name: "detail", id })} onCapture={() => go({ name: "new" })} onDiscover={() => go({ name: "discover" })} />}
         {route.name === "new" && <NewNote uid={uid} getToken={getToken} onSaved={(id, message) => go({ name: "detail", id }, message)} onCancel={() => go({ name: "list" })} />}

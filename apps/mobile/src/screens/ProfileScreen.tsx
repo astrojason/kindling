@@ -75,7 +75,7 @@ export function ProfileScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.scroll}>
+    <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
       <Card style={styles.stack}>
         {!data && !error && <LoadingView text="Loading your profile" />}
         {data && (
