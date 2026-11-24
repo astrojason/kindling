@@ -43,25 +43,6 @@ export function DailyLesson() {
     />
   );
 
-  const resetLink = (
-    <div className="mt-6 flex justify-between border-t border-border pt-3">
-      <button
-        type="button"
-        onClick={() => {
-          if (window.confirm("Reset your streak, history, and topic preferences? This cannot be undone.")) {
-            setEditingCategories(false);
-            setStarted(false);
-            actions.resetAll();
-          }
-        }}
-        className="text-xs text-fg-muted underline"
-      >
-        Reset my data
-      </button>
-      <span />
-    </div>
-  );
-
   if (showHome) {
     return (
       <>
@@ -77,7 +58,6 @@ export function DailyLesson() {
               onRetry={actions.retryPlan}
             />
           )}
-          {resetLink}
         </AppColumn>
         <TabBar />
       </>
@@ -111,7 +91,6 @@ export function DailyLesson() {
           </div>
         )}
 
-        {resetLink}
       </Card>
     </AppColumn>
   );

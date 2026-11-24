@@ -6,6 +6,7 @@ import type { StatsData, StreakData } from "@random-knowledge/shared/types";
 import { GOAL_CHOICES, levelFor, xpIntoLevel, XP_PER_LEVEL } from "@random-knowledge/shared/xp";
 import { DeleteAccountLink } from "../components/DeleteAccountLink";
 import { ErrorBox } from "../components/ErrorBox";
+import { ResetDataLink } from "../components/ResetDataLink";
 import { LoadingView } from "../components/LoadingView";
 import { CategorySettings } from "../components/settings/CategorySettings";
 import { DiscoverSettings } from "../components/settings/DiscoverSettings";
@@ -22,7 +23,7 @@ const LINKS = [
   { title: "Terms of service", path: "/terms" },
 ];
 
-export function ProfileScreen() {
+export function ProfileScreen({ onDataReset }: { onDataReset: () => void }) {
   const theme = useTheme();
   const { user, claims, signOut } = useAuth();
   const [data, setData] = useState<{ stats: StatsData; streak: StreakData } | null>(null);
@@ -31,6 +32,7 @@ export function ProfileScreen() {
   const [goalSaved, setGoalSaved] = useState<number | null>(null);
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadKey, setLoadKey] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -43,7 +45,7 @@ export function ProfileScreen() {
         console.error("Failed to load the profile:", err);
         setError(err instanceof Error ? err.message : "Could not load your profile.");
       });
-  }, [user]);
+  }, [user, loadKey]);
 
   async function chooseGoal(minutes: number) {
     if (!user) return;
@@ -138,7 +140,18 @@ export function ProfileScreen() {
         <Button title={signingOut ? "Signing out…" : "Sign out"} variant="secondary" disabled={signingOut} onPress={() => void handleSignOut()} />
         <View>
           <Text style={{ color: theme.fgMuted, fontSize: 11, fontWeight: "700", letterSpacing: 0.5, marginBottom: 8 }}>ACCOUNT</Text>
-          <DeleteAccountLink />
+          <View style={{ gap: 12, alignItems: "flex-start" }}>
+            {user && (
+              <ResetDataLink
+                uid={user.uid}
+                onReset={() => {
+                  setLoadKey((n) => n + 1);
+                  onDataReset();
+                }}
+              />
+            )}
+            <DeleteAccountLink />
+          </View>
         </View>
         {error && <ErrorBox message={error} />}
       </Card>

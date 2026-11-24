@@ -20,7 +20,6 @@ import {
   getStats,
   getStreak,
   getWeights,
-  resetAllUserData,
   setLesson,
   setSelectedCategories,
   setWeights,
@@ -298,21 +297,6 @@ export function useDailyLesson(user: User | null) {
     setWeightsState(next);
   }
 
-  async function resetAll() {
-    if (!user) return;
-    try {
-      planRun.current++;
-      await resetAllUserData(user.uid);
-      setStreakState({ streak: 0, longest: 0, lastDate: null });
-      setWeightsState(defaultWeights());
-      await load();
-    } catch (err) {
-      console.error("Reset failed:", err);
-      setErrorMessage(errorMessageFor(err, "Reset failed."));
-      setPhase("error");
-    }
-  }
-
   async function saveCategories(categories: CategoryKey[]) {
     if (!user) throw new Error("Sign in to save your categories.");
     await setSelectedCategories(user.uid, categories);
@@ -336,7 +320,7 @@ export function useDailyLesson(user: User | null) {
     categoryKeys: CATEGORY_KEYS,
     lessonKey,
     plan,
-    actions: { retry: load, openLesson, retryPlan, answerPreReview, skipPreReview, startQuiz, selectOption, nextQuestion, adjustWeight, resetAll, saveCategories },
+    actions: { retry: load, openLesson, retryPlan, answerPreReview, skipPreReview, startQuiz, selectOption, nextQuestion, adjustWeight, saveCategories },
   };
 }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SymbolView } from "expo-symbols";
 import { formatDateLabel } from "@random-knowledge/shared/date";
 import { CATEGORIES } from "@random-knowledge/shared/categories";
@@ -43,26 +43,6 @@ export function DailyLessonScreen({ onFlowChange, onOpenReview, onOpenNote, refr
     onFlowChange(started);
   }, [started, onFlowChange]);
 
-  function confirmReset() {
-    Alert.alert(
-      "Reset your data?",
-      "This clears your streak, history, and topic preferences. This cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Reset",
-          style: "destructive",
-          onPress: () => {
-            setEditingCategories(false);
-            setCategoriesSaved(false);
-            setStarted(false);
-            void actions.resetAll();
-          },
-        },
-      ]
-    );
-  }
-
   const picker = showCategoryPicker && (
     <CategoryPicker
       selectedCategories={selectedCategories}
@@ -98,11 +78,6 @@ export function DailyLessonScreen({ onFlowChange, onOpenReview, onOpenNote, refr
             onOpenNote={onOpenNote}
           />
         )}
-        <View style={[styles.footer, { borderColor: theme.border }]}>
-          <Text onPress={confirmReset} style={{ color: theme.fgMuted, fontSize: 11, textDecorationLine: "underline" }}>
-            Reset my data
-          </Text>
-        </View>
       </ScrollView>
     );
   }
@@ -157,11 +132,6 @@ export function DailyLessonScreen({ onFlowChange, onOpenReview, onOpenNote, refr
           </View>
         )}
 
-        <View style={[styles.footer, { borderColor: theme.border }]}>
-          <Text onPress={confirmReset} style={{ color: theme.fgMuted, fontSize: 11, textDecorationLine: "underline" }}>
-            Reset my data
-          </Text>
-        </View>
       </Card>
     </ScrollView>
   );
@@ -210,5 +180,4 @@ const styles = StyleSheet.create({
   headerActions: { flexDirection: "row", alignItems: "center", gap: 14 },
   badge: { alignSelf: "flex-start", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginTop: 14 },
   streak: { marginTop: 20 },
-  footer: { borderTopWidth: 1, paddingTop: 12, marginTop: 24 },
 });

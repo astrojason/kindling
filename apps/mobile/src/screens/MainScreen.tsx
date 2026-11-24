@@ -12,6 +12,8 @@ export function MainScreen() {
   const [tab, setTab] = useState<Tab>("today");
   const [inLesson, setInLesson] = useState(false);
   const [todayShown, setTodayShown] = useState(0);
+  // Bumped after a data reset so Today remounts and loads from the now-empty account instead of keeping stale state.
+  const [todayResets, setTodayResets] = useState(0);
   // A note opened from Today or Review: the Notes tab starts on that note, and remounts (new nonce) for each one.
   const [openedNote, setOpenedNote] = useState<{ id: string; nonce: number } | null>(null);
 
@@ -30,12 +32,12 @@ export function MainScreen() {
   return (
     <View style={{ flex: 1 }}>
       <View style={{ flex: 1, display: tab === "today" ? "flex" : "none" }}>
-        <DailyLessonScreen onFlowChange={setInLesson} refreshKey={todayShown} onOpenReview={() => changeTab("review")} onOpenNote={openNote} />
+        <DailyLessonScreen key={todayResets} onFlowChange={setInLesson} refreshKey={todayShown} onOpenReview={() => changeTab("review")} onOpenNote={openNote} />
       </View>
       {tab === "explore" && <ExploreScreen />}
       {tab === "notes" && <NotesScreen key={openedNote?.nonce ?? 0} initialRoute={openedNote ? { name: "detail", id: openedNote.id } : undefined} />}
       {tab === "review" && <ReviewScreen onOpenNote={openNote} />}
-      {tab === "profile" && <ProfileScreen />}
+      {tab === "profile" && <ProfileScreen onDataReset={() => setTodayResets((n) => n + 1)} />}
       {showTabBar && <TabBar active={tab} onChange={changeTab} />}
     </View>
   );

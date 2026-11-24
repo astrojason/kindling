@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { GoalSetting } from "@/components/profile/GoalSetting";
+import { ResetDataLink } from "@/components/profile/ResetDataLink";
 import { useAuth } from "@/lib/auth-context";
 import { usePendingRequests } from "@/lib/usePendingRequests";
 import { canManageAccess } from "@/lib/auth-guard";
@@ -20,7 +21,8 @@ export function ProfileView({ uid }: { uid: string }) {
   const { count: waiting } = usePendingRequests(user?.uid, claims);
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const state = useLoad(`profile-${uid}`, async () => {
+  const [resets, setResets] = useState(0);
+  const state = useLoad(`profile-${uid}-${resets}`, async () => {
     const [stats, streak] = await Promise.all([getStats(uid), getStreak(uid)]);
     return { stats, streak };
   });
@@ -71,6 +73,7 @@ export function ProfileView({ uid }: { uid: string }) {
           <button type="button" disabled={signingOut} onClick={() => void handleSignOut()} className="rounded-full border-2 border-border py-3 text-sm font-extrabold text-fg-muted disabled:opacity-60">
             {signingOut ? "Signing out…" : "Sign out"}
           </button>
+          <ResetDataLink uid={uid} onReset={() => setResets((n) => n + 1)} />
           {error && <pre role="alert" className="whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all">{error}</pre>}
         </div>
       )}

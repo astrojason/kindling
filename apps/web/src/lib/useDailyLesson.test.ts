@@ -12,7 +12,7 @@ import type { Lesson } from "./types";
 vi.mock("./firestore", () => ({
   addReviewCards: vi.fn(), addStats: vi.fn(), appendHistory: vi.fn(), completeDailyLesson: vi.fn(), getAccessRequest: vi.fn(), getHistory: vi.fn(), getLesson: vi.fn(),
   getPreReviewEnabled: vi.fn(), getProgress: vi.fn(), getSelectedCategories: vi.fn(), getStats: vi.fn(), getStreak: vi.fn(), getWeights: vi.fn(),
-  resetAllUserData: vi.fn(), setLesson: vi.fn(), setSelectedCategories: vi.fn(), setWeights: vi.fn(),
+  setLesson: vi.fn(), setSelectedCategories: vi.fn(), setWeights: vi.fn(),
 }));
 
 const lesson: Lesson = {

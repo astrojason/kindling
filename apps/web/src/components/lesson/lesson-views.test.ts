@@ -30,7 +30,7 @@ function state(phase: ReturnType<typeof useDailyLesson>["phase"]): ReturnType<ty
     weights: {} as ReturnType<typeof useDailyLesson>["weights"], selectedCategories: ["nature"],
     progress: { done: true, correct: 1, total: 1, answers: [0] },
     quiz: { qIndex: 0, correct: 0, selected: null, answers: [] }, preReview: { qIndex: 0 }, errorMessage: "Test error", rewardError: null, earnedXp: null, lessonKey: "2026-09-10", plan: [], categoryKeys: ["nature"],
-    actions: { retry: vi.fn(), startQuiz: noop, answerPreReview: noop, skipPreReview: noop, selectOption: noop, nextQuestion: vi.fn(), adjustWeight: vi.fn(), resetAll: vi.fn(), saveCategories: vi.fn(), openLesson: vi.fn(), retryPlan: noop },
+    actions: { retry: vi.fn(), startQuiz: noop, answerPreReview: noop, skipPreReview: noop, selectOption: noop, nextQuestion: vi.fn(), adjustWeight: vi.fn(), saveCategories: vi.fn(), openLesson: vi.fn(), retryPlan: noop },
   };
 }
 
