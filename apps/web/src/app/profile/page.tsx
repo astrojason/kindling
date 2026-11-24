@@ -9,7 +9,7 @@ export default function ProfilePage() {
   const { user } = useAuth();
   return (
     <AccessGate>
-      <PageFrame>{user && <ProfileView uid={user.uid} />}</PageFrame>
+      <PageFrame panels>{user && <ProfileView uid={user.uid} />}</PageFrame>
     </AccessGate>
   );
 }

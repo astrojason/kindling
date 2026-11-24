@@ -5,6 +5,7 @@ import { formatDateLabel } from "@random-knowledge/shared/date";
 import { CATEGORIES } from "@random-knowledge/shared/categories";
 import { getStreakStatus } from "@random-knowledge/shared/streak";
 import { useAuth } from "../lib/auth-context";
+import { useIsTablet } from "../lib/layout";
 import { useTheme } from "../lib/theme";
 import { useDailyLesson } from "../hooks/useDailyLesson";
 import { CategoriesSavedModal } from "../components/CategoriesSavedModal";
@@ -22,6 +23,7 @@ import { Button, Card } from "../components/ui";
 export function DailyLessonScreen({ onFlowChange, onOpenReview, onOpenNote, refreshKey }: { onFlowChange: (inFlow: boolean) => void; onOpenReview: () => void; onOpenNote: (id: string) => void; refreshKey: number }) {
   const theme = useTheme();
   const { user, signOut } = useAuth();
+  const tablet = useIsTablet();
   const state = useDailyLesson(user);
   const { phase, date, lesson, streak, selectedCategories, actions } = state;
   const [editingCategories, setEditingCategories] = useState(false);
@@ -57,7 +59,7 @@ export function DailyLessonScreen({ onFlowChange, onOpenReview, onOpenNote, refr
 
   if (showHome) {
     return (
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView contentContainerStyle={tablet && !editingCategories ? styles.bleed : styles.scroll}>
         <CategoriesSavedModal visible={categoriesSaved} categories={selectedCategories} onClose={() => setCategoriesSaved(false)} />
         {editingCategories ? (
           <Card>{picker}</Card>
@@ -152,7 +154,7 @@ function LessonPhase({ state, uid }: { state: ReturnType<typeof useDailyLesson>;
   return (
     <View>
       {(next || waiting) && (
-        <View style={{ backgroundColor: theme.accentSoft, borderRadius: 24, padding: 16, marginBottom: 16, alignItems: "center", gap: 10 }}>
+        <View style={{ backgroundColor: theme.accentSoft, borderRadius: 10, padding: 16, marginBottom: 16, alignItems: "center", gap: 10 }}>
           <Text style={{ color: theme.fgStrong, fontSize: 14, fontWeight: "800" }}>{next ? "Keep going with today’s plan" : "Your next lesson is being prepared…"}</Text>
           {next ? <Button title={`Next lesson: ${next.title}`} onPress={() => void actions.openLesson(next.key)} /> : <LoadingView text="Preparing" />}
         </View>
@@ -173,11 +175,12 @@ function LessonPhase({ state, uid }: { state: ReturnType<typeof useDailyLesson>;
 
 const styles = StyleSheet.create({
   scroll: { padding: 16, paddingBottom: 48 },
+  bleed: { paddingBottom: 24 },
   header: { borderBottomWidth: 1, paddingBottom: 14, marginBottom: 20 },
   headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
   dateRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   streakBadge: { flexDirection: "row", alignItems: "center", gap: 2 },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 14 },
-  badge: { alignSelf: "flex-start", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginTop: 14 },
+  badge: { alignSelf: "flex-start", borderRadius: 8, paddingHorizontal: 12, paddingVertical: 4, marginTop: 14 },
   streak: { marginTop: 20 },
 });

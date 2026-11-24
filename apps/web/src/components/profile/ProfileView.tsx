@@ -11,10 +11,10 @@ import { getStats, getStreak } from "@/lib/firestore";
 import { getStreakStatus } from "@/lib/streak";
 import { todayStr } from "@/lib/date";
 import { useLoad } from "@/lib/useLoad";
-import { LoadState } from "@/components/share/PageFrame";
+import { LoadState, PANEL } from "@/components/share/PageFrame";
 import { levelFor, xpIntoLevel, XP_PER_LEVEL } from "@/lib/xp";
 
-const linkClass = "flex items-center justify-between rounded-sm bg-surface-raised px-4 py-3.5 text-sm font-bold text-fg-strong";
+const linkClass = "flex items-center justify-between rounded-sm bg-surface-raised px-4 py-3.5 text-sm font-bold text-fg-strong hover:bg-accent-soft";
 
 export function ProfileView({ uid }: { uid: string }) {
   const { user, claims, signOut } = useAuth();
@@ -42,7 +42,8 @@ export function ProfileView({ uid }: { uid: string }) {
   return (
     <LoadState state={state} notFound="Could not load your profile.">
       {({ stats, streak }) => (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
+          <div className={`flex flex-col gap-6 ${PANEL}`}>
           <div className="flex items-center gap-4">
             <span className="flex size-16 items-center justify-center rounded-full bg-accent text-2xl font-extrabold text-accent-fg">{levelFor(stats.xp)}</span>
             <div className="min-w-0 flex-1">
@@ -59,6 +60,8 @@ export function ProfileView({ uid }: { uid: string }) {
             <div className="rounded-sm bg-accent-soft p-3"><p className="text-2xl font-extrabold text-accent">{streak.longest || 0}</p><p className="text-xs font-bold text-fg-muted">Personal best</p></div>
           </div>
           <GoalSetting uid={uid} initial={stats.goalMinutes} />
+          </div>
+          <div className={`flex flex-col gap-6 ${PANEL}`}>
           <nav className="flex flex-col gap-2">
             <Link href="/settings" className={linkClass}>Settings</Link>
             {canManageAccess(claims) && (
@@ -70,11 +73,12 @@ export function ProfileView({ uid }: { uid: string }) {
             <Link href="/privacy" className={linkClass}>Privacy policy</Link>
             <Link href="/terms" className={linkClass}>Terms of service</Link>
           </nav>
-          <button type="button" disabled={signingOut} onClick={() => void handleSignOut()} className="rounded-full border-2 border-border py-3 text-sm font-extrabold text-fg-muted disabled:opacity-60">
+          <button type="button" disabled={signingOut} onClick={() => void handleSignOut()} className="rounded-button border-2 border-border py-2 text-sm font-extrabold text-fg-muted disabled:opacity-60">
             {signingOut ? "Signing out…" : "Sign out"}
           </button>
           <ResetDataLink uid={uid} onReset={() => setResets((n) => n + 1)} />
           {error && <pre role="alert" className="whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all">{error}</pre>}
+          </div>
         </div>
       )}
     </LoadState>

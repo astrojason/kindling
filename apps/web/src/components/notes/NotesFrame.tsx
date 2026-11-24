@@ -16,7 +16,7 @@ export function NotesFrame({ children }: { children: ReactNode }) {
   const isIndex = usePathname() === "/notes";
   return (
     <>
-      <AppColumn wide>
+      <AppColumn>
         <div className="lg:grid lg:grid-cols-[22rem_minmax(0,1fr)] lg:items-start lg:gap-6">
           <aside className={`${isIndex ? "" : "hidden"} rounded-md bg-surface px-6 pb-7 pt-6 shadow-sm lg:sticky lg:top-6 lg:block lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto lg:px-5`}>
             {user && <NotesPage uid={user.uid} />}

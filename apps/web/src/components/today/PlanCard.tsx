@@ -27,7 +27,7 @@ export function PlanCard({ plan, onStart, onOpen, onRetry }: { plan: PlanItem[];
               onClick={() => onOpen(item.key)}
               className={`flex w-full items-center gap-3 rounded-md p-3 text-left text-fg-strong ${item.done ? "bg-surface/70" : "bg-surface"}`}
             >
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-extrabold text-accent" aria-hidden="true">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-button bg-accent-soft text-sm font-extrabold text-accent" aria-hidden="true">
                 {item.done ? "✓" : item.slot}
               </span>
               <span className="min-w-0 flex-1">

@@ -3,7 +3,7 @@
 import { AccessGate } from "@/components/AccessGate";
 import { DueNotes } from "@/components/review/DueNotes";
 import { ReviewSession } from "@/components/review/ReviewSession";
-import { LoadState, PageFrame } from "@/components/share/PageFrame";
+import { LoadState, PageFrame, PANEL } from "@/components/share/PageFrame";
 import { useAuth } from "@/lib/auth-context";
 import { todayStr } from "@/lib/date";
 import { reviewEmptyMessage } from "@/lib/review-empty";
@@ -20,14 +20,17 @@ function Review({ uid }: { uid: string }) {
     <LoadState state={state} notFound="Could not load your review cards.">
       {({ cards }) => {
         const due = dueCards(cards, today);
+        const hasDueNotes = notes ? dueNotes(notes).length > 0 : false;
         // Only judge "nothing due" once the notes have loaded (or failed), so it never flashes while they are still coming.
         const empty = notes || notesError ? reviewEmptyMessage({ totalCards: cards.length, dueCards: due.length, totalNotes: notes?.length ?? 0, dueNotes: notes ? dueNotes(notes).length : 0 }) : null;
         return (
           <div>
-            <h1 className="mb-4 text-2xl font-extrabold text-fg-strong">Review</h1>
-            <DueNotes notes={notes ?? []} error={notesError} />
-            {due.length > 0 && <ReviewSession uid={uid} today={today} cards={due} />}
-            {empty && <p className="py-6 text-center text-sm text-fg-muted">{empty}</p>}
+            <h1 className="mb-4 text-2xl font-extrabold text-fg-strong lg:mb-6 lg:text-3xl">Review</h1>
+            <div className="flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-6">
+              {(hasDueNotes || notesError) && <div className={`lg:order-2 ${PANEL}`}><DueNotes notes={notes ?? []} error={notesError} /></div>}
+              {due.length > 0 && <div className={`lg:order-1 ${PANEL}`}><ReviewSession uid={uid} today={today} cards={due} /></div>}
+            </div>
+            {empty && <p className={`py-6 text-center text-sm text-fg-muted ${PANEL}`}>{empty}</p>}
           </div>
         );
       }}
@@ -39,7 +42,7 @@ export default function ReviewPage() {
   const { user } = useAuth();
   return (
     <AccessGate>
-      <PageFrame>{user && <Review uid={user.uid} />}</PageFrame>
+      <PageFrame panels>{user && <Review uid={user.uid} />}</PageFrame>
     </AccessGate>
   );
 }

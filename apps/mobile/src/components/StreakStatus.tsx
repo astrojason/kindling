@@ -44,7 +44,7 @@ export function StreakStatus({ streak, date }: { streak: StreakData; date: strin
 }
 
 const styles = StyleSheet.create({
-  container: { borderRadius: 14, borderWidth: 1, padding: 16, marginBottom: 20 },
+  container: { borderRadius: 6, borderWidth: 1, padding: 16, marginBottom: 20 },
   row: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", alignItems: "baseline", gap: 8 },
   title: { fontSize: 19, fontWeight: "600" },
   best: { fontSize: 12, fontWeight: "600" },

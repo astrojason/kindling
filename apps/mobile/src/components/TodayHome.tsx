@@ -2,7 +2,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-nati
 import { SymbolView } from "expo-symbols";
 import { CATEGORIES } from "@random-knowledge/shared/categories";
 import type { PlanItem } from "@random-knowledge/shared/lesson-plan";
-import { dueNotes } from "@random-knowledge/shared/notes-view";
+import { dueNotes, upcomingNotes } from "@random-knowledge/shared/notes-view";
 import { reviewSummary } from "@random-knowledge/shared/review-summary";
 import { dueCards } from "@random-knowledge/shared/srs";
 import { getStreakStatus } from "@random-knowledge/shared/streak";
@@ -12,6 +12,7 @@ import { useProgressData } from "../hooks/useProgressData";
 import { useIsTablet } from "../lib/layout";
 import { radius, useTheme } from "../lib/theme";
 import { ErrorBox } from "./ErrorBox";
+import { TabletToday } from "./TabletToday";
 import { DueNotes } from "./notes/DueNotes";
 import { GoalRing } from "./GoalRing";
 import { LoadingView } from "./LoadingView";
@@ -55,6 +56,18 @@ export function TodayHome({
   useAppBadge(uid, date, notes ? dueNotes(notes).length : null, !!next);
   const failed = plan.some((item) => item.status === "error");
   const preparing = plan.some((item) => item.status === "queued" || item.status === "generating");
+
+  if (tablet) {
+    const now = new Date();
+    return (
+      <TabletToday
+        date={date} plan={plan} streakCount={getStreakStatus(streak, date).count} stats={stats ?? null}
+        reviewCount={progress.data && (notes || notesError) ? dueCount : null} reviewHint={review?.hint ?? ""}
+        due={notes ? dueNotes(notes, now) : []} upcoming={notes ? upcomingNotes(notes, now).slice(0, 8) : []}
+        notesError={notesError} onStart={onStart} onOpen={onOpen} onRetry={onRetry} onOpenReview={onOpenReview} onOpenNote={onOpenNote}
+      />
+    );
+  }
 
   return (
     <View style={styles.stack}>
@@ -208,8 +221,8 @@ const styles = StyleSheet.create({
   planItem: { marginBottom: 8 },
   retry: { borderWidth: 2, borderRadius: radius.md, paddingVertical: 12, alignItems: "center", marginBottom: 12 },
   lessonRow: { flexDirection: "row", alignItems: "center", gap: 12, borderRadius: radius.md, padding: 12 },
-  lessonIcon: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
+  lessonIcon: { width: 44, height: 44, borderRadius: 6, alignItems: "center", justifyContent: "center" },
   startButton: { borderRadius: radius.md, paddingVertical: 16, alignItems: "center", marginTop: 8 },
-  dueBadge: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
+  dueBadge: { width: 48, height: 48, borderRadius: 6, alignItems: "center", justifyContent: "center" },
   pill: { borderRadius: radius.pill, paddingHorizontal: 20, paddingVertical: 10 },
 });

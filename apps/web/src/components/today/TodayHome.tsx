@@ -8,7 +8,9 @@ import { PlanCard } from "@/components/today/PlanCard";
 import { ReviewRow } from "@/components/today/ReviewRow";
 import { StatChips } from "@/components/today/StatChips";
 import { LoadingView } from "@/components/lesson/LoadingView";
-import { dueNotes } from "@random-knowledge/shared/notes-view";
+import { dueNotes, upcomingNotes } from "@random-knowledge/shared/notes-view";
+import { reviewSummary } from "@random-knowledge/shared/review-summary";
+import { DesktopToday } from "@/components/today/DesktopToday";
 import { getStreakStatus } from "@/lib/streak";
 import { dueCards } from "@/lib/srs";
 import { useNotes } from "@/lib/useNotes";
@@ -32,8 +34,18 @@ export function TodayHome({
 }) {
   const progress = useProgressData(uid);
   const { notes, error: notesError } = useNotes(uid);
+  const now = new Date();
+  const reviewReady = !!progress.data && !!(notes || notesError);
+  const review = progress.data ? reviewSummary({ dueCards: dueCards(progress.data.cards, date).length, totalCards: progress.data.cards.length, dueNotes: notes ? dueNotes(notes).length : 0, totalNotes: notes?.length ?? 0 }) : null;
   return (
-    <div className="flex flex-col gap-4">
+    <>
+    <DesktopToday
+      date={date} plan={plan} streakCount={getStreakStatus(streak, date).count} stats={progress.data?.stats ?? null}
+      reviewCount={reviewReady ? review?.count ?? 0 : null} reviewHint={review?.hint ?? ""}
+      due={notes ? dueNotes(notes, now) : []} upcoming={notes ? upcomingNotes(notes, now).slice(0, 8) : []} notesError={notesError}
+      now={now} onStart={onStart} onOpen={onOpen} onRetry={onRetry}
+    />
+    <div className="flex flex-col gap-4 lg:hidden">
       <header className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-fg-muted">Ready for today&apos;s spark?</p>
@@ -76,5 +88,6 @@ export function TodayHome({
         </div>
       </div>
     </div>
+    </>
   );
 }

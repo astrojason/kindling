@@ -65,5 +65,5 @@ export function useTheme(): Palette {
   return palettes[scheme === "dark" ? "dark" : "light"];
 }
 
-/** Shared corner radii, matching the web theme's rounded cards and pills. */
-export const radius = { sm: 14, md: 24, lg: 32, pill: 999 } as const;
+/** Shared corner radii: subtle rounding, no pills (circles are drawn with an explicit half-size radius). */
+export const radius = { sm: 6, md: 10, lg: 12, pill: 8 } as const;

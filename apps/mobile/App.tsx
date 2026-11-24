@@ -17,8 +17,10 @@ function Root() {
   const { user, claims } = useAuth();
   const { status, loading: accessLoading } = useAccessStatus(user, claims);
 
+  // The signed-in app puts its own tab bar at the very bottom (it fills the home-indicator strip itself), so only the top is inset here.
+  const signedIn = !!user && !accessLoading && hasAppAccess(status ?? "pending");
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]} edges={["top", "bottom"]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]} edges={signedIn ? ["top"] : ["top", "bottom"]}>
       <StatusBar style="auto" />
       <Body user={user} accessLoading={accessLoading} status={status} />
     </SafeAreaView>

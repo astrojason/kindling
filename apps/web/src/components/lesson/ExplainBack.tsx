@@ -8,7 +8,7 @@ import { requestJson } from "@/lib/api-client";
 
 const MIN_LENGTH = 20;
 const MAX_LENGTH = 1500;
-const buttonClass = "rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-accent-fg transition-opacity hover:opacity-85 disabled:opacity-50";
+const buttonClass = "rounded-button bg-accent px-4 py-2 text-sm font-extrabold text-accent-fg transition-opacity hover:opacity-85 disabled:opacity-50";
 
 /** Offered only while the server says enough of the day's tokens remain; otherwise it renders nothing. */
 export function ExplainBack({ lesson }: { lesson: Lesson }) {

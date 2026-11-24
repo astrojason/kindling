@@ -12,9 +12,9 @@ export function ReviewRow({ dueCards, totalCards, dueNotes, totalNotes }: { dueC
         <p className="text-sm text-fg-muted">{hint}</p>
       </div>
       {count > 0 ? (
-        <Link href="/review" className="rounded-full bg-accent px-5 py-2.5 text-sm font-extrabold text-accent-fg">Start</Link>
+        <Link href="/review" className="rounded-button bg-accent px-3.5 py-1.5 text-sm font-extrabold text-accent-fg">Start</Link>
       ) : (
-        <span className="rounded-full bg-accent-soft px-5 py-2.5 text-sm font-extrabold text-fg-muted">Done</span>
+        <span className="rounded-button bg-accent-soft px-3.5 py-1.5 text-sm font-extrabold text-fg-muted">Done</span>
       )}
     </section>
   );

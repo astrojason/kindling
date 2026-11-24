@@ -12,7 +12,7 @@ export function LessonView({ lesson, date, onStartQuiz }: { lesson: Lesson; date
       <button
         type="button"
         onClick={onStartQuiz}
-        className="rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-accent-fg transition-opacity hover:opacity-85"
+        className="rounded-button bg-accent px-4 py-2 text-sm font-extrabold text-accent-fg transition-opacity hover:opacity-85"
       >
         Take quiz
       </button>

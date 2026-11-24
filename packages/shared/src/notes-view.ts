@@ -42,6 +42,13 @@ export function dueNotes(notes: Note[], now: Date = new Date()): Note[] {
     .sort((a, b) => a.next_review_at.toDate().getTime() - b.next_review_at.toDate().getTime());
 }
 
+/** Notes still waiting for their review time, soonest first. */
+export function upcomingNotes(notes: Note[], now: Date = new Date()): Note[] {
+  return notes
+    .filter((n) => n.next_review_at.toDate().getTime() > now.getTime())
+    .sort((a, b) => a.next_review_at.toDate().getTime() - b.next_review_at.toDate().getTime());
+}
+
 /** When a note is next due, in words: "due now", "tomorrow", "in 3d" or "in 2w". */
 export function dueLabel(ts: HasDate, now: Date = new Date()): string {
   const ms = ts.toDate().getTime() - now.getTime();

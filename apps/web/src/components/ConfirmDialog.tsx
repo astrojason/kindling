@@ -40,10 +40,10 @@ export function ConfirmDialog({
         <p className="mt-2 text-sm text-fg">{message}</p>
         {error && <pre role="alert" className="mt-3 whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all">{error}</pre>}
         <div className="mt-5 flex justify-end gap-3">
-          <button type="button" onClick={onCancel} disabled={busy} className="rounded-full border-2 border-border px-5 py-2.5 text-sm font-extrabold text-fg-muted disabled:opacity-50">
+          <button type="button" onClick={onCancel} disabled={busy} className="rounded-button border-2 border-border px-3.5 py-1.5 text-sm font-extrabold text-fg-muted disabled:opacity-50">
             Cancel
           </button>
-          <button type="button" onClick={onConfirm} disabled={busy} className="rounded-full bg-rust px-5 py-2.5 text-sm font-extrabold text-accent-fg disabled:opacity-50">
+          <button type="button" onClick={onConfirm} disabled={busy} className="rounded-button bg-rust px-3.5 py-1.5 text-sm font-extrabold text-accent-fg disabled:opacity-50">
             {busy ? busyLabel : confirmLabel}
           </button>
         </div>

@@ -57,7 +57,7 @@ export function LandingPage() {
         <button
           type="button"
           onClick={signIn}
-          className="w-full rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-accent-fg transition-opacity hover:opacity-85"
+          className="w-full rounded-button bg-accent px-4 py-2 text-sm font-extrabold text-accent-fg transition-opacity hover:opacity-85"
         >
           Sign in with Google
         </button>

@@ -48,7 +48,7 @@ export function DiscoverFeed({ uid, getToken }: { uid: string; getToken: () => P
 
       <form onSubmit={onSearch} className="mb-4 flex flex-wrap gap-2">
         <input aria-label="Search articles" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search…" className={`${inputClass} min-w-0 flex-1`} />
-        <button type="submit" className="rounded-full border-2 border-border px-4 py-2 text-sm font-extrabold text-fg-muted hover:border-accent">Search</button>
+        <button type="submit" className="rounded-button border-2 border-border px-3 py-1.5 text-sm font-extrabold text-fg-muted hover:border-accent">Search</button>
         <select aria-label="Category" value={category} onChange={(e) => setCategory(e.target.value)} className={inputClass}>
           <option value="">All categories</option>
           {categories.map((c) => <option key={c} value={c}>{c}</option>)}

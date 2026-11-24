@@ -2,7 +2,7 @@
 
 import { AccessGate } from "@/components/AccessGate";
 import { PagedLinkList } from "@/components/library/PagedLinkList";
-import { LoadState, PageFrame } from "@/components/share/PageFrame";
+import { LoadState, PageFrame, PANEL } from "@/components/share/PageFrame";
 import { useAuth } from "@/lib/auth-context";
 import { CATEGORIES } from "@/lib/categories";
 import { formatDateLabel } from "@/lib/date";
@@ -18,7 +18,8 @@ function Library({ uid }: { uid: string }) {
   return (
     <LoadState state={state} notFound="Nothing here yet.">
       {({ history, stash }) => (
-        <div>
+        <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
+          <section className={PANEL}>
           <h1 className="mb-3 font-heading text-xl font-bold text-fg-strong">Shared with you</h1>
           {stash.length === 0 ? (
             <p className="mb-6 text-sm text-fg-muted">Lessons friends share with you, and that you add to your stash, appear here.</p>
@@ -34,6 +35,8 @@ function Library({ uid }: { uid: string }) {
               />
             </div>
           )}
+          </section>
+          <section className={PANEL}>
           <h1 className="mb-3 font-heading text-xl font-bold text-fg-strong">Your past lessons</h1>
           {history.length === 0 ? (
             <p className="text-sm text-fg-muted">Your lesson history will build up here.</p>
@@ -47,6 +50,7 @@ function Library({ uid }: { uid: string }) {
               }))}
             />
           )}
+          </section>
         </div>
       )}
     </LoadState>
@@ -57,7 +61,7 @@ export default function LibraryPage() {
   const { user } = useAuth();
   return (
     <AccessGate>
-      <PageFrame>{user && <Library uid={user.uid} />}</PageFrame>
+      <PageFrame panels>{user && <Library uid={user.uid} />}</PageFrame>
     </AccessGate>
   );
 }

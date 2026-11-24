@@ -8,7 +8,7 @@ import { TabBar } from "./TabBar";
 let pending: number | null = null;
 vi.mock("@/lib/usePendingRequests", () => ({ usePendingRequests: () => ({ count: pending, error: null }) }));
 vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user: { uid: "me" }, claims: { admin: true } }) }));
-vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {} }), usePathname: () => "/" }));
 vi.mock("next/link", () => ({ default: ({ href, children, className }: { href: string; children: unknown; className?: string }) => createElement("a", { href, className }, children as never) }));
 
 let container: HTMLElement;

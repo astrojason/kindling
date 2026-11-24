@@ -94,7 +94,7 @@ export function NoteForm({
       {error && <pre role="alert" className="whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all">{error}</pre>}
 
       <div className="flex items-center gap-3">
-        <button type="submit" disabled={busy} className="rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-accent-fg hover:opacity-85 disabled:opacity-50">
+        <button type="submit" disabled={busy} className="rounded-button bg-accent px-4 py-2 text-sm font-extrabold text-accent-fg hover:opacity-85 disabled:opacity-50">
           {busy ? "Saving…" : submitLabel}
         </button>
         <button type="button" onClick={onCancel} disabled={busy} className="text-sm font-bold text-fg-muted hover:text-fg disabled:opacity-50">

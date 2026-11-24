@@ -92,7 +92,7 @@ export function SignInScreen() {
 }
 
 const styles = StyleSheet.create({
-  mark: { width: 88, height: 88, borderRadius: 20, alignSelf: "center", marginBottom: 16 },
+  mark: { width: 88, height: 88, borderRadius: 12, alignSelf: "center", marginBottom: 16 },
   scroll: { padding: 20, paddingTop: 48, paddingBottom: 48 },
   title: { fontSize: 30, fontWeight: "700", textAlign: "center" },
   feature: { marginBottom: 12 },

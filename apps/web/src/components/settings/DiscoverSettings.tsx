@@ -75,12 +75,12 @@ function DiscoverForm({ uid, initialUid, initialKeywords }: { uid: string; initi
         </div>
         <div className="mt-2 flex gap-2">
           <input aria-label="Add a keyword" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={onKeyDown} placeholder="Add a keyword…" className={inputClass} />
-          <button type="button" onClick={add} className="rounded-full border-2 border-border px-4 py-2 text-sm font-extrabold text-fg-muted hover:border-accent">Add</button>
+          <button type="button" onClick={add} className="rounded-button border-2 border-border px-3 py-1.5 text-sm font-extrabold text-fg-muted hover:border-accent">Add</button>
         </div>
       </div>
 
       {error && <pre role="alert" className="whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all">{error}</pre>}
-      <button type="button" disabled={saving} onClick={() => void save()} className="rounded-full bg-accent px-6 py-2.5 text-sm font-extrabold text-accent-fg hover:opacity-85 disabled:opacity-50">
+      <button type="button" disabled={saving} onClick={() => void save()} className="rounded-button bg-accent px-4 py-1.5 text-sm font-extrabold text-accent-fg hover:opacity-85 disabled:opacity-50">
         {saving ? "Saving…" : "Save"}
       </button>
     </section>

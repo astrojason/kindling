@@ -50,7 +50,7 @@ export function GameView({ uid, date, game, played, onPlayed }: { uid: string; d
       {phase === "idle" && (
         <>
           <p className="mb-3 text-sm text-fg-muted">A quick round for bonus points.</p>
-          <button type="button" onClick={start} className="rounded-full bg-accent px-6 py-2.5 text-sm font-extrabold text-accent-fg">Play</button>
+          <button type="button" onClick={start} className="rounded-button bg-accent px-4 py-1.5 text-sm font-extrabold text-accent-fg">Play</button>
         </>
       )}
       {phase === "playing" && (

@@ -41,7 +41,7 @@ export function TrueFalseGame({ statements, onFinish }: { statements: TrueFalseS
       {answered && (
         <>
           <p role="status" className={`mt-4 text-sm font-bold ${right ? "text-success" : "text-rust"}`}>{right ? "Correct" : `Not quite — that statement is ${current.isTrue ? "true" : "false"}.`}</p>
-          <button type="button" onClick={next} className="mt-3 rounded-full bg-accent px-6 py-2.5 text-sm font-extrabold text-accent-fg">
+          <button type="button" onClick={next} className="mt-3 rounded-button bg-accent px-4 py-1.5 text-sm font-extrabold text-accent-fg">
             {index + 1 < statements.length ? "Next" : "Finish"}
           </button>
         </>

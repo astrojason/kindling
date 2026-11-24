@@ -19,7 +19,7 @@ Decisions: name **Kindling** (spark motif; domain `kindling.astrojason.com`), br
 ## Desktop and tablet layouts (phone layouts must not change)
 
 - [ ] iPad app (`ios.supportsTablet` on, landscape on iPad only): side navigation instead of the bottom bar, width-capped content, two-column Today and Review, list/detail panes for Notes and Explore. Verify on the iPad with `npm run install:ipad` (not run yet), in portrait, landscape and Split View; update the App Store listing for iPad screenshots (an iPad 13" set is then required)
-- [ ] Web desktop rework: list/detail panes for Notes, Library and Review, multi-column Profile and Settings, a lesson reading view with a progress rail, keyboard shortcuts and hover states; the phone layout (below `lg`) stays as is
+- [ ] Web desktop and iPad: only Today follows the "Kindling Desktop" design (claude.ai/design project d5b9e7e4-e6a0-4737-9176-c93254c84759) so far; the other screens (Notes, Review, Library, Profile, Settings, lesson) still need their own desktop and iPad designs. The phone layout (below `lg`) stays as is
 
 ## Brightly UI + features (shipped, needs verification)
 

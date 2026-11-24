@@ -7,6 +7,7 @@ import { CategoryPicker } from "@/components/lesson/CategoryPicker";
 import { DoneView } from "@/components/lesson/DoneView";
 import { ErrorView } from "@/components/lesson/ErrorView";
 import { Header } from "@/components/lesson/Header";
+import { LessonRail } from "@/components/lesson/LessonRail";
 import { LessonView } from "@/components/lesson/LessonView";
 import { LoadingView } from "@/components/lesson/LoadingView";
 import { PreReviewView } from "@/components/lesson/PreReviewView";
@@ -46,7 +47,7 @@ export function DailyLesson() {
   if (showHome) {
     return (
       <>
-        <AppColumn>
+        <AppColumn bleed={!editingCategories}>
           {editingCategories ? <Card>{picker}</Card> : (
             <TodayHome
               uid={user.uid} date={date} plan={state.plan} streak={streak}
@@ -66,6 +67,7 @@ export function DailyLesson() {
 
   return (
     <AppColumn sidebar={false} reading>
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start lg:gap-6">
       <Card>
         <Header
           date={date}
@@ -92,6 +94,14 @@ export function DailyLesson() {
         )}
 
       </Card>
+      <LessonRail
+        phase={phase}
+        plan={state.plan}
+        currentKey={state.lessonKey}
+        onOpen={(key) => void actions.openLesson(key)}
+        onBack={started && phase !== "quiz" ? () => setStarted(false) : undefined}
+      />
+      </div>
     </AppColumn>
   );
 }
@@ -121,7 +131,7 @@ function LoadedLesson({ state, uid }: { state: ReturnType<typeof useDailyLesson>
         <div className="mb-4 rounded-md bg-accent-soft p-4 text-center">
           <p className="mb-2 text-sm font-extrabold text-fg-strong">{next ? "Keep going with today’s plan" : "Your next lesson is being prepared…"}</p>
           {next ? (
-            <button type="button" onClick={() => void actions.openLesson(next.key)} className="rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-accent-fg">
+            <button type="button" onClick={() => void actions.openLesson(next.key)} className="rounded-button bg-accent px-4 py-2 text-sm font-extrabold text-accent-fg">
               Next lesson: {next.title}
             </button>
           ) : (

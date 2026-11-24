@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SymbolView, type SFSymbol } from "expo-symbols";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "../lib/theme";
 
 export type Tab = "today" | "explore" | "notes" | "review" | "profile";
@@ -15,8 +16,9 @@ export const TABS: { key: Tab; label: string; icon: SFSymbol }[] = [
 /** The bottom tab bar shown on every signed-in screen outside a lesson. */
 export function TabBar({ active, onChange }: { active: Tab; onChange: (tab: Tab) => void }) {
   const theme = useTheme();
+  const { bottom } = useSafeAreaInsets();
   return (
-    <View style={[styles.bar, { backgroundColor: theme.surface, borderColor: theme.border }]} accessibilityRole="tablist">
+    <View style={[styles.bar, { backgroundColor: theme.surface, borderColor: theme.border, paddingBottom: Math.max(bottom, 4) }]} accessibilityRole="tablist">
       {TABS.map((tab) => {
         const selected = tab.key === active;
         const color = selected ? theme.accent : theme.fgMuted;

@@ -29,6 +29,8 @@ afterEach(async () => {
   await act(async () => root.unmount());
   vi.unstubAllGlobals();
 });
+/** The phone layout; the desktop one is rendered beside it and shown from the lg breakpoint. */
+const phone = () => container.querySelector(".lg\\:hidden")!;
 const render = async (state: typeof notesState) => {
   notesState = state;
   await act(async () => root.render(createElement(TodayHome, { uid: "u1", date: "2026-11-22", plan: [], streak: { streak: 0, longest: 0, lastDate: null }, onStart: vi.fn(), onOpen: vi.fn(), onRetry: vi.fn() })));
@@ -38,16 +40,16 @@ it("counts the notes that are due in the Review row and lists them on Today, eac
   await render({ notes: [note("a", "Overdue note", -5), note("b", "Due today", -1), note("c", "Later", 7)], error: null });
 
   expect(container.querySelector("section[aria-label='Review']")?.textContent).toContain("2 notes due");
-  const links = [...container.querySelectorAll("a[href^='/notes/']")];
+  const links = [...phone().querySelectorAll("a[href^='/notes/']")];
   expect(links.map((a) => a.getAttribute("href"))).toEqual(["/notes/a", "/notes/b"]);
-  expect(container.textContent).toContain("2 notes to recall");
-  expect(container.textContent).not.toContain("Later");
+  expect(phone().textContent).toContain("2 notes to recall");
+  expect(phone().textContent).not.toContain("Later");
 });
 
 it("says nothing is due, and lists nothing, when no note is due", async () => {
   await render({ notes: [note("c", "Later", 7)], error: null });
   expect(container.querySelector("section[aria-label='Review']")?.textContent).toContain("Nothing due right now");
-  expect(container.querySelector("a[href^='/notes/']")).toBeNull();
+  expect(phone().querySelector("a[href^='/notes/']")).toBeNull();
 });
 
 it("does not claim nothing is due while the notes are still loading", async () => {
@@ -67,4 +69,13 @@ it("no longer offers category editing on Today (it lives in Settings), but keeps
   expect(container.textContent).not.toContain("My categories");
   expect(container.textContent).toContain("Library");
   expect(container.textContent).toContain("Shared");
+});
+
+it("shows the desktop Today beside it: the notes due and those coming up, with the daily goal", async () => {
+  await render({ notes: [note("a", "Overdue note", -5), note("c", "Later", 7)], error: null });
+  const desktop = container.querySelector(".lg\\:flex")!;
+  expect(desktop.textContent).toContain("1 NOTE TO RECALL");
+  expect(desktop.textContent).toContain("Overdue note");
+  expect(desktop.textContent).toContain("Later");
+  expect(desktop.textContent).toContain("DAILY GOAL");
 });

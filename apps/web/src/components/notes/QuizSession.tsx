@@ -219,7 +219,7 @@ export function QuizSession({ uid, note, getToken }: { uid: string; note: Note; 
         <div className="mt-4 space-y-2">
           <pre role="alert" className={errorClass}>{error}</pre>
           {retry && (
-            <button type="button" onClick={() => session && void (retry.text === undefined ? takeTurn(session, []) : send(retry.text))} className="rounded-full border-2 border-border px-4 py-2 text-sm font-extrabold text-fg-muted hover:border-accent">
+            <button type="button" onClick={() => session && void (retry.text === undefined ? takeTurn(session, []) : send(retry.text))} className="rounded-button border-2 border-border px-3 py-1.5 text-sm font-extrabold text-fg-muted hover:border-accent">
               Retry
             </button>
           )}
@@ -238,7 +238,7 @@ export function QuizSession({ uid, note, getToken }: { uid: string; note: Note; 
             placeholder="Answer in your own words…"
             className="w-full rounded-sm border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent disabled:opacity-60"
           />
-          <button type="button" disabled={streaming || !input.trim()} onClick={() => void send(input)} className="rounded-full bg-accent px-6 py-2.5 text-sm font-extrabold text-accent-fg hover:opacity-85 disabled:opacity-50">
+          <button type="button" disabled={streaming || !input.trim()} onClick={() => void send(input)} className="rounded-button bg-accent px-4 py-1.5 text-sm font-extrabold text-accent-fg hover:opacity-85 disabled:opacity-50">
             {streaming ? "Thinking…" : "Send"}
           </button>
         </div>
@@ -255,13 +255,13 @@ export function QuizSession({ uid, note, getToken }: { uid: string; note: Note; 
                 aria-label={`Rate ${i + 1} ${label}`}
                 aria-pressed={rating === i + 1}
                 onClick={() => setChosen(i + 1)}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-bold ${rating === i + 1 ? "bg-accent text-accent-fg" : "border border-border text-fg-muted hover:border-accent"}`}
+                className={`rounded-button px-3 py-1 text-xs font-bold ${rating === i + 1 ? "bg-accent text-accent-fg" : "border border-border text-fg-muted hover:border-accent"}`}
               >
                 {i + 1} · {label}
               </button>
             ))}
           </div>
-          <button type="button" disabled={saving || rating === null} onClick={() => rating !== null && void saveRating(rating)} className="rounded-full bg-accent px-6 py-2.5 text-sm font-extrabold text-accent-fg hover:opacity-85 disabled:opacity-50">
+          <button type="button" disabled={saving || rating === null} onClick={() => rating !== null && void saveRating(rating)} className="rounded-button bg-accent px-4 py-1.5 text-sm font-extrabold text-accent-fg hover:opacity-85 disabled:opacity-50">
             {saving ? "Saving…" : "Save rating"}
           </button>
         </div>

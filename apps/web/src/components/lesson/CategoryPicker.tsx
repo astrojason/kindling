@@ -61,7 +61,7 @@ export function CategoryPicker({ selectedCategories, onSave, onCancel, editing =
       </p>
       {error && <p role="alert" className="mt-3 text-sm text-rust">{error}</p>}
       <div className="mt-4 flex items-center gap-4">
-        <button type="submit" disabled={saving || !selected.length} className="rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-accent-fg disabled:opacity-60">
+        <button type="submit" disabled={saving || !selected.length} className="rounded-button bg-accent px-4 py-2 text-sm font-extrabold text-accent-fg disabled:opacity-60">
           {saving ? "Saving…" : editing ? "Save categories" : "Start learning"}
         </button>
         {onCancel && <button type="button" disabled={saving} onClick={onCancel} className="text-sm text-fg-muted underline disabled:opacity-60">Cancel</button>}

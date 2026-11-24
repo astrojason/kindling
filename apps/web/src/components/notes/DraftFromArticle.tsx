@@ -37,7 +37,7 @@ export function DraftFromArticle({ getToken, onDraft }: { getToken: () => Promis
         type="button"
         disabled={busy || !title.trim() || !text.trim()}
         onClick={() => void draft()}
-        className="rounded-full bg-accent px-5 py-2.5 text-sm font-extrabold text-accent-fg hover:opacity-85 disabled:opacity-50"
+        className="rounded-button bg-accent px-3.5 py-1.5 text-sm font-extrabold text-accent-fg hover:opacity-85 disabled:opacity-50"
       >
         {busy ? "Drafting…" : "Draft a note"}
       </button>

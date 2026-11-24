@@ -13,7 +13,7 @@ vi.mock("@/lib/notes-firestore", () => ({ getNoteSettings: vi.fn(), updateNoteSe
 vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user: { uid: "reader" } }) }));
 vi.mock("@/lib/usePendingRequests", () => ({ usePendingRequests: () => ({ count: null, error: null }) }));
 vi.mock("@/components/AccessGate", () => ({ AccessGate: ({ children }: { children: unknown }) => children }));
-vi.mock("next/navigation", () => ({ usePathname: () => "/settings" }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {} }), usePathname: () => "/settings" }));
 vi.mock("next/link", () => ({ default: ({ href, children }: { href: string; children: unknown }) => createElement("a", { href }, children as never) }));
 
 let container: HTMLElement;

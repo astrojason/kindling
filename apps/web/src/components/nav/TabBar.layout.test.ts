@@ -7,7 +7,7 @@ import { TabBar } from "./TabBar";
 
 vi.mock("@/lib/usePendingRequests", () => ({ usePendingRequests: () => ({ count: null, error: null }) }));
 vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user: { uid: "me" }, claims: {} }) }));
-vi.mock("next/navigation", () => ({ usePathname: () => "/notes" }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {} }), usePathname: () => "/notes" }));
 vi.mock("next/link", () => ({ default: ({ href, children, className, ...rest }: { href: string; children: unknown; className?: string }) => createElement("a", { href, className, ...rest }, children as never) }));
 
 let container: HTMLElement;
@@ -28,12 +28,12 @@ it("is a bottom bar on a phone and a left sidebar on a desktop", async () => {
   const nav = container.querySelector("nav[aria-label='Main']")!;
   expect(nav.className).toContain("bottom-0");
   expect(nav.className).toContain("lg:inset-y-0");
-  expect(nav.className).toContain("lg:w-60");
+  expect(nav.className).toContain("lg:w-[76px]");
 });
 
-it("names the app in the desktop sidebar, where there is room for it", async () => {
+it("shows the app's flame mark at the top of the desktop rail, which has no room for its name", async () => {
   await render();
-  const brand = [...container.querySelectorAll("p")].find((p) => p.textContent === "Kindling");
+  const brand = container.querySelector("[aria-label='Kindling']");
   expect(brand?.className).toContain("hidden");
   expect(brand?.className).toContain("lg:block");
 });

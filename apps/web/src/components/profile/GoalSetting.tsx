@@ -32,7 +32,7 @@ export function GoalSetting({ uid, initial }: { uid: string; initial: number }) 
       <div className="flex gap-2">
         {GOAL_CHOICES.map((minutes) => (
           <button key={minutes} type="button" aria-pressed={goal === minutes} disabled={saving !== null} onClick={() => void choose(minutes)}
-            className={`flex-1 rounded-full py-2.5 text-sm font-extrabold disabled:opacity-60 ${goal === minutes ? "bg-accent text-accent-fg" : "bg-accent-soft text-accent"}`}>
+            className={`flex-1 rounded-button py-1.5 text-sm font-extrabold disabled:opacity-60 ${goal === minutes ? "bg-accent text-accent-fg" : "bg-accent-soft text-accent"}`}>
             {saving === minutes ? "Saving…" : `${minutes} min`}
           </button>
         ))}

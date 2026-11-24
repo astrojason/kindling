@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SideNav } from "../components/SideNav";
 import { TabBar, type Tab } from "../components/TabBar";
 import { CONTENT_MAX_WIDTH, READING_MAX_WIDTH, useIsTablet } from "../lib/layout";
@@ -32,6 +33,9 @@ export function MainScreen() {
   const reading = tab === "today" && inLesson;
   const showTabBar = !reading;
   const tablet = useIsTablet();
+  const { bottom } = useSafeAreaInsets();
+  // With no tab bar (a lesson being read) the content itself keeps clear of the home indicator.
+  const bottomInset = showTabBar ? 0 : bottom;
 
   const pages = (
     <>
@@ -47,17 +51,17 @@ export function MainScreen() {
 
   if (tablet) {
     return (
-      <View style={{ flex: 1, flexDirection: "row" }}>
+      <View style={{ flex: 1, flexDirection: "row", paddingBottom: bottomInset }}>
         {showTabBar && <SideNav active={tab} onChange={changeTab} />}
         <View style={{ flex: 1, alignItems: "center" }}>
-          <View style={{ flex: 1, width: "100%", maxWidth: reading ? READING_MAX_WIDTH : CONTENT_MAX_WIDTH }}>{pages}</View>
+          <View style={{ flex: 1, width: "100%", maxWidth: reading ? READING_MAX_WIDTH : tab === "today" ? undefined : CONTENT_MAX_WIDTH }}>{pages}</View>
         </View>
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, paddingBottom: bottomInset }}>
       {pages}
       {showTabBar && <TabBar active={tab} onChange={changeTab} />}
     </View>

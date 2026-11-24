@@ -72,7 +72,7 @@ export function DoneView({
             type="button"
             disabled={flashed === "less"}
             onClick={() => handle("less", onLess)}
-            className="rounded-full border-2 border-border px-5 py-2.5 text-sm font-extrabold text-fg-muted transition-opacity hover:opacity-85 disabled:opacity-60"
+            className="rounded-button border-2 border-border px-3.5 py-1.5 text-sm font-extrabold text-fg-muted transition-opacity hover:opacity-85 disabled:opacity-60"
           >
             {flashed === "less" ? "Got it" : "Show less of this"}
           </button>
@@ -80,7 +80,7 @@ export function DoneView({
             type="button"
             disabled={flashed === "more"}
             onClick={() => handle("more", onMore)}
-            className="rounded-full bg-accent px-5 py-2.5 text-sm font-extrabold text-accent-fg transition-opacity hover:opacity-85 disabled:opacity-60"
+            className="rounded-button bg-accent px-3.5 py-1.5 text-sm font-extrabold text-accent-fg transition-opacity hover:opacity-85 disabled:opacity-60"
           >
             {flashed === "more" ? "Got it" : "Show more of this"}
           </button>

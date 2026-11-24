@@ -29,7 +29,7 @@ export function NotesLibrary({ notes, error = null, now = new Date() }: { notes:
         </div>
         <div className="flex items-center gap-3">
           <Link href="/discover" className="text-sm font-bold text-fg-muted hover:text-fg">Discover</Link>
-          <Link href="/notes/new" className="rounded-full bg-accent px-4 py-2 text-sm font-extrabold text-accent-fg hover:opacity-85">
+          <Link href="/notes/new" className="rounded-button bg-accent px-3 py-1.5 text-sm font-extrabold text-accent-fg hover:opacity-85">
             Capture
           </Link>
         </div>

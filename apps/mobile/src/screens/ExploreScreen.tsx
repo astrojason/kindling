@@ -116,5 +116,5 @@ const styles = StyleSheet.create({
   detailPane: { flex: 1 },
   scroll: { padding: 16, paddingBottom: 32 },
   title: { fontSize: 24, fontWeight: "800", marginBottom: 16 },
-  row: { flexDirection: "row", alignItems: "center", borderRadius: 14, padding: 14, marginBottom: 8 },
+  row: { flexDirection: "row", alignItems: "center", borderRadius: 6, padding: 14, marginBottom: 8 },
 });
