@@ -1,6 +1,6 @@
 {
   "name": "random-knowledge.astrojason.com",
-  "version": "1.27.0",
+  "version": "1.28.0",
   "private": true,
   "engines": {
     "node": ">=22.18"
@@ -15,6 +15,11 @@
     "lint": "npm --prefix apps/web run lint",
     "test": "npm --prefix apps/web run test",
     "mobile": "npm --prefix apps/mobile run start",
-    "icons": "node scripts/icons/generate.mjs"
+    "icons": "node scripts/icons/generate.mjs",
+    "build:web": "npm --prefix apps/web run build",
+    "build:ios": "bash scripts/mobile-build ios",
+    "build:android": "bash scripts/mobile-build android",
+    "build:all": "npm run build:web && npm run build:ios",
+    "typecheck:mobile": "npm --prefix apps/mobile run typecheck"
   }
 }

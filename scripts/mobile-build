@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Builds a release binary of the mobile app on THIS machine with `eas build --local`
+# (no EAS cloud build credits spent).
+#
+# Usage: scripts/mobile-build [ios|android]   (default: ios)
+#
+# The .ipa/.aab is written to ~/Builds/kindling (outside the repo). Submit an iOS build with:
+#   eas submit --platform ios --path <the .ipa>      (run in a real terminal; it may prompt for Apple ID/2FA)
+# or upload the .ipa with Apple's Transporter app (not both: Apple rejects a duplicate build number).
+#
+# Needs Xcode, CocoaPods and fastlane for iOS (`brew install fastlane`), and apps/mobile/.env.local
+# with the EXPO_PUBLIC_* values (API base URL must be the deployed site, not localhost).
+set -uo pipefail
+
+PLATFORM="${1:-ios}"
+case "$PLATFORM" in
+  ios) EXT="ipa" ;;
+  android) EXT="aab" ;;
+  *) echo "usage: scripts/mobile-build [ios|android]" >&2; exit 2 ;;
+esac
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+OUT_DIR="$HOME/Builds/kindling"
+STAMP="$(date +%Y%m%d-%H%M%S)"
+OUT="$OUT_DIR/kindling-$STAMP.$EXT"
+LOG="$OUT_DIR/build-$STAMP.log"
+mkdir -p "$OUT_DIR"
+
+cd "$REPO_ROOT/apps/mobile"
+
+if [[ ! -f .env.local && ! -f .env.production ]]; then
+  echo "error: apps/mobile/.env.local not found (see .env.local.example); the app would crash at launch without its Firebase config." >&2
+  exit 1
+fi
+if grep -Eq '^EXPO_PUBLIC_API_BASE_URL=.*(localhost|127\.0\.0\.1)' .env.local 2>/dev/null; then
+  echo "error: EXPO_PUBLIC_API_BASE_URL in .env.local points at localhost; a phone can't reach that." >&2
+  exit 1
+fi
+
+echo "==> Typecheck + lint"
+npm run typecheck || exit $?
+npm run lint || exit $?
+
+echo "==> Building $PLATFORM locally (log: $LOG)"
+# Not piped through tail: that would hide the real exit code.
+eas build --platform "$PLATFORM" --profile production --local --non-interactive --output "$OUT" 2>&1 | tee "$LOG"
+code="${PIPESTATUS[0]}"
+echo "exit=$code" >> "$LOG"
+
+if [ "$code" -ne 0 ]; then
+  echo "error: build failed with exit code $code; see $LOG" >&2
+  exit "$code"
+fi
+echo "==> Built $OUT"
+if [ "$PLATFORM" = "ios" ]; then
+  echo "    Submit: eas submit --platform ios --path \"$OUT\"   (in a real terminal), or upload it with Transporter."
+fi
