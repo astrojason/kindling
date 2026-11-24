@@ -24,7 +24,7 @@ export function NotesLibrary({ notes, error = null, now = new Date() }: { notes:
     <div>
       <div className="mb-4 flex items-end justify-between gap-3">
         <div>
-          <h1 className="font-heading text-xl font-bold text-fg-strong">Notes</h1>
+          <h1 className="font-heading text-xl font-bold text-fg-strong lg:hidden">Notes</h1>
           <p className="text-xs text-fg-muted">{visible.length === notes.length ? `${notes.length} notes` : `${visible.length} of ${notes.length}`}</p>
         </div>
         <div className="flex items-center gap-3">

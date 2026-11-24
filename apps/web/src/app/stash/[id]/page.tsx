@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { AccessGate } from "@/components/AccessGate";
-import { LoadState, PageFrame } from "@/components/share/PageFrame";
+import { LoadState, PAGE_BODY, PageFrame } from "@/components/share/PageFrame";
 import { SavedLesson } from "@/components/share/SavedLesson";
 import { ShareButton } from "@/components/share/ShareButton";
 import { useAuth } from "@/lib/auth-context";
@@ -52,7 +52,7 @@ export default function StashPage() {
   const { id } = useParams<{ id: string }>();
   return (
     <AccessGate>
-      <PageFrame>{user && <StashedLesson uid={user.uid} id={id} />}</PageFrame>
+      <PageFrame panels title="Stash">{user && <div className={PAGE_BODY}><StashedLesson uid={user.uid} id={id} /></div>}</PageFrame>
     </AccessGate>
   );
 }

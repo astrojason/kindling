@@ -24,7 +24,7 @@ export function LessonRail({
 }) {
   const current = STEPS.findIndex((step) => step.phase.includes(phase));
   return (
-    <aside aria-label="Lesson progress" className="sticky top-6 hidden flex-col gap-6 rounded-md bg-surface p-5 shadow-sm lg:flex">
+    <aside aria-label="Lesson progress" className="hidden flex-col gap-6 border-l border-border bg-surface px-6 py-10 lg:flex">
       {onBack && (
         <button type="button" onClick={onBack} className="self-start text-sm font-extrabold text-accent hover:underline">
           ‹ Back to Today

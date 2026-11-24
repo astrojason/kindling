@@ -66,9 +66,9 @@ export function DailyLesson() {
   }
 
   return (
-    <AppColumn sidebar={false} reading>
-      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start lg:gap-6">
-      <Card>
+    <AppColumn sidebar={false} reading bleed>
+      <div className="lg:grid lg:min-h-screen lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-stretch">
+      <Card className="lg:mx-auto lg:w-full lg:max-w-3xl lg:rounded-none lg:bg-transparent lg:px-12 lg:py-10 lg:shadow-none">
         <Header
           date={date}
           streakCount={getStreakStatus(streak, date).count}

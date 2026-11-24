@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { SymbolView } from "expo-symbols";
 import { CATEGORIES } from "@random-knowledge/shared/categories";
 import { formatDateLabel } from "@random-knowledge/shared/date";
@@ -41,6 +41,8 @@ export function TabletToday({
   onOpenNote: (id: string) => void;
 }) {
   const theme = useTheme();
+  const { width, height } = useWindowDimensions();
+  const portrait = width < height;
   const xp = stats?.xp ?? 0;
   const next = plan.find((item) => item.status === "ready" && !item.done);
   const doneCount = plan.filter((item) => item.done).length;
@@ -135,27 +137,30 @@ export function TabletToday({
         })}
       </View>
 
-      <View style={styles.columns}>
-        <View style={[styles.column, { borderColor: theme.border }]}>
-          <Text style={[styles.label, { color: theme.fgMuted }]}>REVIEW</Text>
-          {reviewCount === null ? <Text style={{ color: theme.fgMuted }}>Loading…</Text> : (
-            <View style={[styles.row, { alignItems: "baseline", gap: 10 }]}>
-              <Text style={{ color: theme.fgStrong, fontSize: 40, fontWeight: "900" }}>{reviewCount}</Text>
-              <Text style={{ color: theme.fgMuted, fontSize: 15, flexShrink: 1 }}>{reviewHint}</Text>
-            </View>
-          )}
-          {reviewCount ? (
-            <Pressable accessibilityRole="button" onPress={onOpenReview} style={[styles.reviewButton, { backgroundColor: theme.accent }]}>
-              <Text style={{ color: theme.accentFg, fontSize: 14, fontWeight: "800" }}>Start review</Text>
-            </Pressable>
-          ) : null}
+      <View style={[styles.columns, portrait && styles.columnsPortrait]}>
+        {/* In portrait there is only room for two columns: review and the notes to recall stack in the first, and coming up fills the second. */}
+        <View style={portrait ? styles.stackColumn : styles.contents}>
+          <View style={[styles.column, { borderColor: theme.border }, portrait && { borderRightWidth: 0, borderBottomWidth: 1 }]}>
+            <Text style={[styles.label, { color: theme.fgMuted }]}>REVIEW</Text>
+            {reviewCount === null ? <Text style={{ color: theme.fgMuted }}>Loading…</Text> : (
+              <View style={[styles.row, { alignItems: "baseline", gap: 10 }]}>
+                <Text style={{ color: theme.fgStrong, fontSize: 40, fontWeight: "900" }}>{reviewCount}</Text>
+                <Text style={{ color: theme.fgMuted, fontSize: 15, flexShrink: 1 }}>{reviewHint}</Text>
+              </View>
+            )}
+            {reviewCount ? (
+              <Pressable accessibilityRole="button" onPress={onOpenReview} style={[styles.reviewButton, { backgroundColor: theme.accent }]}>
+                <Text style={{ color: theme.accentFg, fontSize: 14, fontWeight: "800" }}>Start review</Text>
+              </Pressable>
+            ) : null}
+          </View>
+          <View style={[styles.column, { borderColor: theme.border }, portrait && { borderRightWidth: 0 }]}>
+            <Text style={[styles.label, { color: theme.fgMuted }]}>{due.length} {due.length === 1 ? "NOTE" : "NOTES"} TO RECALL</Text>
+            {notesError && <ErrorBox message={`Could not load your notes for review: ${notesError}`} />}
+            {due.map((n) => <NoteRow key={n.id} note={n} due onOpen={onOpenNote} />)}
+          </View>
         </View>
-        <View style={[styles.column, { borderColor: theme.border }]}>
-          <Text style={[styles.label, { color: theme.fgMuted }]}>{due.length} {due.length === 1 ? "NOTE" : "NOTES"} TO RECALL</Text>
-          {notesError && <ErrorBox message={`Could not load your notes for review: ${notesError}`} />}
-          {due.map((n) => <NoteRow key={n.id} note={n} due onOpen={onOpenNote} />)}
-        </View>
-        <View style={[styles.column, { borderRightWidth: 0 }]}>
+        <View style={[styles.column, { borderColor: theme.border, borderRightWidth: 0 }, portrait && { borderLeftWidth: 1 }]}>
           <Text style={[styles.label, { color: theme.fgMuted }]}>COMING UP FOR REVIEW</Text>
           {upcoming.map((n) => <NoteRow key={n.id} note={n} due={false} onOpen={onOpenNote} />)}
         </View>
@@ -191,6 +196,9 @@ const styles = StyleSheet.create({
   strip: { flexDirection: "row", borderBottomWidth: 1 },
   planCell: { flex: 1, borderRightWidth: 1, paddingHorizontal: 32, paddingTop: 22, paddingBottom: 24 },
   columns: { flexDirection: "row", alignItems: "flex-start" },
+  columnsPortrait: { alignItems: "stretch" },
+  contents: { flex: 2, flexDirection: "row" },
+  stackColumn: { flex: 1 },
   column: { flex: 1, borderRightWidth: 1, paddingHorizontal: 32, paddingVertical: 26, gap: 10 },
   label: { fontSize: 12, fontWeight: "900", letterSpacing: 1.2 },
   reviewButton: { alignSelf: "flex-start", borderRadius: radius.sm, paddingVertical: 10, paddingHorizontal: 20 },

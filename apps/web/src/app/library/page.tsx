@@ -18,7 +18,7 @@ function Library({ uid }: { uid: string }) {
   return (
     <LoadState state={state} notFound="Nothing here yet.">
       {({ history, stash }) => (
-        <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
+        <div className="lg:grid lg:flex-1 lg:grid-cols-2 lg:items-stretch">
           <section className={PANEL}>
           <h1 className="mb-3 font-heading text-xl font-bold text-fg-strong">Shared with you</h1>
           {stash.length === 0 ? (
@@ -61,7 +61,7 @@ export default function LibraryPage() {
   const { user } = useAuth();
   return (
     <AccessGate>
-      <PageFrame panels>{user && <Library uid={user.uid} />}</PageFrame>
+      <PageFrame panels title="Library">{user && <Library uid={user.uid} />}</PageFrame>
     </AccessGate>
   );
 }

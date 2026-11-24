@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { AccessGate } from "@/components/AccessGate";
 import { QuizReview } from "@/components/lesson/QuizReview";
-import { LoadState, PageFrame } from "@/components/share/PageFrame";
+import { LoadState, PAGE_BODY, PageFrame } from "@/components/share/PageFrame";
 import { SavedLesson } from "@/components/share/SavedLesson";
 import { ShareLessonButton } from "@/components/share/ShareButton";
 import { useAuth } from "@/lib/auth-context";
@@ -33,7 +33,7 @@ export default function LessonPage() {
   const { date } = useParams<{ date: string }>();
   return (
     <AccessGate>
-      <PageFrame>{user && <PastLesson uid={user.uid} date={date} />}</PageFrame>
+      <PageFrame panels title="Past lesson">{user && <div className={PAGE_BODY}><PastLesson uid={user.uid} date={date} /></div>}</PageFrame>
     </AccessGate>
   );
 }

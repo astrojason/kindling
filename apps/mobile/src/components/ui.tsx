@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
+import { useIsTablet } from "../lib/layout";
 import { radius, useTheme } from "../lib/theme";
 
 export function Button({
@@ -42,10 +43,12 @@ export function LinkText({ title, onPress }: { title: string; onPress: () => voi
   );
 }
 
+/** A card on a phone; on a tablet a flat, borderless panel on the page, like the desktop layout. */
 export function Card({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
   const theme = useTheme();
+  const tablet = useIsTablet();
   return (
-    <View style={[styles.card, { backgroundColor: theme.surface, shadowColor: theme.accent }, style]}>
+    <View style={[styles.card, tablet ? styles.flat : { backgroundColor: theme.surface, shadowColor: theme.accent }, style]}>
       {children}
     </View>
   );
@@ -64,6 +67,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     textAlign: "center",
   },
+  flat: { borderRadius: 0, shadowOpacity: 0, paddingHorizontal: 24, paddingVertical: 12 },
   card: {
     borderRadius: radius.md,
     padding: 22,

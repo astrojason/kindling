@@ -42,7 +42,7 @@ export function ProfileView({ uid }: { uid: string }) {
   return (
     <LoadState state={state} notFound="Could not load your profile.">
       {({ stats, streak }) => (
-        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
+        <div className="flex flex-col gap-6 lg:grid lg:flex-1 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-stretch lg:gap-0">
           <div className={`flex flex-col gap-6 ${PANEL}`}>
           <div className="flex items-center gap-4">
             <span className="flex size-16 items-center justify-center rounded-full bg-accent text-2xl font-extrabold text-accent-fg">{levelFor(stats.xp)}</span>

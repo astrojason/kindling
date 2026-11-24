@@ -24,9 +24,9 @@ function Review({ uid }: { uid: string }) {
         // Only judge "nothing due" once the notes have loaded (or failed), so it never flashes while they are still coming.
         const empty = notes || notesError ? reviewEmptyMessage({ totalCards: cards.length, dueCards: due.length, totalNotes: notes?.length ?? 0, dueNotes: notes ? dueNotes(notes).length : 0 }) : null;
         return (
-          <div>
-            <h1 className="mb-4 text-2xl font-extrabold text-fg-strong lg:mb-6 lg:text-3xl">Review</h1>
-            <div className="flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-6">
+          <div className="lg:flex lg:flex-1 lg:flex-col">
+            <h1 className="mb-4 text-2xl font-extrabold text-fg-strong lg:hidden">Review</h1>
+            <div className="flex flex-col lg:grid lg:flex-1 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-stretch">
               {(hasDueNotes || notesError) && <div className={`lg:order-2 ${PANEL}`}><DueNotes notes={notes ?? []} error={notesError} /></div>}
               {due.length > 0 && <div className={`lg:order-1 ${PANEL}`}><ReviewSession uid={uid} today={today} cards={due} /></div>}
             </div>
@@ -42,7 +42,7 @@ export default function ReviewPage() {
   const { user } = useAuth();
   return (
     <AccessGate>
-      <PageFrame panels>{user && <Review uid={user.uid} />}</PageFrame>
+      <PageFrame panels title="Review">{user && <Review uid={user.uid} />}</PageFrame>
     </AccessGate>
   );
 }

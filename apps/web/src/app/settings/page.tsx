@@ -11,10 +11,10 @@ export default function SettingsPage() {
   const { user } = useAuth();
   return (
     <AccessGate>
-      <PageFrame panels>
-        <h1 className="mb-4 font-heading text-xl font-bold text-fg-strong lg:mb-6 lg:text-2xl">Settings</h1>
+      <PageFrame panels title="Settings">
+        <h1 className="mb-4 font-heading text-xl font-bold text-fg-strong lg:hidden">Settings</h1>
         {user && (
-          <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
+          <div className="lg:grid lg:flex-1 lg:grid-cols-2 lg:items-stretch">
             <div className={PANEL}>
               <PreReviewSetting uid={user.uid} />
               <CategorySettings uid={user.uid} />
