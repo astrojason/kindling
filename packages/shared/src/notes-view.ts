@@ -49,6 +49,15 @@ export function upcomingNotes(notes: Note[], now: Date = new Date()): Note[] {
     .sort((a, b) => a.next_review_at.toDate().getTime() - b.next_review_at.toDate().getTime());
 }
 
+/** The day a note is next due, with how far away it is: "Thursday, Nov 26 (2 days)". A note already due reads "due now". */
+export function dueDateLabel(ts: HasDate, now: Date = new Date()): string {
+  const date = ts.toDate();
+  if (date.getTime() <= now.getTime()) return "due now";
+  const days = Math.ceil((date.getTime() - now.getTime()) / DAY_MS);
+  const day = date.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+  return `${day} (${days} ${days === 1 ? "day" : "days"})`;
+}
+
 /** When a note is next due, in words: "due now", "tomorrow", "in 3d" or "in 2w". */
 export function dueLabel(ts: HasDate, now: Date = new Date()): string {
   const ms = ts.toDate().getTime() - now.getTime();

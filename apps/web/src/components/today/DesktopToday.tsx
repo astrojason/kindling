@@ -4,7 +4,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { formatDateLabel } from "@/lib/date";
 import type { PlanItem } from "@/lib/lesson-plan";
 import type { Note } from "@random-knowledge/shared/notes";
-import { dueLabel } from "@random-knowledge/shared/notes-view";
+import { dueDateLabel, dueLabel } from "@random-knowledge/shared/notes-view";
 import type { StatsData } from "@/lib/types";
 import { levelFor, minutesOn, weekDays } from "@/lib/xp";
 
@@ -24,7 +24,7 @@ function NoteRow({ note, now, due }: { note: Note; now: Date; due: boolean }) {
         <span className="text-[11px] font-black uppercase tracking-[0.06em] text-accent">{note.tag}</span>
         <span className="truncate text-[15px] font-bold text-fg-strong">{note.title}</span>
       </span>
-      <span className={`whitespace-nowrap text-xs ${due ? "text-rust" : "text-fg-muted"}`}>{dueLabel(note.next_review_at, now)}</span>
+      <span className={`whitespace-nowrap text-xs ${due ? "text-rust" : "text-fg-muted"}`}>{(due ? dueLabel : dueDateLabel)(note.next_review_at, now)}</span>
     </Link>
   );
 }

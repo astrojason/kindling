@@ -4,7 +4,7 @@ import { CATEGORIES } from "@random-knowledge/shared/categories";
 import { formatDateLabel } from "@random-knowledge/shared/date";
 import type { PlanItem } from "@random-knowledge/shared/lesson-plan";
 import type { Note } from "@random-knowledge/shared/notes";
-import { dueLabel } from "@random-knowledge/shared/notes-view";
+import { dueDateLabel, dueLabel } from "@random-knowledge/shared/notes-view";
 import type { StatsData } from "@random-knowledge/shared/types";
 import { levelFor, minutesOn, weekDays } from "@random-knowledge/shared/xp";
 import { radius, useTheme } from "../lib/theme";
@@ -172,7 +172,7 @@ function NoteRow({ note, due, onOpen }: { note: Note; due: boolean; onOpen: (id:
         <Text style={{ color: theme.accent, fontSize: 11, fontWeight: "900", letterSpacing: 0.5 }}>{note.tag.toUpperCase()}</Text>
         <Text numberOfLines={1} style={{ color: theme.fgStrong, fontSize: 15, fontWeight: "700" }}>{note.title}</Text>
       </View>
-      <Text style={{ color: due ? theme.rust : theme.fgMuted, fontSize: 12 }}>{dueLabel(note.next_review_at)}</Text>
+      <Text style={{ color: due ? theme.rust : theme.fgMuted, fontSize: 12 }}>{(due ? dueLabel : dueDateLabel)(note.next_review_at)}</Text>
     </Pressable>
   );
 }
