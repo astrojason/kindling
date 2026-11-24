@@ -20,7 +20,7 @@ class RandomKnowledgeTestCase: ScreenshotTestCase {
     /// A new account picks its categories first; an existing one goes straight to the lesson.
     func pickCategoriesIfAsked() {
         let picker = element("What would you like to learn?")
-        let lessonReady = element("Take the quick check")
+        let lessonReady = element("Take quiz")
         let done = element("Your answers")
         let deadline = Date().addingTimeInterval(60)
         while !picker.exists && !lessonReady.exists && !done.exists && Date() < deadline { Thread.sleep(forTimeInterval: 1) }
@@ -35,7 +35,7 @@ class RandomKnowledgeTestCase: ScreenshotTestCase {
     /// First load of the day generates the lesson, which can take a while, and the generator's
     /// output validation occasionally rejects a draft — retry like a user would.
     func waitForLesson(attempts: Int) -> LessonState {
-        let quizButton = element("Take the quick check")
+        let quizButton = element("Take quiz")
         let results = element("Your answers")
         let retryButton = element("Try again")
         for attempt in 1...attempts {

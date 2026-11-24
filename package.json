@@ -16,6 +16,8 @@
     "test": "npm --prefix apps/web run test",
     "mobile": "npm --prefix apps/mobile run start",
     "icons": "node scripts/icons/generate.mjs",
+    "install:iphone": "bash scripts/ios-install iPhone",
+    "install:ipad": "bash scripts/ios-install iPad",
     "build:web": "npm --prefix apps/web run build",
     "build:ios": "bash scripts/mobile-build ios",
     "build:android": "bash scripts/mobile-build android",

@@ -1,3 +1,4 @@
+import { MathText } from "@/components/lesson/MathText";
 import { DONT_REMEMBER } from "@/lib/quiz";
 import type { Lesson } from "@/lib/types";
 
@@ -26,7 +27,7 @@ export function QuizView({
       <div className="mb-1.5 text-xs text-fg-muted">
         Question {quiz.qIndex + 1} of {lesson.quiz.length}
       </div>
-      <p className="mb-3.5 font-heading text-[17px] font-semibold text-fg-strong">{q.question}</p>
+      <p className="mb-3.5 font-heading text-[17px] font-semibold text-fg-strong"><MathText text={q.question} /></p>
       <div className="mb-1">
         {q.options.map((option, i) => {
           const isCorrect = i === q.correctIndex;
@@ -47,7 +48,7 @@ export function QuizView({
                     : "border-border bg-surface-raised hover:border-rust cursor-pointer")
               }
             >
-              {option}
+              <MathText text={option} />
             </button>
           );
         })}
@@ -68,7 +69,7 @@ export function QuizView({
       )}
       {answered && (
         <>
-          <p className="mt-2.5 text-[13.5px] italic leading-relaxed text-fg-muted">{q.explanation}</p>
+          <p className="mt-2.5 text-[13.5px] italic leading-relaxed text-fg-muted"><MathText text={q.explanation} /></p>
           <button
             type="button"
             onClick={onNext}

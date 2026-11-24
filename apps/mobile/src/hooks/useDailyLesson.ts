@@ -8,7 +8,7 @@ import { advanceQuiz, initialQuizState, selectAnswer } from "@random-knowledge/s
 import type { DailyProgress, GeneratedLesson, HistoryEntry, Lesson, StreakData } from "@random-knowledge/shared/types";
 import { estimateMinutes } from "@random-knowledge/shared/lesson-time";
 import { lessonsNeeded, slotKey, slotOf, type PlanItem } from "@random-knowledge/shared/lesson-plan";
-import { lessonXp } from "@random-knowledge/shared/xp";
+import { goalReached, lessonXp } from "@random-knowledge/shared/xp";
 import {
   addReviewCards,
   addStats,
@@ -33,6 +33,11 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const MAX_LESSON_SECONDS = 20 * 60;
 
 type Phase = "loading" | "categories" | "generating" | "error" | "lesson" | "quiz" | "done";
+
+/** Once the daily goal is met no new lesson is prepared: drop the plan entries still waiting and keep those already made. */
+function keepReady(items: PlanItem[]): PlanItem[] {
+  return items.filter((item) => item.status === "ready");
+}
 
 export function useDailyLesson(user: User | null) {
   const busy = useRef(false);
@@ -202,7 +207,12 @@ export function useDailyLesson(user: User | null) {
     if (!ctx || !first || ctx.paused) return;
     const run = ++planRun.current;
     try {
-      const { goalMinutes } = await getStats(u.uid);
+      const stats = await getStats(u.uid);
+      if (goalReached(stats, today)) {
+        setPlan(keepReady);
+        return;
+      }
+      const { goalMinutes } = stats;
       const needed = lessonsNeeded(goalMinutes, estimateMinutes(first));
       setPlan((items) => [
         ...items.filter((item) => item.slot <= needed || item.status === "ready"),
@@ -214,6 +224,11 @@ export function useDailyLesson(user: User | null) {
         if (planRun.current !== run) return;
         const key = slotKey(today, slot);
         if (lessons.current.has(key)) continue;
+        // The goal may have been met since the last lesson started (by finishing one): then stop making new ones.
+        if (goalReached(await getStats(u.uid), today)) {
+          setPlan(keepReady);
+          return;
+        }
         setPlan((items) => items.map((item) => (item.key === key ? { ...item, status: "generating", error: undefined } : item)));
         try {
           let lesson = await getLesson(u.uid, key);

@@ -13,7 +13,7 @@ type Stage = "idle" | "skipping" | "ingesting" | "paste" | "drafting" | "draft-f
 
 const message = (err: unknown) => (err instanceof Error ? err.message : String(err));
 const errorClass = "whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all";
-const primary = "rounded-full bg-accent px-4 py-2 text-sm font-extrabold text-accent-fg hover:opacity-85 disabled:opacity-50";
+const primary = "rounded-full border-2 border-accent bg-accent px-4 py-2 text-sm font-extrabold text-accent-fg hover:opacity-85 disabled:opacity-50";
 const secondary = "rounded-full border-2 border-border px-4 py-2 text-sm font-extrabold text-fg-muted hover:border-accent disabled:opacity-50";
 
 /**

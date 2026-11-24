@@ -1,3 +1,4 @@
+import { plainMath } from "@random-knowledge/shared/math";
 import { StyleSheet, Text, View } from "react-native";
 import { DONT_REMEMBER } from "@random-knowledge/shared/quiz";
 import type { Lesson } from "@random-knowledge/shared/types";
@@ -13,7 +14,7 @@ export function QuizReview({ lesson, answers }: { lesson: Lesson; answers: numbe
         return (
           <View key={qIndex} style={styles.question}>
             <Text style={{ color: theme.fgMuted, fontSize: 12, marginBottom: 4 }}>Question {qIndex + 1}</Text>
-            <Text style={{ color: theme.fgStrong, fontSize: 14.5, fontWeight: "500", marginBottom: 8 }}>{q.question}</Text>
+            <Text style={{ color: theme.fgStrong, fontSize: 14.5, fontWeight: "500", marginBottom: 8 }}>{plainMath(q.question)}</Text>
             {q.options.map((option, i) => {
               const isCorrect = i === q.correctIndex;
               const isSelected = i === selected;
@@ -21,14 +22,14 @@ export function QuizReview({ lesson, answers }: { lesson: Lesson; answers: numbe
               const borderColor = isCorrect ? theme.accent : isSelected ? theme.rust : theme.border;
               return (
                 <View key={i} style={[styles.option, { backgroundColor, borderColor }]}>
-                  <Text style={{ color: theme.fg, fontSize: 14.5 }}>{option}</Text>
+                  <Text style={{ color: theme.fg, fontSize: 14.5 }}>{plainMath(option)}</Text>
                 </View>
               );
             })}
             {selected === DONT_REMEMBER && (
               <Text style={{ color: theme.fgMuted, fontSize: 13, marginBottom: 8 }}>You said you didn&apos;t remember.</Text>
             )}
-            <Text style={{ color: theme.fgMuted, fontSize: 13, fontStyle: "italic", lineHeight: 19 }}>{q.explanation}</Text>
+            <Text style={{ color: theme.fgMuted, fontSize: 13, fontStyle: "italic", lineHeight: 19 }}>{plainMath(q.explanation)}</Text>
           </View>
         );
       })}

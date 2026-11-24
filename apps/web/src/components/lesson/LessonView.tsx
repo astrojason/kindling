@@ -14,7 +14,7 @@ export function LessonView({ lesson, date, onStartQuiz }: { lesson: Lesson; date
         onClick={onStartQuiz}
         className="rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-accent-fg transition-opacity hover:opacity-85"
       >
-        Take the quick check
+        Take quiz
       </button>
     </div>
   );

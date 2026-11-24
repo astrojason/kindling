@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Builds the mobile app in Release (standalone JS bundle, no Metro needed) and
-# installs it on a connected iPhone. Uses this machine's Xcode, not EAS cloud.
+# installs it on a connected iPhone or iPad. Uses this machine's Xcode, not EAS cloud.
 #
-# Usage: scripts/ios-install [device name or UDID]
+# Usage: scripts/ios-install [iPhone|iPad] [device name or UDID]   (device type defaults to iPhone)
 # With no argument, Expo asks which connected device to use.
 #
 # Needs: the phone connected (or on the same network) with Developer Mode on and
@@ -30,12 +30,17 @@ echo "==> Installing dependencies"
 echo "==> Regenerating the native iOS project"
 npx expo prebuild --platform ios --clean
 
+KIND="iPhone"
+if [[ "${1:-}" == "iPhone" || "${1:-}" == "iPad" ]]; then
+  KIND="$1"
+  shift
+fi
 DEVICE="${1:-}"
 if [[ -z "$DEVICE" ]]; then
-  # No prompt is possible in a non-interactive shell, so pick the device ourselves when exactly one iPhone is available.
+  # No prompt is possible in a non-interactive shell, so pick the device ourselves when exactly one $KIND is available.
   LIST="$(mktemp)"
   xcrun devicectl list devices --json-output "$LIST" >/dev/null 2>&1 || true
-  NAMES="$(python3 - "$LIST" <<'PY'
+  NAMES="$(python3 - "$LIST" "$KIND" <<'PY'
 import json, sys
 try:
     devices = json.load(open(sys.argv[1]))["result"]["devices"]
@@ -43,7 +48,7 @@ except Exception:
     devices = []
 for d in devices:
     hw = d.get("hardwareProperties", {})
-    if hw.get("deviceType") == "iPhone" and hw.get("reality") == "physical" and d.get("connectionProperties", {}).get("pairingState") == "paired":
+    if hw.get("deviceType") == sys.argv[2] and hw.get("reality") == "physical" and d.get("connectionProperties", {}).get("pairingState") == "paired":
         print(d["deviceProperties"]["name"])
 PY
 )"
@@ -52,10 +57,10 @@ PY
   if [[ "$COUNT" == "1" ]]; then
     DEVICE="$NAMES"
   elif [[ "$COUNT" == "0" ]]; then
-    echo "error: no paired iPhone found. Connect and unlock it (Developer Mode on), or pass its name: scripts/ios-install \"My iPhone\"" >&2
+    echo "error: no paired $KIND found. Connect and unlock it (Developer Mode on), or pass its name: scripts/ios-install $KIND \"My $KIND\"" >&2
     exit 1
   else
-    echo "error: several iPhones found; pass one by name: scripts/ios-install \"<name>\"" >&2
+    echo "error: several ${KIND}s found; pass one by name: scripts/ios-install $KIND \"<name>\"" >&2
     printf '%s\n' "$NAMES" >&2
     exit 1
   fi

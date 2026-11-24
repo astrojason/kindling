@@ -13,7 +13,7 @@ final class RandomKnowledgeTests: RandomKnowledgeTestCase {
             shot("01-lesson")
             app.swipeUp()
             shot("02-lesson-body")
-            tap("Take the quick check")
+            tap("Take quiz")
             shot("03-quiz")
             answerQuiz()
         }

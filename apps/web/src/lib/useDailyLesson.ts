@@ -25,6 +25,7 @@ import {
   setWeights,
 } from "@/lib/firestore";
 import { estimateMinutes } from "@/lib/lesson-time";
+import { goalReached } from "@/lib/xp";
 import { lessonsNeeded, slotKey, slotOf, type PlanItem } from "@/lib/lesson-plan";
 import { advanceQuiz, initialQuizState, selectAnswer } from "@/lib/quiz";
 import { lessonXp } from "@/lib/xp";
@@ -33,6 +34,11 @@ import type { DailyProgress, GeneratedLesson, HistoryEntry, Lesson, StreakData }
 const MAX_LESSON_SECONDS = 20 * 60;
 
 type Phase = "loading" | "categories" | "generating" | "error" | "prereview" | "lesson" | "quiz" | "done";
+
+/** Once the daily goal is met no new lesson is prepared: drop the plan entries still waiting and keep those already made. */
+function keepReady(items: PlanItem[]): PlanItem[] {
+  return items.filter((item) => item.status === "ready");
+}
 
 export function useDailyLesson(user: User | null) {
   const busy = useRef(false);
@@ -214,13 +220,23 @@ export function useDailyLesson(user: User | null) {
     if (!ctx || !first || ctx.paused) return;
     const run = ++planRun.current;
     try {
-      const { goalMinutes } = await getStats(u.uid);
+      const stats = await getStats(u.uid);
+      if (goalReached(stats, today)) {
+        setPlan(keepReady);
+        return;
+      }
+      const { goalMinutes } = stats;
       const needed = lessonsNeeded(goalMinutes, estimateMinutes(first));
       setPlan((items) => [...items.filter((item) => item.slot <= needed || item.status === "ready"), ...Array.from({ length: needed }, (_, i) => i + 1).filter((slot) => !items.some((item) => item.slot === slot)).map((slot) => ({ slot, key: slotKey(today, slot), status: "queued" as const, done: false }))].sort((a, b) => a.slot - b.slot));
       for (let slot = 2; slot <= needed; slot++) {
         if (planRun.current !== run) return;
         const key = slotKey(today, slot);
         if (lessons.current.has(key)) continue;
+        // The goal may have been met since the last lesson started (by finishing one): then stop making new ones.
+        if (goalReached(await getStats(u.uid), today)) {
+          setPlan(keepReady);
+          return;
+        }
         setPlan((items) => items.map((item) => (item.key === key ? { ...item, status: "generating", error: undefined } : item)));
         try {
           const saved = await getLesson(u.uid, key);

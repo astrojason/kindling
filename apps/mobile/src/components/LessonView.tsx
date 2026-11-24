@@ -11,7 +11,7 @@ export function LessonView({ lesson, date, onStartQuiz }: { lesson: Lesson; date
       <LessonBody lesson={lesson} />
       <DeepLinks lesson={lesson} />
       <ShareLessonButton lesson={lesson} date={date} />
-      <Button title="Take the quick check" onPress={onStartQuiz} />
+      <Button title="Take quiz" onPress={onStartQuiz} />
     </View>
   );
 }

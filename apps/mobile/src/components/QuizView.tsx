@@ -1,3 +1,4 @@
+import { plainMath } from "@random-knowledge/shared/math";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { DONT_REMEMBER, type QuizState } from "@random-knowledge/shared/quiz";
 import type { Lesson } from "@random-knowledge/shared/types";
@@ -24,7 +25,7 @@ export function QuizView({
       <Text style={{ color: theme.fgMuted, fontSize: 12, marginBottom: 6 }}>
         Question {quiz.qIndex + 1} of {lesson.quiz.length}
       </Text>
-      <Text style={[styles.question, { color: theme.fgStrong }]}>{q.question}</Text>
+      <Text style={[styles.question, { color: theme.fgStrong }]}>{plainMath(q.question)}</Text>
       <View style={{ marginBottom: 4 }}>
         {q.options.map((option, i) => {
           const isCorrect = i === q.correctIndex;
@@ -39,7 +40,7 @@ export function QuizView({
               onPress={() => onSelect(i)}
               style={[styles.option, { backgroundColor, borderColor }]}
             >
-              <Text style={{ color: theme.fg, fontSize: 14.5 }}>{option}</Text>
+              <Text style={{ color: theme.fg, fontSize: 14.5 }}>{plainMath(option)}</Text>
             </Pressable>
           );
         })}
@@ -59,7 +60,7 @@ export function QuizView({
       {answered && (
         <>
           <Text style={{ color: theme.fgMuted, fontSize: 13, fontStyle: "italic", lineHeight: 19, marginTop: 8 }}>
-            {q.explanation}
+            {plainMath(q.explanation)}
           </Text>
           <View style={{ marginTop: 18 }}>
             <Button title="Continue" onPress={onNext} />

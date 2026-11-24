@@ -67,7 +67,7 @@ export function NotesLibrary({ notes, error = null, now = new Date() }: { notes:
           {visible.length === 0 ? (
             <p className="py-6 text-center text-sm text-fg-muted">No notes match.</p>
           ) : (
-            <ul className="space-y-2 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
+            <ul className="space-y-2">
               {visible.map((n) => (
                 <li key={n.id}>
                   <Link href={`/notes/${n.id}`} className="block rounded-sm border border-border px-3.5 py-3 hover:border-accent">

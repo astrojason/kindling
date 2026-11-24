@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { gameXp, goalFraction, lessonXp, levelFor, minutesOn, reviewXp, weekDays, XP_PER_LEVEL } from "@random-knowledge/shared/xp";
+import { gameXp, goalFraction, goalReached, lessonXp, levelFor, minutesOn, reviewXp, weekDays, XP_PER_LEVEL } from "@random-knowledge/shared/xp";
 
 describe("xp", () => {
   it("gives 10 per correct answer plus a 15 point completion bonus", () => {
@@ -30,5 +30,11 @@ describe("xp", () => {
     expect(minutesOn(stats, "2026-11-20")).toBe(0);
     expect(goalFraction(stats, "2026-11-21")).toBe(0.55);
     expect(goalFraction({ ...stats, seconds: { "2026-11-21": 9999 } }, "2026-11-21")).toBe(1);
+  });
+  it("reports the goal as reached once the day's learning time covers it", () => {
+    const stats = { xp: 0, goalMinutes: 10, seconds: { "2026-11-21": 599 } };
+    expect(goalReached(stats, "2026-11-21")).toBe(false);
+    expect(goalReached({ ...stats, seconds: { "2026-11-21": 600 } }, "2026-11-21")).toBe(true);
+    expect(goalReached(stats, "2026-11-22")).toBe(false);
   });
 });

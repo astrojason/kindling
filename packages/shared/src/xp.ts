@@ -44,6 +44,11 @@ export function minutesOn(stats: StatsData, date: string): number {
   return Math.floor((stats.seconds[date] ?? 0) / 60);
 }
 
+/** Whether the daily goal is met on `date`: no more lessons are prepared for the day once it is. */
+export function goalReached(stats: StatsData, date: string): boolean {
+  return goalFraction(stats, date) >= 1;
+}
+
 /** Share of the daily goal reached on `date`, from 0 to 1 (counts partial minutes). */
 export function goalFraction(stats: StatsData, date: string): number {
   const goalSeconds = Math.max(stats.goalMinutes, 1) * 60;

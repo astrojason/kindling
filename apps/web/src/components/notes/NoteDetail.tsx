@@ -99,7 +99,7 @@ export function NoteDetail({ uid, note }: { uid: string; note: Note }) {
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        <Link href={`/notes/${note.id}/session`} className="rounded-full bg-accent px-4 py-2 text-sm font-extrabold text-accent-fg hover:opacity-85">Quiz me</Link>
+        <Link href={`/notes/${note.id}/session`} className="rounded-full border-2 border-accent bg-accent px-4 py-2 text-sm font-extrabold text-accent-fg hover:opacity-85">Quiz me</Link>
         <button type="button" onClick={() => setSpeedReading(true)} className={actionClass}>Speed read</button>
         <Link href={`/notes/${note.id}/edit`} className={actionClass}>Edit</Link>
         <button type="button" onClick={() => setConfirming(true)} className={actionClass}>Delete</button>

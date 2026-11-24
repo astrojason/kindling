@@ -1,3 +1,4 @@
+import { MathText } from "@/components/lesson/MathText";
 import { DONT_REMEMBER } from "@/lib/quiz";
 import type { Lesson } from "@/lib/types";
 
@@ -11,7 +12,7 @@ export function QuizReview({ lesson, answers }: { lesson: Lesson; answers: numbe
           return (
             <div key={qIndex}>
               <p className="mb-2 text-[13px] text-fg-muted">Question {qIndex + 1}</p>
-              <p className="mb-2.5 text-[14.5px] font-medium text-fg-strong">{q.question}</p>
+              <p className="mb-2.5 text-[14.5px] font-medium text-fg-strong"><MathText text={q.question} /></p>
               <div className="mb-1">
                 {q.options.map((option, i) => {
                   const isCorrect = i === q.correctIndex;
@@ -29,7 +30,7 @@ export function QuizReview({ lesson, answers }: { lesson: Lesson; answers: numbe
                             : "border-border bg-surface-raised")
                       }
                     >
-                      {option}
+                      <MathText text={option} />
                     </div>
                   );
                 })}
@@ -37,7 +38,7 @@ export function QuizReview({ lesson, answers }: { lesson: Lesson; answers: numbe
               {selected === DONT_REMEMBER && (
                 <p className="mb-2 text-[13px] text-fg-muted">You said you didn&apos;t remember.</p>
               )}
-              <p className="text-[13.5px] italic leading-relaxed text-fg-muted">{q.explanation}</p>
+              <p className="text-[13.5px] italic leading-relaxed text-fg-muted"><MathText text={q.explanation} /></p>
             </div>
           );
         })}

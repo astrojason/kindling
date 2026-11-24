@@ -23,4 +23,8 @@ describe("plainMath", () => {
     expect(plainMath(String.raw`So \(P(\text{all distinct}) = \frac{365}{365} \cdot \frac{364}{365} \cdots \frac{343}{365}\approx 0.4927\), calculated as \(1 - 0.4927\).`))
       .toBe("So P(all distinct) = 365/365 × 364/365 × … × 343/365 ≈ 0.4927, calculated as 1 - 0.4927.");
   });
+
+  it("turns sigma and Greek letters into their symbols", () => {
+    expect(plainMath(String.raw`\(\Sigma\) and \(\sum x_i\) with \(\mu\), \(\sigma\)`)).toBe("Σ and Σ x_i with μ, σ");
+  });
 });

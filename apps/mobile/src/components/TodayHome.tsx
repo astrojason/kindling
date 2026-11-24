@@ -9,6 +9,7 @@ import { getStreakStatus } from "@random-knowledge/shared/streak";
 import type { StatsData, StreakData } from "@random-knowledge/shared/types";
 import { goalFraction, levelFor, minutesOn, weekDays } from "@random-knowledge/shared/xp";
 import { useProgressData } from "../hooks/useProgressData";
+import { useIsTablet } from "../lib/layout";
 import { radius, useTheme } from "../lib/theme";
 import { ErrorBox } from "./ErrorBox";
 import { DueNotes } from "./notes/DueNotes";
@@ -42,6 +43,7 @@ export function TodayHome({
   onOpenNote: (id: string) => void;
 }) {
   const theme = useTheme();
+  const tablet = useIsTablet();
   const progress = useProgressData(uid, refreshKey);
   const stats = progress.data?.stats;
   const { notes, error: notesError } = useNotes(uid);
@@ -67,6 +69,8 @@ export function TodayHome({
 
       {progress.loading && <LoadingView text="Loading your progress" />}
       {progress.error && <ErrorBox message={progress.error} />}
+      <View style={tablet ? styles.columns : styles.stack}>
+      <View style={tablet ? styles.column : styles.stack}>
       {stats && <GoalCard stats={stats} date={date} />}
 
       <View style={[styles.hero, { backgroundColor: theme.heroFrom }]}>
@@ -114,7 +118,9 @@ export function TodayHome({
           </Text>
         </Pressable>
       </View>
+      </View>
 
+      <View style={tablet ? styles.column : styles.stack}>
       {/* Judge "nothing due" only once the notes have loaded (or failed), so it never flashes while they are still coming. */}
       {progress.data && (notes || notesError) && (
         <View style={[styles.card, { backgroundColor: theme.surface }]}>
@@ -139,6 +145,8 @@ export function TodayHome({
         </View>
       )}
       <DueNotes notes={notes ?? []} error={notesError ? `Could not load your notes for review: ${notesError}` : null} onOpen={onOpenNote} />
+      </View>
+      </View>
     </View>
   );
 }
@@ -183,6 +191,8 @@ function GoalCard({ stats, date }: { stats: StatsData; date: string }) {
 const styles = StyleSheet.create({
   stack: { gap: 16 },
   flex: { flex: 1 },
+  columns: { flexDirection: "row", alignItems: "flex-start", gap: 20 },
+  column: { flex: 1, gap: 16 },
   header: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
   greeting: { fontSize: 13, fontWeight: "600" },
   appName: { fontSize: 26, fontWeight: "800" },

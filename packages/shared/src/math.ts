@@ -15,9 +15,16 @@ export function splitMath(text: string): MathSegment[] {
   return segments;
 }
 
+const GREEK: Record<string, string> = {
+  alpha: "α", beta: "β", gamma: "γ", delta: "δ", epsilon: "ε", theta: "θ", lambda: "λ", mu: "μ", pi: "π", rho: "ρ", sigma: "σ", tau: "τ", phi: "φ", omega: "ω",
+  Gamma: "Γ", Delta: "Δ", Theta: "Θ", Lambda: "Λ", Pi: "Π", Phi: "Φ", Omega: "Ω",
+};
+
 /** Plain-text form of LaTeX in `text`, for read-aloud and for surfaces that can't render math. */
 export function plainMath(text: string): string {
   return text
+    .replace(/\\(?:sum|Sigma)\b/g, "Σ")
+    .replace(/\\([A-Za-z]+)\b/g, (whole, name: string) => GREEK[name] ?? whole)
     .replace(/\\[()[\]]/g, "")
     .replace(/\\(?:text|mathrm)\{([^{}]*)\}/g, "$1")
     .replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, "$1/$2")

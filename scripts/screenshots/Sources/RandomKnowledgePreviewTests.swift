@@ -11,7 +11,7 @@ final class RandomKnowledgePreviewTests: RandomKnowledgeTestCase {
             pause(2.5)
             app.swipeUp(velocity: .slow)
             pause(2)
-            tap("Take the quick check")
+            tap("Take quiz")
             for question in 1...3 {
                 waitFor(element("Question \(question) of 3"), timeout: 10, "question \(question)")
                 pause(1.5)

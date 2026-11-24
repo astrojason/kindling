@@ -4,7 +4,7 @@ import { useTheme } from "../lib/theme";
 
 export type Tab = "today" | "explore" | "notes" | "review" | "profile";
 
-const TABS: { key: Tab; label: string; icon: SFSymbol }[] = [
+export const TABS: { key: Tab; label: string; icon: SFSymbol }[] = [
   { key: "today", label: "Today", icon: "sun.max.fill" },
   { key: "explore", label: "Explore", icon: "safari" },
   { key: "notes", label: "Notes", icon: "note.text" },

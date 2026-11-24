@@ -1,9 +1,9 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { AccessGate } from "@/components/AccessGate";
 import { EditNote } from "@/components/notes/EditNote";
-import { LoadState, PageFrame } from "@/components/share/PageFrame";
+import { NotesPane } from "@/components/notes/NotesPane";
+import { LoadState } from "@/components/share/PageFrame";
 import { useAuth } from "@/lib/auth-context";
 import { getNote } from "@/lib/notes-firestore";
 import { useLoad } from "@/lib/useLoad";
@@ -20,8 +20,6 @@ export default function EditNoteRoute() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   return (
-    <AccessGate>
-      <PageFrame>{user && <LoadedNote uid={user.uid} id={id} />}</PageFrame>
-    </AccessGate>
+    <NotesPane>{user && <LoadedNote uid={user.uid} id={id} />}</NotesPane>
   );
 }
