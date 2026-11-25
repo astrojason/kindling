@@ -1,14 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito } from "next/font/google";
+import localFont from "next/font/local";
 import { AuthProvider } from "@/lib/auth-context";
 import { ToastProvider } from "@/components/Toast";
 import { SiteFooter } from "@/components/legal/SiteFooter";
 import "./globals.css";
 
-const nunito = Nunito({
+// Shipped with the app (Nunito, SIL Open Font License, see fonts/OFL.txt) rather than fetched from Google Fonts at
+// build time, which App Hosting's builders intermittently could not reach. One variable file covers every weight.
+const nunito = localFont({
+  src: "./fonts/nunito-latin-wght.woff2",
   variable: "--font-nunito",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: "200 1000",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
