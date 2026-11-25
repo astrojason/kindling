@@ -28,21 +28,20 @@ afterEach(async () => {
 const render = async (state: typeof explore) => { explore = state; await act(async () => root.render(createElement(ExplorePage))); };
 
 it("shows the user's own articles feed when they have an articles account", async () => {
-  await render({ loading: false, data: { hasArticles: true, shared: [{ id: "s1", title: "Tide pools", category: "nature", ownerName: "Ada", createdAt: "" }] }, error: null });
+  await render({ loading: false, data: { hasArticles: true, lessons: [{ uid: "ada", key: "2026-11-20~2", title: "Tide pools", category: "nature" }] }, error: null });
   expect(container.textContent).toContain("Articles feed");
-  expect(container.querySelector("a[href='/share/s1']")).toBeNull();
+  expect(container.querySelector("a[href^='/explore/']")).toBeNull();
 });
 
-it("otherwise lists lessons other people shared, each opening its share page", async () => {
-  await render({ loading: false, data: { hasArticles: false, shared: [{ id: "s1", title: "Tide pools", category: "nature", ownerName: "Ada", createdAt: "" }] }, error: null });
-  const link = container.querySelector("a[href='/share/s1']");
+it("otherwise lists the lessons made for other people, each opening in Explore's reader", async () => {
+  await render({ loading: false, data: { hasArticles: false, lessons: [{ uid: "ada", key: "2026-11-20~2", title: "Tide pools", category: "nature" }] }, error: null });
+  const link = container.querySelector("a[href='/explore/ada/2026-11-20~2']");
   expect(link?.textContent).toContain("Tide pools");
-  expect(link?.textContent).toContain("Ada");
   expect(container.textContent).not.toContain("Articles feed");
 });
 
 it("explains how to fill Explore when there is nothing to show", async () => {
-  await render({ loading: false, data: { hasArticles: false, shared: [] }, error: null });
+  await render({ loading: false, data: { hasArticles: false, lessons: [] }, error: null });
   expect(container.textContent).toMatch(/articles account/i);
   expect(container.querySelector("a[href='/profile']")).not.toBeNull();
 });

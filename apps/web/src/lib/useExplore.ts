@@ -2,12 +2,12 @@
 
 import type { User } from "firebase/auth";
 import { requestJson } from "@/lib/api-client";
-import type { SharedLessonSummary } from "@/lib/types";
+import type { ExploreLesson } from "@/lib/types";
 import { useLoad } from "@/lib/useLoad";
 
 export interface ExploreData {
   hasArticles: boolean;
-  shared: SharedLessonSummary[];
+  lessons: ExploreLesson[];
 }
 
 // The tab bar is on every screen, so one answer is kept per account instead of asking again on each navigation.
@@ -29,13 +29,13 @@ function loadExplore(user: User): Promise<ExploreData> {
   return pending;
 }
 
-/** Whether this user has their own articles feed, and the lessons other people shared: what Explore shows. */
+/** Whether this user has their own articles feed, and the lessons generated for everyone else: what Explore shows. */
 export function useExplore(user: User | null) {
-  return useLoad(`explore-${user?.uid ?? "signed-out"}`, () => (user ? loadExplore(user) : Promise.resolve({ hasArticles: false, shared: [] })));
+  return useLoad(`explore-${user?.uid ?? "signed-out"}`, () => (user ? loadExplore(user) : Promise.resolve({ hasArticles: false, lessons: [] })));
 }
 
-/** Explore is offered only when it has something to show; a failed check keeps it, so the page can show the error. */
+/** Explore is offered only when it has something to show (an articles feed or anyone else's lessons); a failed check keeps it, so the page can show the error. */
 export function exploreAvailable(state: { data: ExploreData | null; error: string | null }): boolean {
   if (state.error) return true;
-  return Boolean(state.data && (state.data.hasArticles || state.data.shared.length > 0));
+  return Boolean(state.data && (state.data.hasArticles || state.data.lessons.length > 0));
 }

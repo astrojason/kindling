@@ -164,13 +164,13 @@ export interface SharedLesson {
   lesson: Lesson;
 }
 
-/** One entry in Explore's list of lessons other people shared. */
-export interface SharedLessonSummary {
-  id: string;
+/** One entry in Explore's list of lessons generated for other people: where it is stored, and what it is about. */
+export interface ExploreLesson {
+  uid: string;
+  /** The lesson's key under users/{uid}/lessons: a date, or `date~slot` for a later lesson of that day. */
+  key: string;
   title: string;
   category: CategoryKey;
-  ownerName: string | null;
-  createdAt: string;
 }
 
 /** What a signed-out or not-yet-approved visitor may see of a share: enough to make the invite interesting. */

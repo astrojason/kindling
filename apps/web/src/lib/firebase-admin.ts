@@ -6,7 +6,7 @@ import { getStorage } from "firebase-admin/storage";
 import type { AccessRequest } from "@/lib/auth-guard";
 import { CATEGORY_KEYS, defaultWeights, type CategoryKey, type Weights } from "@/lib/categories";
 import { fromFirestoreLesson, toFirestoreLesson } from "@/lib/lesson-storage";
-import type { CronRunLogEntry, CronRunResult, GenerationLogEntry, GenerationSource, HistoryEntry, Lesson, PushToken, SharedLessonSummary, SharePreview } from "@/lib/types";
+import type { CronRunLogEntry, CronRunResult, GenerationLogEntry, GenerationSource, HistoryEntry, Lesson, ExploreLesson, PushToken, SharePreview } from "@/lib/types";
 import { mergeRoleClaim } from "@/lib/claims";
 
 const STORAGE_BUCKET = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
@@ -234,12 +234,24 @@ export async function getSharePreviewAdmin(id: string): Promise<SharePreview | n
   return { title, category, ownerName: ownerName ?? null };
 }
 
-/** The lessons other people shared most recently (never the caller's own), newest first, without the lesson bodies. */
-export async function listOthersSharesAdmin(uid: string, limit: number): Promise<SharedLessonSummary[]> {
-  // Firestore can't order by createdAt and filter ownerUid != uid without a composite index, so read a little extra and filter here.
-  const snap = await getFirestore(getAdminApp()).collection("shares").orderBy("createdAt", "desc").limit(limit * 2).get();
-  return snap.docs
-    .filter((d) => d.get("ownerUid") !== uid)
-    .slice(0, limit)
-    .map((d) => ({ id: d.id, title: d.get("title"), category: d.get("category"), ownerName: d.get("ownerName") ?? null, createdAt: d.get("createdAt") }));
+/**
+ * The lessons generated for everyone else with access (never the caller), newest first: merged from each person's
+ * lesson history (their last 60), so no index over every lesson is needed.
+ */
+export async function listOthersLessonsAdmin(uid: string, limit: number): Promise<ExploreLesson[]> {
+  const [granted, privileged] = await Promise.all([listGrantedUserIds(), listPrivilegedUserIds()]);
+  const others = [...new Set([...granted, ...privileged])].filter((id) => id !== uid);
+  if (others.length === 0) return [];
+  const db = getFirestore(getAdminApp());
+  const histories = await db.getAll(...others.map((id) => db.collection("users").doc(id).collection("meta").doc("history")));
+  return histories
+    .flatMap((snap) => ((snap.get("entries") as HistoryEntry[] | undefined) ?? []).map((entry) => ({ uid: snap.ref.parent.parent!.id, key: entry.date, title: entry.title, category: entry.category })))
+    .sort((a, b) => b.key.localeCompare(a.key))
+    .slice(0, limit);
+}
+
+/** One lesson of any account, for Explore's reader. */
+export async function getLessonAdmin(uid: string, key: string): Promise<Lesson | null> {
+  const snap = await getFirestore(getAdminApp()).collection("users").doc(uid).collection("lessons").doc(key).get();
+  return snap.exists ? fromFirestoreLesson(snap.data() as Parameters<typeof fromFirestoreLesson>[0]) : null;
 }

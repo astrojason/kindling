@@ -21,7 +21,7 @@ function Icon({ children }: { children: ReactNode }) {
 
 const TABS = [
   { href: "/", label: "Today", match: ["/"], icon: <Icon><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" /></Icon> },
-  { href: "/discover", label: "Explore", match: ["/discover", "/share"], icon: <Icon><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5Z" /></Icon> },
+  { href: "/discover", label: "Explore", match: ["/discover", "/explore", "/share"], icon: <Icon><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5Z" /></Icon> },
   { href: "/notes", label: "Notes", match: ["/notes"], icon: <Icon><path d="M6 3.5h9l3.5 3.5v13H6Z" /><path d="M14.5 3.5V7.5h4M9 12h6M9 15.5h6" /></Icon> },
   { href: "/review", label: "Review", match: ["/review", "/library", "/lesson", "/stash"], icon: <Icon><rect x="7" y="3.5" width="12" height="15" rx="2.5" /><path d="M4.5 7v11a2.5 2.5 0 0 0 2.5 2.5h9" /></Icon> },
   { href: "/profile", label: "Profile", match: ["/profile", "/settings", "/admin"], icon: <Icon><circle cx="12" cy="8" r="3.6" /><path d="M4.5 20.5c.8-4 3.8-6 7.5-6s6.7 2 7.5 6" /></Icon> },
