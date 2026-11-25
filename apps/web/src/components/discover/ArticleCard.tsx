@@ -10,7 +10,7 @@ import { ApiError, requestJson } from "@/lib/api-client";
 import { createNote, incrementNotesStats } from "@/lib/notes-firestore";
 import { fieldClass } from "@/components/form/field";
 
-type Stage = "idle" | "skipping" | "ingesting" | "paste" | "drafting" | "draft-failed" | "review";
+type Stage = "idle" | "skipping" | "marking-read" | "ingesting" | "paste" | "drafting" | "draft-failed" | "review";
 
 const message = (err: unknown) => (err instanceof Error ? err.message : String(err));
 const errorClass = "whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all";
@@ -18,8 +18,9 @@ const primary = "rounded-button border-2 border-accent bg-accent px-3 py-1.5 tex
 const secondary = "rounded-button border-2 border-border px-3 py-1.5 text-sm font-extrabold text-fg-muted hover:border-accent disabled:opacity-50";
 
 /**
- * One suggested article. "Make a note" fetches the full text (or takes pasted text when scraping fails), has
- * the AI draft a note, and opens it in the form to review before anything is saved; "Skip" marks it read.
+ * One suggested article. "Make a note" first records the read date in the articles app, then fetches the full
+ * text (or takes pasted text when scraping fails), has the AI draft a note, and opens it in the form to review
+ * before anything is saved; "Skip" marks it read.
  */
 export function ArticleCard({ article, uid, getToken, onDone }: { article: DiscoverArticle; uid: string; getToken: () => Promise<string>; onDone: (articleId: number) => void }) {
   const router = useRouter();
@@ -29,6 +30,7 @@ export function ArticleCard({ article, uid, getToken, onDone }: { article: Disco
   const [pasted, setPasted] = useState("");
   const [content, setContent] = useState<string | null>(null);
   const [draft, setDraft] = useState<Partial<CreateNoteInput> | null>(null);
+  const [readRecorded, setReadRecorded] = useState(false);
 
   const markRead = async () => requestJson("/api/discover/mark-read", await getToken(), { method: "POST", body: JSON.stringify({ articleId: article.id }) });
 
@@ -60,8 +62,20 @@ export function ArticleCard({ article, uid, getToken, onDone }: { article: Disco
   }
 
   async function makeNote(pastedContent?: string) {
-    setStage("ingesting");
     setError(null);
+    if (!readRecorded) {
+      setStage("marking-read");
+      try {
+        await markRead();
+        setReadRecorded(true);
+      } catch (err) {
+        console.error("Failed to record the article's read date", err);
+        setError(`Could not mark the article read: ${message(err)}`);
+        setStage("idle");
+        return;
+      }
+    }
+    setStage("ingesting");
     let text: string;
     try {
       const result = await requestJson("/api/discover/ingest", await getToken(), { method: "POST", body: JSON.stringify({ articleId: article.id, ...(pastedContent ? { pastedContent } : {}) }) });
@@ -86,18 +100,12 @@ export function ArticleCard({ article, uid, getToken, onDone }: { article: Disco
       console.error("Failed to update the notes count", err);
       warnings.push(`Note saved, but its count could not be updated: ${message(err)}.`);
     }
-    try {
-      await markRead();
-    } catch (err) {
-      console.error("Failed to mark the article read", err);
-      warnings.push(`Note saved, but the article could not be marked read: ${message(err)}.`);
-    }
     toast(warnings.length > 0 ? warnings.join(" ") : "Note saved.");
     onDone(article.id);
     router.push(`/notes/${id}`);
   }
 
-  const working = stage === "skipping" || stage === "ingesting" || stage === "drafting";
+  const working = stage === "skipping" || stage === "marking-read" || stage === "ingesting" || stage === "drafting";
 
   return (
     <article className="rounded-sm border border-border p-3.5">
@@ -126,7 +134,7 @@ export function ArticleCard({ article, uid, getToken, onDone }: { article: Disco
           )}
           <div className="flex flex-wrap gap-2">
             <button type="button" disabled={working} onClick={() => void makeNote()} className={primary}>
-              {stage === "ingesting" ? "Fetching the article…" : stage === "drafting" ? "Drafting the note…" : "Make a note"}
+              {stage === "marking-read" ? "Marking it read…" : stage === "ingesting" ? "Fetching the article…" : stage === "drafting" ? "Drafting the note…" : "Make a note"}
             </button>
             {stage === "draft-failed" && content && <button type="button" onClick={() => void makeDraft(content)} className={secondary}>Retry</button>}
             <button type="button" disabled={working} onClick={() => void skip()} className={secondary}>{stage === "skipping" ? "Skipping…" : "Skip"}</button>

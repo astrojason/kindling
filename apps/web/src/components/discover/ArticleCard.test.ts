@@ -97,10 +97,12 @@ it("shows progress while skipping and a failed skip in full", async () => {
   expect(button("Skip").disabled).toBe(false);
 });
 
-it("makes a note: fetches the article, drafts it, and opens the draft in the form to review", async () => {
+it("makes a note: records the read date first, then fetches the article, drafts it, and opens the draft in the form to review", async () => {
   await render();
   await click(button("Make a note"));
 
+  expect(body(markRead)).toEqual({ articleId: 5 });
+  expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(["/api/discover/mark-read", "/api/discover/ingest", "/api/notes/draft"]);
   expect(body(ingest)).toEqual({ articleId: 5 });
   expect(body(draftRoute)).toEqual({ title: "Dovetail joints", content: TEXT });
   expect(field("Title").value).toBe("Dovetail joints");
@@ -111,12 +113,18 @@ it("makes a note: fetches the article, drafts it, and opens the draft in the for
 });
 
 it("shows what step it is on while it works", async () => {
+  let finishRead!: (r: Response) => void;
+  markRead.mockReturnValueOnce(new Promise<Response>((resolve) => { finishRead = resolve; }));
   let finishIngest!: (r: Response) => void;
   ingest.mockReturnValueOnce(new Promise<Response>((resolve) => { finishIngest = resolve; }));
   let finishDraft!: (r: Response) => void;
   draftRoute.mockReturnValueOnce(new Promise<Response>((resolve) => { finishDraft = resolve; }));
   await render();
   await click(button("Make a note"));
+  expect(button("Marking it read…").disabled).toBe(true);
+  expect(button("Skip").disabled).toBe(true);
+
+  await act(async () => finishRead(Response.json({ ok: true })));
   expect(button("Fetching the article…").disabled).toBe(true);
 
   await act(async () => finishIngest(Response.json({ content: TEXT, scraped: true })));
@@ -126,7 +134,7 @@ it("shows what step it is on while it works", async () => {
   expect(field("Title")).toBeTruthy();
 });
 
-it("saves the reviewed note with its source, counts it, marks the article read, and opens the note", async () => {
+it("saves the reviewed note with its source, counts it, and opens the note, without marking the article read again", async () => {
   await render();
   await click(button("Make a note"));
   await setValue(field("What did it say?"), "Edited by me");
@@ -134,7 +142,7 @@ it("saves the reviewed note with its source, counts it, marks the article read, 
 
   expect(createNote).toHaveBeenCalledWith("u1", { title: "Dovetail joints", tag: "woodworking", source_url: "https://example.com/dovetails", what_it_said: "Edited by me", why_it_matters: "Drafted why", application: "Drafted how" });
   expect(incrementNotesStats).toHaveBeenCalledWith("u1", { total_notes: 1 });
-  expect(body(markRead)).toEqual({ articleId: 5 });
+  expect(markRead).toHaveBeenCalledTimes(1);
   expect(toast).toHaveBeenCalledWith("Note saved.");
   expect(onDone).toHaveBeenCalledWith(5);
   expect(push).toHaveBeenCalledWith("/notes/note-1");
@@ -153,6 +161,7 @@ it("offers pasting when the article cannot be fetched, with every reason in full
   await setValue(field("Pasted article text"), "  The pasted article text  ");
   await click(button("Use pasted text"));
   expect(body(ingest, 1)).toEqual({ articleId: 5, pastedContent: "The pasted article text" });
+  expect(markRead).toHaveBeenCalledTimes(1); // already recorded when "Make a note" was pressed
   expect(body(draftRoute)).toEqual({ title: "Dovetail joints", content: TEXT });
   expect(field("Title").value).toBe("Dovetail joints");
 });
@@ -184,20 +193,25 @@ it("shows a failed save in the form, saves nothing else, and stays", async () =>
   await saveForm();
 
   expect(container.querySelector("[role='alert']")?.textContent).toContain("Missing or insufficient permissions.");
-  expect(markRead).not.toHaveBeenCalled();
+  expect(markRead).toHaveBeenCalledTimes(1);
   expect(onDone).not.toHaveBeenCalled();
   expect(push).not.toHaveBeenCalled();
 });
 
-it("reports a failed mark-read after saving, instead of hiding it, and still opens the saved note", async () => {
+it("shows a failure to record the read date in full, goes no further, and lets the user try again", async () => {
   markRead.mockResolvedValueOnce(Response.json({ error: "database is locked" }, { status: 502 }));
   await render();
   await click(button("Make a note"));
-  await saveForm();
 
-  expect(toast).toHaveBeenCalledWith(expect.stringContaining("database is locked"));
-  expect(toast).not.toHaveBeenCalledWith("Note saved.");
-  expect(push).toHaveBeenCalledWith("/notes/note-1");
+  const alert = container.querySelector("[role='alert']");
+  expect(alert?.textContent).toContain("database is locked");
+  expect(alert?.className).toContain("select-all");
+  expect(ingest).not.toHaveBeenCalled();
+  expect(button("Make a note").disabled).toBe(false);
+
+  await click(button("Make a note"));
+  expect(markRead).toHaveBeenCalledTimes(2);
+  expect(field("Title").value).toBe("Dovetail joints");
 });
 
 it("reports a failed count update after saving", async () => {

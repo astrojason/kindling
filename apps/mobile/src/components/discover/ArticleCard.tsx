@@ -11,7 +11,7 @@ import { Field } from "../notes/Field";
 import { NoteForm } from "../notes/NoteForm";
 import { Button } from "../ui";
 
-type Stage = "idle" | "skipping" | "ingesting" | "paste" | "drafting" | "draft-failed" | "review";
+type Stage = "idle" | "skipping" | "marking-read" | "ingesting" | "paste" | "drafting" | "draft-failed" | "review";
 
 const message = (err: unknown) => (err instanceof Error ? err.message : String(err));
 
@@ -27,6 +27,7 @@ export function ArticleCard({ article, uid, getToken, onDone, onSaved }: { artic
   const [pasted, setPasted] = useState("");
   const [content, setContent] = useState<string | null>(null);
   const [draft, setDraft] = useState<Partial<CreateNoteInput> | null>(null);
+  const [readRecorded, setReadRecorded] = useState(false);
 
   const markRead = async () => requestJson("/api/discover/mark-read", await getToken(), { method: "POST", body: JSON.stringify({ articleId: article.id }) });
 
@@ -58,8 +59,21 @@ export function ArticleCard({ article, uid, getToken, onDone, onSaved }: { artic
   }
 
   async function makeNote(pastedContent?: string) {
-    setStage("ingesting");
     setError(null);
+    // The read date goes into the articles app as soon as "Make a note" is pressed, before the note exists.
+    if (!readRecorded) {
+      setStage("marking-read");
+      try {
+        await markRead();
+        setReadRecorded(true);
+      } catch (err) {
+        console.error("Failed to record the article's read date", err);
+        setError(`Could not mark the article read: ${message(err)}`);
+        setStage("idle");
+        return;
+      }
+    }
+    setStage("ingesting");
     let text: string;
     try {
       const result = await requestJson("/api/discover/ingest", await getToken(), { method: "POST", body: JSON.stringify({ articleId: article.id, ...(pastedContent ? { pastedContent } : {}) }) });
@@ -84,17 +98,11 @@ export function ArticleCard({ article, uid, getToken, onDone, onSaved }: { artic
       console.error("Failed to update the notes count", err);
       warnings.push(`Note saved, but its count could not be updated: ${message(err)}.`);
     }
-    try {
-      await markRead();
-    } catch (err) {
-      console.error("Failed to mark the article read", err);
-      warnings.push(`Note saved, but the article could not be marked read: ${message(err)}.`);
-    }
     onDone(article.id);
     onSaved(id, warnings.length > 0 ? warnings.join(" ") : "Note saved.");
   }
 
-  const working = stage === "skipping" || stage === "ingesting" || stage === "drafting";
+  const working = stage === "skipping" || stage === "marking-read" || stage === "ingesting" || stage === "drafting";
 
   return (
     <View style={[styles.card, { borderColor: theme.border }]}>
@@ -123,7 +131,7 @@ export function ArticleCard({ article, uid, getToken, onDone, onSaved }: { artic
               <Button title="Use pasted text" onPress={() => void makeNote(pasted.trim())} disabled={!pasted.trim()} />
             </View>
           )}
-          <Button title={stage === "ingesting" ? "Fetching the article…" : stage === "drafting" ? "Drafting the note…" : "Make a note"} onPress={() => void makeNote()} disabled={working} />
+          <Button title={stage === "marking-read" ? "Marking it read…" : stage === "ingesting" ? "Fetching the article…" : stage === "drafting" ? "Drafting the note…" : "Make a note"} onPress={() => void makeNote()} disabled={working} />
           {stage === "draft-failed" && content && <Button title="Retry" variant="secondary" onPress={() => void makeDraft(content)} />}
           <Button title={stage === "skipping" ? "Skipping…" : "Skip"} variant="secondary" onPress={() => void skip()} disabled={working} />
         </View>
