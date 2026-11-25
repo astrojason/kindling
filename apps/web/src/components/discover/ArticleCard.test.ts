@@ -117,50 +117,63 @@ it("shows progress while marking as read and a failure in full", async () => {
   expect(button("Mark as read").disabled).toBe(false);
 });
 
-it("makes a note: records the read date first, then fetches the article, drafts it, and opens the draft in the form to review", async () => {
+const write = async () => {
+  await setValue(field("What did it say?"), "What I read");
+  await setValue(field("Why does it matter?"), "Why I care");
+  await setValue(field("How would you explain it?"), "How I'd say it");
+  await setValue(field("Tag"), "woodworking");
+};
+
+it("makes a note: opens the article in a new tab, records the read date, and opens an empty form to write the note in", async () => {
+  const open = vi.fn();
+  vi.stubGlobal("open", open);
   await render();
   await click(button("Make a note"));
 
+  expect(open).toHaveBeenCalledWith("https://example.com/dovetails", "_blank", "noopener,noreferrer");
   expect(body(markRead)).toEqual({ articleId: 5 });
-  expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(["/api/discover/mark-read", "/api/discover/ingest", "/api/notes/draft"]);
-  expect(body(ingest)).toEqual({ articleId: 5 });
-  expect(body(draftRoute)).toEqual({ title: "Dovetail joints", content: TEXT });
   expect(field("Title").value).toBe("Dovetail joints");
-  expect(field("Tag").value).toBe("woodworking");
   expect(field("Source URL").value).toBe("https://example.com/dovetails");
-  expect(field("What did it say?").value).toBe("Drafted what");
-  expect(createNote).not.toHaveBeenCalled(); // a draft is never saved on its own
+  // The note is the user's own writing: nothing is fetched or drafted for them.
+  expect(field("What did it say?").value).toBe("");
+  expect(field("Why does it matter?").value).toBe("");
+  expect(field("How would you explain it?").value).toBe("");
+  expect(ingest).not.toHaveBeenCalled();
+  expect(draftRoute).not.toHaveBeenCalled();
+  expect(createNote).not.toHaveBeenCalled();
 });
 
-it("shows what step it is on while it works", async () => {
-  let finishRead!: (r: Response) => void;
-  markRead.mockReturnValueOnce(new Promise<Response>((resolve) => { finishRead = resolve; }));
-  let finishIngest!: (r: Response) => void;
-  ingest.mockReturnValueOnce(new Promise<Response>((resolve) => { finishIngest = resolve; }));
-  let finishDraft!: (r: Response) => void;
-  draftRoute.mockReturnValueOnce(new Promise<Response>((resolve) => { finishDraft = resolve; }));
-  await render();
+it("does not open a link that is not a web address", async () => {
+  const open = vi.fn();
+  vi.stubGlobal("open", open);
+  await act(async () => root.render(createElement(ArticleCard, { article: { ...article, url: "javascript:alert(1)" }, uid: "u1", getToken: async () => "tok", onDone })));
   await click(button("Make a note"));
-  expect(button("Marking it read…").disabled).toBe(true);
-  expect(button("Skip").disabled).toBe(true);
-
-  await act(async () => finishRead(Response.json({ ok: true })));
-  expect(button("Fetching the article…").disabled).toBe(true);
-
-  await act(async () => finishIngest(Response.json({ content: TEXT, scraped: true })));
-  expect(button("Drafting the note…").disabled).toBe(true);
-
-  await act(async () => finishDraft(Response.json(draft)));
+  expect(open).not.toHaveBeenCalled();
   expect(field("Title")).toBeTruthy();
 });
 
-it("saves the reviewed note with its source, counts it, and opens the note, without marking the article read again", async () => {
+it("shows progress while recording the read date", async () => {
+  vi.stubGlobal("open", vi.fn());
+  let finish!: (r: Response) => void;
+  markRead.mockReturnValueOnce(new Promise<Response>((resolve) => { finish = resolve; }));
   await render();
   await click(button("Make a note"));
-  await setValue(field("What did it say?"), "Edited by me");
+  expect(button("Marking it read…").disabled).toBe(true);
+  expect(button("Mark as read").disabled).toBe(true);
+  expect(button("Skip").disabled).toBe(true);
+
+  await act(async () => finish(Response.json({ ok: true })));
+  expect(field("Title")).toBeTruthy();
+});
+
+it("saves the written note with its source, counts it, and opens the note, without marking the article read again", async () => {
+  vi.stubGlobal("open", vi.fn());
+  await render();
+  await click(button("Make a note"));
+  await write();
   await saveForm();
 
-  expect(createNote).toHaveBeenCalledWith("u1", { title: "Dovetail joints", tag: "woodworking", source_url: "https://example.com/dovetails", what_it_said: "Edited by me", why_it_matters: "Drafted why", application: "Drafted how" });
+  expect(createNote).toHaveBeenCalledWith("u1", { title: "Dovetail joints", tag: "woodworking", source_url: "https://example.com/dovetails", what_it_said: "What I read", why_it_matters: "Why I care", application: "How I'd say it" });
   expect(incrementNotesStats).toHaveBeenCalledWith("u1", { total_notes: 1 });
   expect(markRead).toHaveBeenCalledTimes(1);
   expect(toast).toHaveBeenCalledWith("Note saved.");
@@ -168,57 +181,20 @@ it("saves the reviewed note with its source, counts it, and opens the note, with
   expect(push).toHaveBeenCalledWith("/notes/note-1");
 });
 
-it("offers pasting when the article cannot be fetched, with every reason in full", async () => {
-  ingest.mockResolvedValueOnce(Response.json({ error: "Could not fetch this article. Direct fetch: HTTP 403; Jina Reader: HTTP 429. Paste the text manually instead.", failures: ["Direct fetch: HTTP 403", "Jina Reader: HTTP 429"] }, { status: 422 }));
+it("cancelling the form goes back to the card, and making a note again does not record a second read", async () => {
+  vi.stubGlobal("open", vi.fn());
   await render();
   await click(button("Make a note"));
+  await click(button("Cancel"));
+  expect(field("Title")).toBeNull();
 
-  const alert = container.querySelector("[role='alert']");
-  expect(alert?.textContent).toContain("Direct fetch: HTTP 403");
-  expect(alert?.className).toContain("select-all");
-  expect(draftRoute).not.toHaveBeenCalled();
-
-  await setValue(field("Pasted article text"), "  The pasted article text  ");
-  await click(button("Use pasted text"));
-  expect(body(ingest, 1)).toEqual({ articleId: 5, pastedContent: "The pasted article text" });
-  expect(markRead).toHaveBeenCalledTimes(1); // already recorded when "Make a note" was pressed
-  expect(body(draftRoute)).toEqual({ title: "Dovetail joints", content: TEXT });
-  expect(field("Title").value).toBe("Dovetail joints");
-});
-
-it("shows a failed draft in full and lets the user retry it", async () => {
-  draftRoute.mockResolvedValueOnce(Response.json({ error: "Daily token limit reached (250,000 / 250,000)" }, { status: 429 }));
-  await render();
   await click(button("Make a note"));
-
-  expect(container.querySelector("[role='alert']")?.textContent).toContain("Daily token limit reached");
-  await click(button("Retry"));
-  expect(draftRoute).toHaveBeenCalledTimes(2);
-  expect(field("Title").value).toBe("Dovetail joints");
-});
-
-it("shows a failure to fetch the article that is not a scrape failure, and allows another try", async () => {
-  ingest.mockResolvedValueOnce(Response.json({ error: "Article 5 was not found in your library." }, { status: 404 }));
-  await render();
-  await click(button("Make a note"));
-
-  expect(container.querySelector("[role='alert']")?.textContent).toContain("was not found in your library");
-  expect(button("Make a note").disabled).toBe(false);
-});
-
-it("shows a failed save in the form, saves nothing else, and stays", async () => {
-  vi.mocked(createNote).mockRejectedValue(new Error("Missing or insufficient permissions."));
-  await render();
-  await click(button("Make a note"));
-  await saveForm();
-
-  expect(container.querySelector("[role='alert']")?.textContent).toContain("Missing or insufficient permissions.");
   expect(markRead).toHaveBeenCalledTimes(1);
-  expect(onDone).not.toHaveBeenCalled();
-  expect(push).not.toHaveBeenCalled();
+  expect(field("Title")).toBeTruthy();
 });
 
-it("shows a failure to record the read date in full, goes no further, and lets the user try again", async () => {
+it("shows a failure to record the read date in full, opens no form, and lets the user try again", async () => {
+  vi.stubGlobal("open", vi.fn());
   markRead.mockResolvedValueOnce(Response.json({ error: "database is locked" }, { status: 502 }));
   await render();
   await click(button("Make a note"));
@@ -226,18 +202,33 @@ it("shows a failure to record the read date in full, goes no further, and lets t
   const alert = container.querySelector("[role='alert']");
   expect(alert?.textContent).toContain("database is locked");
   expect(alert?.className).toContain("select-all");
-  expect(ingest).not.toHaveBeenCalled();
+  expect(field("Title")).toBeNull();
   expect(button("Make a note").disabled).toBe(false);
 
   await click(button("Make a note"));
   expect(markRead).toHaveBeenCalledTimes(2);
-  expect(field("Title").value).toBe("Dovetail joints");
+  expect(field("Title")).toBeTruthy();
+});
+
+it("shows a failed save in the form, saves nothing else, and stays", async () => {
+  vi.stubGlobal("open", vi.fn());
+  vi.mocked(createNote).mockRejectedValue(new Error("Missing or insufficient permissions."));
+  await render();
+  await click(button("Make a note"));
+  await write();
+  await saveForm();
+
+  expect(container.querySelector("[role='alert']")?.textContent).toContain("Missing or insufficient permissions.");
+  expect(onDone).not.toHaveBeenCalled();
+  expect(push).not.toHaveBeenCalled();
 });
 
 it("reports a failed count update after saving", async () => {
+  vi.stubGlobal("open", vi.fn());
   vi.mocked(incrementNotesStats).mockRejectedValue(new Error("quota exceeded"));
   await render();
   await click(button("Make a note"));
+  await write();
   await saveForm();
 
   expect(toast).toHaveBeenCalledWith(expect.stringContaining("quota exceeded"));

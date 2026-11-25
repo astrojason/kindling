@@ -29,6 +29,7 @@ Decisions: name **Kindling** (spark motif; domain `kindling.astrojason.com`), br
 
 ## Follow-up
 
+- [ ] `/api/discover/ingest` and its SSRF-guarded scraper (plus the `SCRAPER_API_KEY` secret) have no callers since Explore's "Make a note" became write-it-yourself: remove them, or keep them if an AI draft from an article should come back
 - [ ] Decide whether the Explore feed's search and category filter should look through ALL unread articles (today they only narrow the ones matching the interest keywords, by keywords column or exact category name), and change `getUnreadArticlesForKeywords` if so
 
 - [ ] Lessons are now stored with LaTeX and rendered with KaTeX on web (plain-text fallback on mobile, plain text for read-aloud): check a fresh lesson with math on web; regenerate audio for already-stored lessons that contain `\(` since their saved narration read the raw markup; mobile could render real math later (needs a native-capable renderer and a new `eas build`)
