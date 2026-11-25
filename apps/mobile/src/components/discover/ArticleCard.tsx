@@ -11,13 +11,13 @@ import { Field } from "../notes/Field";
 import { NoteForm } from "../notes/NoteForm";
 import { Button } from "../ui";
 
-type Stage = "idle" | "skipping" | "marking-read" | "ingesting" | "paste" | "drafting" | "draft-failed" | "review";
+type Stage = "idle" | "marking" | "marking-read" | "ingesting" | "paste" | "drafting" | "draft-failed" | "review";
 
 const message = (err: unknown) => (err instanceof Error ? err.message : String(err));
 
 /**
  * One suggested article. "Make a note" fetches the full text (or takes pasted text when scraping fails), has
- * the AI draft a note, and opens it in the form to review before anything is saved; "Skip" marks it read.
+ * the AI draft a note, and opens it in the form to review before anything is saved. "Mark as read" records it read and removes it; "Skip" only hides it until the feed reloads.
  * Mirrors the web's ArticleCard, which has the tests.
  */
 export function ArticleCard({ article, uid, getToken, onDone, onSaved }: { article: DiscoverArticle; uid: string; getToken: () => Promise<string>; onDone: (articleId: number) => void; onSaved: (noteId: string, notice: string) => void }) {
@@ -31,14 +31,14 @@ export function ArticleCard({ article, uid, getToken, onDone, onSaved }: { artic
 
   const markRead = async () => requestJson("/api/discover/mark-read", await getToken(), { method: "POST", body: JSON.stringify({ articleId: article.id }) });
 
-  async function skip() {
-    setStage("skipping");
+  async function markAsRead() {
+    setStage("marking");
     setError(null);
     try {
       await markRead();
       onDone(article.id);
     } catch (err) {
-      console.error("Failed to skip an article", err);
+      console.error("Failed to mark an article read", err);
       setError(message(err));
       setStage("idle");
     }
@@ -102,7 +102,7 @@ export function ArticleCard({ article, uid, getToken, onDone, onSaved }: { artic
     onSaved(id, warnings.length > 0 ? warnings.join(" ") : "Note saved.");
   }
 
-  const working = stage === "skipping" || stage === "marking-read" || stage === "ingesting" || stage === "drafting";
+  const working = stage === "marking" || stage === "marking-read" || stage === "ingesting" || stage === "drafting";
 
   return (
     <View style={[styles.card, { borderColor: theme.border }]}>
@@ -133,7 +133,8 @@ export function ArticleCard({ article, uid, getToken, onDone, onSaved }: { artic
           )}
           <Button title={stage === "marking-read" ? "Marking it read…" : stage === "ingesting" ? "Fetching the article…" : stage === "drafting" ? "Drafting the note…" : "Make a note"} onPress={() => void makeNote()} disabled={working} />
           {stage === "draft-failed" && content && <Button title="Retry" variant="secondary" onPress={() => void makeDraft(content)} />}
-          <Button title={stage === "skipping" ? "Skipping…" : "Skip"} variant="secondary" onPress={() => void skip()} disabled={working} />
+          <Button title={stage === "marking" ? "Marking read…" : "Mark as read"} variant="secondary" onPress={() => void markAsRead()} disabled={working} />
+          <Button title="Skip" variant="secondary" onPress={() => onDone(article.id)} disabled={working} />
         </View>
       )}
     </View>

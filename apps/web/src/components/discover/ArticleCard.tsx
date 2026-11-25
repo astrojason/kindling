@@ -10,7 +10,7 @@ import { ApiError, requestJson } from "@/lib/api-client";
 import { createNote, incrementNotesStats } from "@/lib/notes-firestore";
 import { fieldClass } from "@/components/form/field";
 
-type Stage = "idle" | "skipping" | "marking-read" | "ingesting" | "paste" | "drafting" | "draft-failed" | "review";
+type Stage = "idle" | "marking" | "marking-read" | "ingesting" | "paste" | "drafting" | "draft-failed" | "review";
 
 const message = (err: unknown) => (err instanceof Error ? err.message : String(err));
 const errorClass = "whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all";
@@ -20,7 +20,7 @@ const secondary = "rounded-button border-2 border-border px-3 py-1.5 text-sm fon
 /**
  * One suggested article. "Make a note" first records the read date in the articles app, then fetches the full
  * text (or takes pasted text when scraping fails), has the AI draft a note, and opens it in the form to review
- * before anything is saved; "Skip" marks it read.
+ * before anything is saved. "Mark as read" records it read and removes it; "Skip" only hides it until the feed reloads.
  */
 export function ArticleCard({ article, uid, getToken, onDone }: { article: DiscoverArticle; uid: string; getToken: () => Promise<string>; onDone: (articleId: number) => void }) {
   const router = useRouter();
@@ -34,14 +34,14 @@ export function ArticleCard({ article, uid, getToken, onDone }: { article: Disco
 
   const markRead = async () => requestJson("/api/discover/mark-read", await getToken(), { method: "POST", body: JSON.stringify({ articleId: article.id }) });
 
-  async function skip() {
-    setStage("skipping");
+  async function markAsRead() {
+    setStage("marking");
     setError(null);
     try {
       await markRead();
       onDone(article.id);
     } catch (err) {
-      console.error("Failed to skip an article", err);
+      console.error("Failed to mark an article read", err);
       setError(message(err));
       setStage("idle");
     }
@@ -105,7 +105,7 @@ export function ArticleCard({ article, uid, getToken, onDone }: { article: Disco
     router.push(`/notes/${id}`);
   }
 
-  const working = stage === "skipping" || stage === "marking-read" || stage === "ingesting" || stage === "drafting";
+  const working = stage === "marking" || stage === "marking-read" || stage === "ingesting" || stage === "drafting";
 
   return (
     <article className="rounded-sm border border-border p-3.5">
@@ -137,7 +137,8 @@ export function ArticleCard({ article, uid, getToken, onDone }: { article: Disco
               {stage === "marking-read" ? "Marking it read…" : stage === "ingesting" ? "Fetching the article…" : stage === "drafting" ? "Drafting the note…" : "Make a note"}
             </button>
             {stage === "draft-failed" && content && <button type="button" onClick={() => void makeDraft(content)} className={secondary}>Retry</button>}
-            <button type="button" disabled={working} onClick={() => void skip()} className={secondary}>{stage === "skipping" ? "Skipping…" : "Skip"}</button>
+            <button type="button" disabled={working} onClick={() => void markAsRead()} className={secondary}>{stage === "marking" ? "Marking read…" : "Mark as read"}</button>
+            <button type="button" disabled={working} onClick={() => onDone(article.id)} className={secondary}>Skip</button>
           </div>
         </div>
       )}

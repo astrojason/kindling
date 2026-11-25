@@ -73,28 +73,36 @@ it("shows the article: a link that opens safely in a new tab, summary, reading t
   for (const text of ["How dovetails hold.", "6 min", "woodworking", "DIY"]) expect(container.textContent).toContain(text);
 });
 
-it("skips an article: marks it read and removes the card", async () => {
+it("skips an article: hides the card for now without recording anything", async () => {
   await render();
   await click(button("Skip"));
+  expect(fetchMock).not.toHaveBeenCalled();
+  expect(onDone).toHaveBeenCalledWith(5);
+});
+
+it("marks an article as read: records it in the articles app and removes the card", async () => {
+  await render();
+  await click(button("Mark as read"));
   expect(body(markRead)).toEqual({ articleId: 5 });
   expect((markRead.mock.calls[0][0].headers as Record<string, string>).Authorization).toBe("Bearer tok");
   expect(onDone).toHaveBeenCalledWith(5);
 });
 
-it("shows progress while skipping and a failed skip in full", async () => {
+it("shows progress while marking as read and a failure in full", async () => {
   let finish!: (r: Response) => void;
   markRead.mockReturnValueOnce(new Promise<Response>((resolve) => { finish = resolve; }));
   await render();
-  await click(button("Skip"));
-  expect(button("Skipping…").disabled).toBe(true);
+  await click(button("Mark as read"));
+  expect(button("Marking read…").disabled).toBe(true);
   expect(button("Make a note").disabled).toBe(true);
+  expect(button("Skip").disabled).toBe(true);
 
   await act(async () => finish(Response.json({ error: "database is locked" }, { status: 502 })));
   const alert = container.querySelector("[role='alert']");
   expect(alert?.textContent).toContain("database is locked");
   expect(alert?.className).toContain("select-all");
   expect(onDone).not.toHaveBeenCalled();
-  expect(button("Skip").disabled).toBe(false);
+  expect(button("Mark as read").disabled).toBe(false);
 });
 
 it("makes a note: records the read date first, then fetches the article, drafts it, and opens the draft in the form to review", async () => {
