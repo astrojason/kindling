@@ -55,12 +55,19 @@ function rowToArticle(row: Row): DiscoverArticle {
   };
 }
 
-/** Unread articles of this owner matching at least one keyword against the article's keywords column. */
+/** Unread articles of this owner matching at least one keyword, by the article's keywords column or a category's name. */
 export async function getUnreadArticlesForKeywords(articlesAppUid: string, keywords: string[], opts: DiscoverFilterOptions = {}): Promise<DiscoverArticle[]> {
   if (keywords.length === 0) return [];
 
-  const keywordClauses = keywords.map(() => "LOWER(a.keywords) LIKE LOWER(?) ESCAPE '\\'").join(" OR ");
-  const keywordArgs = keywords.map((k) => `%${escapeLike(k)}%`);
+  // An article matches a keyword found in its keywords column, or a keyword that is the whole name of one of the
+  // owner's categories it is in (ignoring case), so a category's articles show even when untagged with that word.
+  const keywordClauses = `${keywords.map(() => "LOWER(a.keywords) LIKE LOWER(?) ESCAPE '\\'").join(" OR ")}
+      OR EXISTS (
+        SELECT 1 FROM user_article_category_article uaca
+        JOIN user_article_category uac ON uac.id = uaca.user_article_category_id
+        WHERE uaca.article_id = a.id AND uaca.created_by_uid = ? AND LOWER(uac.name) IN (${keywords.map(() => "LOWER(?)").join(", ")})
+      )`;
+  const keywordArgs: InValue[] = [...keywords.map((k) => `%${escapeLike(k)}%`), articlesAppUid, ...keywords];
 
   let extraSql = "";
   const extraArgs: InValue[] = [];

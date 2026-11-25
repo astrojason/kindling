@@ -38,6 +38,17 @@ describe("getUnreadArticlesForKeywords", () => {
     expect(args).toEqual(expect.arrayContaining(["%woodworking%", "%astronomy%"]));
   });
 
+  it("also matches an article in one of the owner's categories whose whole name is a keyword", async () => {
+    await getUnreadArticlesForKeywords("uid-1", ["Big Ideas Simply Explained", "astronomy"]);
+    const { sql, args } = execute.mock.calls[0][0];
+    const match = sql.slice(sql.indexOf("NOT EXISTS"));
+    // Either a keyword LIKE or the category EXISTS, so an article untagged with the keyword still shows.
+    expect(match).toMatch(/LOWER\(a\.keywords\) LIKE LOWER\(\?\) ESCAPE '\\' OR LOWER\(a\.keywords\) LIKE LOWER\(\?\) ESCAPE '\\'\s+OR EXISTS \(/);
+    // A whole-name comparison (ignoring case), never a substring LIKE.
+    expect(match).toContain("uaca.created_by_uid = ? AND LOWER(uac.name) IN (LOWER(?), LOWER(?))");
+    expect(args.slice(3)).toEqual(["%Big Ideas Simply Explained%", "%astronomy%", "uid-1", "Big Ideas Simply Explained", "astronomy"]);
+  });
+
   it("treats % and _ in a keyword or search as literal characters", async () => {
     await getUnreadArticlesForKeywords("uid-1", ["100%_sure"], { search: "50%" });
     const { sql, args } = execute.mock.calls[0][0];
