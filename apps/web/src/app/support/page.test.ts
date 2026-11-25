@@ -10,5 +10,4 @@ it("shows how to reach support and answers the common questions", () => {
   expect(html).toContain('href="mailto:jason@astrojason.com"');
   expect(html).toContain("Access requested");
   expect(html).toContain('href="/privacy"');
-  expect(html).toContain('href="/terms"');
 });

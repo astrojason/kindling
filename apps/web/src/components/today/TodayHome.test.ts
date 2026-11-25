@@ -12,6 +12,7 @@ vi.mock("@/lib/useProgressData", () => ({ useProgressData: () => ({ loading: fal
 vi.mock("@/components/admin/PendingBanner", () => ({ PendingBanner: () => null }));
 vi.mock("@/components/today/PlanCard", () => ({ PlanCard: () => null }));
 vi.mock("@/components/today/GoalCard", () => ({ GoalCard: () => null }));
+vi.mock("@/components/nav/SignOutButton", () => ({ SignOutButton: () => null }));
 vi.mock("@/components/today/StatChips", () => ({ StatChips: () => null }));
 vi.mock("next/link", () => ({ default: ({ href, children, className }: { href: string; children: unknown; className?: string }) => createElement("a", { href, className }, children as never) }));
 

@@ -78,7 +78,7 @@ export default function AdminAccessPage() {
 
   return (
     <div>
-      <h1 className="mb-5 font-heading text-xl font-bold text-fg-strong">Manage access</h1>
+      <h1 className="mb-5 font-heading text-xl font-bold text-fg-strong lg:hidden">Manage access</h1>
       {error && <p role="alert" className="mb-4 text-sm text-rust">{error}</p>}
       {requests === null ? (
         !error && <LoadingView text="Loading requests" />

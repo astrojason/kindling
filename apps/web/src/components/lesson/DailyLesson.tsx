@@ -22,7 +22,7 @@ import { getStreakStatus } from "@/lib/streak";
 import { useDailyLesson } from "@/lib/useDailyLesson";
 
 export function DailyLesson() {
-  const { user, claims, signOut } = useAuth();
+  const { user, claims } = useAuth();
   const state = useDailyLesson(user);
   const { phase, date, lesson, streak, selectedCategories, actions } = state;
   const [editingCategories, setEditingCategories] = useState(false);
@@ -79,7 +79,6 @@ export function DailyLesson() {
           onEditCategories={() => {
             setEditingCategories(true);
           }}
-          onSignOut={signOut}
           onBack={started && phase !== "quiz" ? () => setStarted(false) : undefined}
         />
 

@@ -25,7 +25,7 @@ export function LogPage<T extends { createdAt: string }>({
 
   return (
     <div>
-      <h1 className="mb-5 font-heading text-xl font-bold text-fg-strong">{title}</h1>
+      <h1 className="mb-5 font-heading text-xl font-bold text-fg-strong lg:hidden">{title}</h1>
       {log.error && <p role="alert" className="text-sm text-rust">{log.error}</p>}
       {people.error && <p role="alert" className="mb-3 text-xs text-rust">Could not load names, showing ids: {people.error}</p>}
       {log.loading && <LoadingView text={loadingText} />}

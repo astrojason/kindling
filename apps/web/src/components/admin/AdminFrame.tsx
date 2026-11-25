@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Card } from "@/components/lesson/Card";
+import { PAGE_BODY, PageFrame } from "@/components/share/PageFrame";
 import { useAuth } from "@/lib/auth-context";
 import { isSuperadmin } from "@/lib/auth-guard";
 
@@ -13,30 +13,31 @@ const SECTIONS = [
   { href: "/admin/cron-log", label: "Cron run log", superadminOnly: true },
 ];
 
+/** The admin pages, in the same frame as the rest of the app. Its sections are tabs: a row at the top of the card on a phone, a strip under the title bar from `lg`. */
 export function AdminFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { claims } = useAuth();
   const sections = SECTIONS.filter((s) => !s.superadminOnly || isSuperadmin(claims));
   return (
-    <div className="mx-auto w-full max-w-[640px] px-4 py-10 lg:max-w-3xl">
-      <Card>
-        <nav className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border pb-3.5 text-xs font-medium">
-          <Link href="/" className="text-fg-muted underline decoration-border decoration-1 underline-offset-2 hover:text-accent">
-            Today&apos;s lesson
-          </Link>
-          {sections.map(({ href, label }) => (
+    <PageFrame panels title="Admin">
+      <nav aria-label="Admin" role="tablist" className="-mx-6 mb-5 flex gap-5 overflow-x-auto border-b border-border px-6 text-xs font-semibold lg:mx-0 lg:mb-0 lg:h-12 lg:flex-none lg:gap-8 lg:bg-surface lg:px-12 lg:text-sm">
+        {sections.map(({ href, label }) => {
+          const current = pathname === href;
+          return (
             <Link
               key={href}
               href={href}
-              aria-current={pathname === href ? "page" : undefined}
-              className={pathname === href ? "font-semibold text-accent" : "text-fg-muted hover:text-accent"}
+              role="tab"
+              aria-selected={current}
+              aria-current={current ? "page" : undefined}
+              className={`-mb-px flex flex-none items-center whitespace-nowrap border-b-2 pb-3 lg:pb-0 ${current ? "border-accent text-accent" : "border-transparent text-fg-muted hover:text-fg"}`}
             >
               {label}
             </Link>
-          ))}
-        </nav>
-        {children}
-      </Card>
-    </div>
+          );
+        })}
+      </nav>
+      <div className={PAGE_BODY}>{children}</div>
+    </PageFrame>
   );
 }

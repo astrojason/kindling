@@ -27,17 +27,6 @@ export function LegalLayout({
             {children}
           </div>
 
-          <nav className="mt-10 flex gap-4 border-t border-border pt-6 text-sm">
-            <Link href="/support" className="text-accent hover:opacity-85">
-              Support
-            </Link>
-            <Link href="/privacy" className="text-accent hover:opacity-85">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="text-accent hover:opacity-85">
-              Terms of Service
-            </Link>
-          </nav>
         </div>
       </div>
     </div>

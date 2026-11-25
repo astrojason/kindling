@@ -17,6 +17,7 @@ import { useNotes } from "@/lib/useNotes";
 import { useProgressData } from "@/lib/useProgressData";
 import type { PlanItem } from "@/lib/lesson-plan";
 import type { StreakData } from "@/lib/types";
+import { SignOutButton } from "@/components/nav/SignOutButton";
 
 const tileClass = "flex flex-col items-start gap-1 rounded-md bg-surface p-4 text-left text-sm font-extrabold text-fg-strong shadow-sm";
 
@@ -51,7 +52,10 @@ export function TodayHome({
           <p className="text-sm font-semibold text-fg-muted">Ready for today&apos;s spark?</p>
           <h1 className="text-3xl font-extrabold leading-tight text-fg-strong">Kindling</h1>
         </div>
-        <StatChips streakCount={getStreakStatus(streak, date).count} xp={progress.data?.stats.xp ?? 0} />
+        <div className="flex items-center gap-2">
+          <StatChips streakCount={getStreakStatus(streak, date).count} xp={progress.data?.stats.xp ?? 0} />
+          <SignOutButton />
+        </div>
       </header>
 
       <PendingBanner />

@@ -53,7 +53,7 @@ export function TabBar() {
     return () => window.removeEventListener("keydown", onKey);
   }, [router]);
   return (
-    <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface lg:inset-y-0 lg:right-auto lg:flex lg:w-[76px] lg:flex-col lg:items-center lg:border-r lg:border-t-0 lg:px-0 lg:pb-5 lg:pt-6">
+    <nav aria-label="Main" data-tabbar className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface lg:inset-y-0 lg:right-auto lg:flex lg:w-[76px] lg:flex-col lg:items-center lg:border-r lg:border-t-0 lg:px-0 lg:pb-5 lg:pt-6">
       <span role="img" aria-label="Kindling" className="hidden pb-6 text-gold lg:block">
         <svg viewBox="0 0 20 20" fill="currentColor" className="size-[26px]" aria-hidden="true">
           <path d="M10 1.5c.4 2.3-.6 3.7-1.9 5.1-1.4 1.5-3 3.2-3 5.9a4.9 4.9 0 0 0 9.8 0c0-1.7-.7-2.9-1.5-3.9-.1.9-.5 1.7-1.2 2.3.2-2.4-.7-3.7-2.2-6.1Z" />

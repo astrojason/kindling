@@ -7,6 +7,7 @@ import type { Note } from "@random-knowledge/shared/notes";
 import { dueDateLabel, dueLabel } from "@random-knowledge/shared/notes-view";
 import type { StatsData } from "@/lib/types";
 import { levelFor, minutesOn, weekDays } from "@/lib/xp";
+import { SignOutButton } from "@/components/nav/SignOutButton";
 
 const WEEKDAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
 const label = "text-xs font-black tracking-[0.1em] text-fg-muted";
@@ -67,7 +68,7 @@ export function DesktopToday({
           <span className="text-xl font-black text-fg-strong">Kindling</span>
           <span className="text-sm font-bold text-fg-muted">{formatDateLabel(date)}</span>
         </div>
-        <div className="flex gap-5 text-sm font-extrabold text-fg-strong">
+        <div className="flex items-center gap-5 text-sm font-extrabold text-fg-strong">
           <span className="flex items-center gap-1.5" aria-label={`${streakCount} day streak`}>
             <svg viewBox="0 0 20 20" fill="currentColor" className="size-4 text-gold" aria-hidden="true"><path d="M10 1.5c.4 2.3-.6 3.7-1.9 5.1-1.4 1.5-3 3.2-3 5.9a4.9 4.9 0 0 0 9.8 0c0-1.7-.7-2.9-1.5-3.9-.1.9-.5 1.7-1.2 2.3.2-2.4-.7-3.7-2.2-6.1Z" /></svg>
             {streakCount} day streak
@@ -76,6 +77,7 @@ export function DesktopToday({
             <svg viewBox="0 0 20 20" fill="currentColor" className="size-4 text-accent" aria-hidden="true"><path d="m10 1.8 2.3 5.1 5.5.6-4.1 3.7 1.2 5.5L10 14l-4.9 2.7 1.2-5.5L2.2 7.5l5.5-.6Z" /></svg>
             {xp.toLocaleString()} XP · Level {levelFor(xp)}
           </span>
+          <SignOutButton />
         </div>
       </header>
 

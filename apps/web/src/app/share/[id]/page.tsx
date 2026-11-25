@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { AccessGate } from "@/components/AccessGate";
-import { LoadState, PageFrame } from "@/components/share/PageFrame";
+import { LoadState, PAGE_BODY, PageFrame } from "@/components/share/PageFrame";
 import { SavedLesson } from "@/components/share/SavedLesson";
 import { ShareButton } from "@/components/share/ShareButton";
 import { ShareInvite } from "@/components/share/ShareInvite";
@@ -79,7 +79,7 @@ export default function SharePage() {
   const { id } = useParams<{ id: string }>();
   return (
     <AccessGate signedOut={<ShareInvite id={id} />}>
-      <PageFrame>{user && <SharedLessonView uid={user.uid} id={id} />}</PageFrame>
+      <PageFrame panels title="Shared lesson">{user && <div className={PAGE_BODY}><SharedLessonView uid={user.uid} id={id} /></div>}</PageFrame>
     </AccessGate>
   );
 }

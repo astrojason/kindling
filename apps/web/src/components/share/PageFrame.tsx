@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { LoadingView } from "@/components/lesson/LoadingView";
 import { AppColumn } from "@/components/nav/AppColumn";
+import { SignOutButton } from "@/components/nav/SignOutButton";
 import { TabBar } from "@/components/nav/TabBar";
 import { useAuth } from "@/lib/auth-context";
 
@@ -12,12 +13,15 @@ export const PANEL = "lg:border-r lg:border-border lg:px-12 lg:py-7 lg:last:bord
 /** The padding of a desktop page that is a single column. */
 export const PAGE_BODY = "lg:max-w-4xl lg:px-12 lg:py-7";
 
-/** The desktop page title bar: a hairline-bordered strip across the top (same as Today's). Hidden on a phone. */
+/** The desktop page title bar: a hairline-bordered strip across the top (same as Today's), with sign out at the right. Hidden on a phone. */
 export function DesktopHeader({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <header className="hidden h-16 flex-none items-center justify-between border-b border-border bg-surface px-12 lg:flex">
       <h1 className="text-xl font-black text-fg-strong">{title}</h1>
-      {children}
+      <div className="flex items-center gap-5">
+        {children}
+        <SignOutButton />
+      </div>
     </header>
   );
 }

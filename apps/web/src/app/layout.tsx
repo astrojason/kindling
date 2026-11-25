@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Nunito } from "next/font/google";
 import { AuthProvider } from "@/lib/auth-context";
 import { ToastProvider } from "@/components/Toast";
+import { SiteFooter } from "@/components/legal/SiteFooter";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -39,12 +40,13 @@ export const dynamic = "force-dynamic";
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${nunito.variable} h-full`}>
-      <body className="flex min-h-screen flex-col bg-bg font-sans text-fg antialiased">
+      <body className="group/app flex min-h-screen flex-col bg-bg font-sans text-fg antialiased">
         <div className="flex-1">
           <AuthProvider>
             <ToastProvider>{children}</ToastProvider>
           </AuthProvider>
         </div>
+        <SiteFooter />
       </body>
     </html>
   );

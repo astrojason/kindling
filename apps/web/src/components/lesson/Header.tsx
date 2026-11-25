@@ -1,4 +1,5 @@
 import { HeaderMenu } from "@/components/lesson/HeaderMenu";
+import { SignOutButton } from "@/components/nav/SignOutButton";
 import { CATEGORIES, type CategoryKey } from "@/lib/categories";
 import { formatDateLabel } from "@/lib/date";
 
@@ -10,7 +11,6 @@ export function Header({
   showCategoriesSetting,
   categoryCount,
   onEditCategories,
-  onSignOut,
   onBack,
 }: {
   date: string;
@@ -20,7 +20,6 @@ export function Header({
   showCategoriesSetting: boolean;
   categoryCount: number;
   onEditCategories: () => void;
-  onSignOut: () => void;
   onBack?: () => void;
 }) {
   return (
@@ -51,13 +50,7 @@ export function Header({
             )}
           </div>
         </div>
-        <button
-          type="button"
-          onClick={onSignOut}
-          className="text-xs font-medium text-fg-muted underline decoration-border decoration-1 underline-offset-2 hover:text-accent"
-        >
-          Sign out
-        </button>
+        <SignOutButton />
       </div>
       {category && (
         <span className="mt-3.5 inline-block rounded-full bg-accent-soft px-3 py-1 text-xs font-extrabold text-accent">

@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { GoalSetting } from "@/components/profile/GoalSetting";
-import { ResetDataLink } from "@/components/profile/ResetDataLink";
 import { useAuth } from "@/lib/auth-context";
 import { usePendingRequests } from "@/lib/usePendingRequests";
 import { canManageAccess } from "@/lib/auth-guard";
@@ -17,27 +15,12 @@ import { levelFor, xpIntoLevel, XP_PER_LEVEL } from "@/lib/xp";
 const linkClass = "flex items-center justify-between rounded-sm bg-surface-raised px-4 py-3.5 text-sm font-bold text-fg-strong hover:bg-accent-soft";
 
 export function ProfileView({ uid }: { uid: string }) {
-  const { user, claims, signOut } = useAuth();
+  const { user, claims } = useAuth();
   const { count: waiting } = usePendingRequests(user?.uid, claims);
-  const [signingOut, setSigningOut] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [resets, setResets] = useState(0);
-  const state = useLoad(`profile-${uid}-${resets}`, async () => {
+  const state = useLoad(`profile-${uid}`, async () => {
     const [stats, streak] = await Promise.all([getStats(uid), getStreak(uid)]);
     return { stats, streak };
   });
-
-  async function handleSignOut() {
-    setSigningOut(true);
-    setError(null);
-    try {
-      await signOut();
-    } catch (err) {
-      console.error("Sign out failed:", err);
-      setError(err instanceof Error ? err.message : "Could not sign out.");
-      setSigningOut(false);
-    }
-  }
 
   return (
     <LoadState state={state} notFound="Could not load your profile.">
@@ -69,15 +52,7 @@ export function ProfileView({ uid }: { uid: string }) {
                 Admin{waiting ? <span aria-label={`${waiting} waiting for access`} className="ml-2 rounded-full bg-rust px-2 py-0.5 text-[11px] font-extrabold text-accent-fg">{waiting}</span> : null}
               </Link>
             )}
-            <Link href="/support" className={linkClass}>Support</Link>
-            <Link href="/privacy" className={linkClass}>Privacy policy</Link>
-            <Link href="/terms" className={linkClass}>Terms of service</Link>
           </nav>
-          <button type="button" disabled={signingOut} onClick={() => void handleSignOut()} className="rounded-button border-2 border-border py-2 text-sm font-extrabold text-fg-muted disabled:opacity-60">
-            {signingOut ? "Signing out…" : "Sign out"}
-          </button>
-          <ResetDataLink uid={uid} onReset={() => setResets((n) => n + 1)} />
-          {error && <pre role="alert" className="whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all">{error}</pre>}
           </div>
         </div>
       )}
