@@ -42,3 +42,10 @@ env:
     secret: openai-api-key
   - variable: CRON_SECRET
     secret: cron-secret
+  # Discover (the articles feed in Explore): the articles app's Turso database and the scraper used to read an article.
+  - variable: TURSO_DATABASE_URL
+    secret: turso-database-url
+  - variable: TURSO_AUTH_TOKEN
+    secret: turso-auth-token
+  - variable: SCRAPER_API_KEY
+    secret: scraper-api-key
