@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SymbolView } from "expo-symbols";
-import { useTheme } from "../lib/theme";
+import { radius, useTheme } from "../lib/theme";
 import { TABS, type Tab } from "./TabBar";
 
 export const SIDE_NAV_WIDTH = 76;
@@ -34,5 +34,5 @@ export function SideNav({ active, onChange }: { active: Tab; onChange: (tab: Tab
 const styles = StyleSheet.create({
   nav: { width: SIDE_NAV_WIDTH, borderRightWidth: 1, alignItems: "center", paddingTop: 26, paddingBottom: 20, gap: 6 },
   brand: { width: 26, height: 26, marginBottom: 20 },
-  item: { width: 60, alignItems: "center", gap: 3, borderRadius: 4, paddingVertical: 9 },
+  item: { width: 60, alignItems: "center", gap: 3, borderRadius: radius.sm, paddingVertical: 9 },
 });

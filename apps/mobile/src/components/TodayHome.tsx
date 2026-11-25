@@ -221,8 +221,8 @@ const styles = StyleSheet.create({
   planItem: { marginBottom: 8 },
   retry: { borderWidth: 2, borderRadius: radius.md, paddingVertical: 12, alignItems: "center", marginBottom: 12 },
   lessonRow: { flexDirection: "row", alignItems: "center", gap: 12, borderRadius: radius.md, padding: 12 },
-  lessonIcon: { width: 44, height: 44, borderRadius: 6, alignItems: "center", justifyContent: "center" },
+  lessonIcon: { width: 44, height: 44, borderRadius: radius.sm, alignItems: "center", justifyContent: "center" },
   startButton: { borderRadius: radius.md, paddingVertical: 16, alignItems: "center", marginTop: 8 },
-  dueBadge: { width: 48, height: 48, borderRadius: 6, alignItems: "center", justifyContent: "center" },
+  dueBadge: { width: 48, height: 48, borderRadius: radius.sm, alignItems: "center", justifyContent: "center" },
   pill: { borderRadius: radius.pill, paddingHorizontal: 20, paddingVertical: 10 },
 });

@@ -1,6 +1,6 @@
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { CATEGORIES, type CategoryKey } from "@random-knowledge/shared/categories";
-import { useTheme } from "../lib/theme";
+import { radius, useTheme } from "../lib/theme";
 import { Button } from "./ui";
 
 /** Confirms a category save in front of everything, so it is seen wherever the user has scrolled to. */
@@ -41,7 +41,7 @@ export function CategoriesSavedModal({
 
 const styles = StyleSheet.create({
   root: { flex: 1, justifyContent: "center", padding: 24, backgroundColor: "rgba(0, 0, 0, 0.4)" },
-  dialog: { borderRadius: 10, borderWidth: 1, padding: 20, maxHeight: "70%" },
+  dialog: { borderRadius: radius.md, borderWidth: 1, padding: 20, maxHeight: "70%" },
   list: { flexGrow: 0 },
   action: { marginTop: 16 },
 });

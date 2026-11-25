@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { CATEGORIES, CATEGORY_KEYS, type CategoryKey } from "@random-knowledge/shared/categories";
-import { useTheme } from "../lib/theme";
+import { radius, useTheme } from "../lib/theme";
 import { Button, LinkText } from "./ui";
 
 export function CategoryPicker({
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "700" },
   compactTitle: { fontSize: 16, fontWeight: "800" },
   linkRow: { flexDirection: "row", gap: 16, marginBottom: 10 },
-  row: { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 6, borderWidth: 1, padding: 12, marginBottom: 8 },
+  row: { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: radius.sm, borderWidth: 1, padding: 12, marginBottom: 8 },
   checkbox: { width: 18, height: 18, borderRadius: 4, borderWidth: 1.5, alignItems: "center", justifyContent: "center" },
   actions: { marginTop: 12 },
 });

@@ -52,7 +52,7 @@ export function AdminAccessList({
                   type="button"
                   onClick={() => onToggleAutoGeneration(req.uid, !autoGenerationEnabled(req))}
                   title="When off, they keep seeing their last generated lesson"
-                  className="rounded-sm border border-border px-3 py-1.5 text-xs font-semibold text-fg-muted hover:opacity-85"
+                  className="rounded-button border-2 border-border px-3 py-1.5 text-xs font-extrabold text-fg-muted hover:border-accent"
                 >
                   Auto lessons: {autoGenerationEnabled(req) ? "on" : "off"}
                 </button>
@@ -62,7 +62,7 @@ export function AdminAccessList({
                   type="button"
                   disabled={busyUid === req.uid}
                   onClick={() => onToggleAdmin(req.uid, !adminUids?.has(req.uid))}
-                  className="rounded-sm border border-border px-3 py-1.5 text-xs font-semibold text-fg-muted hover:opacity-85 disabled:opacity-50"
+                  className="rounded-button border-2 border-border px-3 py-1.5 text-xs font-extrabold text-fg-muted hover:border-accent disabled:opacity-50"
                 >
                   {busyUid === req.uid ? "Saving…" : adminUids?.has(req.uid) ? "Remove admin" : "Make admin"}
                 </button>
@@ -70,7 +70,7 @@ export function AdminAccessList({
               <button
                 type="button"
                 onClick={() => onRevoke(req.uid)}
-                className="rounded-sm border border-border px-3 py-1.5 text-xs font-semibold text-fg-muted hover:opacity-85"
+                className="rounded-button border-2 border-border px-3 py-1.5 text-xs font-extrabold text-fg-muted hover:border-accent"
               >
                 Revoke
               </button>
@@ -79,7 +79,7 @@ export function AdminAccessList({
             <button
               type="button"
               onClick={() => onGrant(req.uid)}
-              className="rounded-sm bg-accent px-3 py-1.5 text-xs font-semibold text-accent-fg hover:opacity-85"
+              className="rounded-button bg-accent px-3 py-1.5 text-xs font-extrabold text-accent-fg hover:opacity-85"
             >
               Grant
             </button>

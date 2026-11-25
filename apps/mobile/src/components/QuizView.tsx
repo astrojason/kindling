@@ -2,7 +2,7 @@ import { plainMath } from "@random-knowledge/shared/math";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { DONT_REMEMBER, type QuizState } from "@random-knowledge/shared/quiz";
 import type { Lesson } from "@random-knowledge/shared/types";
-import { useTheme } from "../lib/theme";
+import { radius, useTheme } from "../lib/theme";
 import { Button } from "./ui";
 
 export function QuizView({
@@ -73,5 +73,5 @@ export function QuizView({
 
 const styles = StyleSheet.create({
   question: { fontSize: 17, fontWeight: "600", marginBottom: 14 },
-  option: { borderRadius: 6, borderWidth: 2, paddingVertical: 12, paddingHorizontal: 14, marginBottom: 8 },
+  option: { borderRadius: radius.sm, borderWidth: 2, paddingVertical: 12, paddingHorizontal: 14, marginBottom: 8 },
 });

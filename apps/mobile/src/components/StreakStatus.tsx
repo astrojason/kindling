@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { getStreakStatus } from "@random-knowledge/shared/streak";
 import type { StreakData } from "@random-knowledge/shared/types";
-import { useTheme } from "../lib/theme";
+import { radius, useTheme } from "../lib/theme";
 
 const MESSAGES = {
   new: "Finish a lesson and its quiz to start your streak. Every score counts.",
@@ -44,7 +44,7 @@ export function StreakStatus({ streak, date }: { streak: StreakData; date: strin
 }
 
 const styles = StyleSheet.create({
-  container: { borderRadius: 6, borderWidth: 1, padding: 16, marginBottom: 20 },
+  container: { borderRadius: radius.sm, borderWidth: 1, padding: 16, marginBottom: 20 },
   row: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", alignItems: "baseline", gap: 8 },
   title: { fontSize: 19, fontWeight: "600" },
   best: { fontSize: 12, fontWeight: "600" },

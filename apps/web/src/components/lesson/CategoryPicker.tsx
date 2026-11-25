@@ -42,7 +42,7 @@ export function CategoryPicker({ selectedCategories, onSave, onCancel, editing =
         </div>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {CATEGORY_KEYS.map((key) => (
-            <label key={key} className={`flex cursor-pointer items-center gap-3 rounded-sm border p-3 text-sm ${selected.includes(key) ? "border-accent bg-accent-soft text-accent" : "border-border text-fg-muted"}`}>
+            <label key={key} className={`flex cursor-pointer items-center gap-3 rounded-button border p-3 text-sm ${selected.includes(key) ? "border-accent bg-accent-soft text-accent" : "border-border text-fg-muted"}`}>
               <input
                 type="checkbox"
                 name="categories"

@@ -30,7 +30,7 @@ export function PreReviewView({
             key={i}
             type="button"
             onClick={onAnswer}
-            className="mb-2 block w-full cursor-pointer rounded-sm border border-border bg-surface-raised px-3.5 py-3 text-left text-[14.5px] transition-colors hover:border-rust"
+            className="mb-2 block w-full cursor-pointer rounded-button border border-border bg-surface-raised px-3.5 py-3 text-left text-[14.5px] transition-colors hover:border-rust"
           >
             {option}
           </button>

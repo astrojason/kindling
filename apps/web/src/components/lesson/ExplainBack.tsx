@@ -50,7 +50,7 @@ function ExplainBackForm({ lesson, getToken }: { lesson: Lesson; getToken: () =>
   if (!open) {
     return (
       <div className="mb-5 text-center">
-        <button type="button" onClick={() => setOpen(true)} className="rounded-sm border border-border px-5 py-2.5 text-sm font-semibold text-fg-muted transition-opacity hover:opacity-85">
+        <button type="button" onClick={() => setOpen(true)} className="rounded-button border-2 border-border px-4 py-2 text-sm font-extrabold text-fg-muted transition-colors hover:border-accent">
           Explain it back
         </button>
       </div>

@@ -13,7 +13,7 @@ import { addToStash, getShare, getStashEntry } from "@/lib/firestore";
 import type { SharedLesson } from "@/lib/types";
 import { useLoad } from "@/lib/useLoad";
 
-const buttonClass = "rounded-sm bg-accent px-4 py-2 text-sm font-semibold text-accent-fg transition-opacity hover:opacity-85 disabled:opacity-60";
+const buttonClass = "rounded-button bg-accent px-4 py-2 text-sm font-extrabold text-accent-fg transition-opacity hover:opacity-85 disabled:opacity-60";
 
 function StashAction({ uid, share }: { uid: string; share: SharedLesson }) {
   const existing = useLoad(`stashed-${uid}-${share.id}`, async () => Boolean(await getStashEntry(uid, share.id)));

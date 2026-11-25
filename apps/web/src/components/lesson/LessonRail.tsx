@@ -50,7 +50,7 @@ export function LessonRail({
                   type="button"
                   disabled={item.status !== "ready" || item.key === currentKey}
                   onClick={() => onOpen(item.key)}
-                  className={`flex w-full items-center gap-2 rounded-sm px-2.5 py-2 text-left text-xs font-bold ${item.key === currentKey ? "bg-accent-soft text-accent" : "text-fg hover:bg-accent-soft disabled:text-fg-muted disabled:hover:bg-transparent"}`}
+                  className={`flex w-full items-center gap-2 rounded-button px-2.5 py-2 text-left text-xs font-bold ${item.key === currentKey ? "bg-accent-soft text-accent" : "text-fg hover:bg-accent-soft disabled:text-fg-muted disabled:hover:bg-transparent"}`}
                 >
                   <span>{item.done ? "✓" : item.slot}</span>
                   <span className="min-w-0 flex-1 truncate">{item.title ?? (item.category ? CATEGORIES[item.category] : `Lesson ${item.slot}`)}</span>

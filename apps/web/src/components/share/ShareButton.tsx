@@ -6,7 +6,7 @@ import { createShare } from "@/lib/firestore";
 import { shareMessage, shareUrl } from "@/lib/share";
 import type { Lesson } from "@/lib/types";
 
-const iconButtonClass = "inline-flex size-8 items-center justify-center rounded-sm text-fg-muted hover:bg-accent-soft hover:text-accent disabled:opacity-60";
+const iconButtonClass = "inline-flex size-8 items-center justify-center rounded-button text-fg-muted hover:bg-accent-soft hover:text-accent disabled:opacity-60";
 
 /** The standard "share" glyph: a tray with an arrow leaving it. */
 function ShareIcon() {

@@ -33,7 +33,7 @@ export function TrueFalseGame({ statements, onFinish }: { statements: TrueFalseS
       <div className="flex gap-3">
         {[true, false].map((value) => (
           <button key={String(value)} type="button" disabled={answered} onClick={() => choose(value)}
-            className="flex-1 rounded-md border-2 border-border bg-surface-raised py-3.5 text-base font-extrabold text-fg-strong disabled:opacity-60">
+            className="flex-1 rounded-button border-2 border-border bg-surface-raised py-3.5 text-base font-extrabold text-fg-strong disabled:opacity-60">
             {value ? "True" : "False"}
           </button>
         ))}

@@ -13,7 +13,7 @@ import { useNote } from "../hooks/useNote";
 import { useNotes } from "../hooks/useNotes";
 import { useAuth } from "../lib/auth-context";
 import { useIsTablet } from "../lib/layout";
-import { useTheme } from "../lib/theme";
+import { radius, useTheme } from "../lib/theme";
 
 export type NotesRoute = { name: "list" } | { name: "new" } | { name: "detail"; id: string } | { name: "edit"; id: string } | { name: "quiz"; id: string } | { name: "discover" };
 
@@ -113,5 +113,5 @@ const styles = StyleSheet.create({
   listPane: { width: 380, flexGrow: 0, borderRightWidth: 1 },
   detailPane: { flex: 1 },
   scroll: { padding: 16, paddingBottom: 32 },
-  notice: { borderRadius: 8, padding: 10, fontSize: 13, fontWeight: "700", marginBottom: 12 },
+  notice: { borderRadius: radius.sm, padding: 10, fontSize: 13, fontWeight: "700", marginBottom: 12 },
 });

@@ -18,7 +18,7 @@ export function DiagramView({ diagram }: { diagram: LessonDiagram }) {
               type="button"
               aria-expanded={open === i}
               onClick={() => setOpen(open === i ? null : i)}
-              className="w-full rounded-sm bg-blueprint-tag px-3.5 py-2.5 text-left text-sm font-extrabold text-blueprint-fg"
+              className="w-full rounded-button bg-blueprint-tag px-3.5 py-2.5 text-left text-sm font-extrabold text-blueprint-fg"
             >
               {label.term}
             </button>

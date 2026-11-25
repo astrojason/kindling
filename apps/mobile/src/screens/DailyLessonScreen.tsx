@@ -6,7 +6,7 @@ import { CATEGORIES } from "@random-knowledge/shared/categories";
 import { getStreakStatus } from "@random-knowledge/shared/streak";
 import { useAuth } from "../lib/auth-context";
 import { useIsTablet } from "../lib/layout";
-import { useTheme } from "../lib/theme";
+import { radius, useTheme } from "../lib/theme";
 import { useDailyLesson } from "../hooks/useDailyLesson";
 import { CategoriesSavedModal } from "../components/CategoriesSavedModal";
 import { CategoryPicker } from "../components/CategoryPicker";
@@ -156,7 +156,7 @@ function LessonPhase({ state, uid }: { state: ReturnType<typeof useDailyLesson>;
   return (
     <View>
       {(next || waiting) && (
-        <View style={{ backgroundColor: theme.accentSoft, borderRadius: 10, padding: 16, marginBottom: 16, alignItems: "center", gap: 10 }}>
+        <View style={{ backgroundColor: theme.accentSoft, borderRadius: radius.md, padding: 16, marginBottom: 16, alignItems: "center", gap: 10 }}>
           <Text style={{ color: theme.fgStrong, fontSize: 14, fontWeight: "800" }}>{next ? "Keep going with today’s plan" : "Your next lesson is being prepared…"}</Text>
           {next ? <Button title={`Next lesson: ${next.title}`} onPress={() => void actions.openLesson(next.key)} /> : <LoadingView text="Preparing" />}
         </View>
@@ -183,6 +183,6 @@ const styles = StyleSheet.create({
   dateRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   streakBadge: { flexDirection: "row", alignItems: "center", gap: 2 },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 14 },
-  badge: { alignSelf: "flex-start", borderRadius: 8, paddingHorizontal: 12, paddingVertical: 4, marginTop: 14 },
+  badge: { alignSelf: "flex-start", borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 4, marginTop: 14 },
   streak: { marginTop: 20 },
 });

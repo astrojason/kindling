@@ -7,7 +7,7 @@ const DEFAULT_WPM = 300;
 const MIN_WPM = 100;
 const MAX_WPM = 1000;
 const WPM_STEP = 25;
-const controlClass = "rounded-sm border border-border px-3 py-3 text-xs font-bold uppercase tracking-wide text-fg-muted hover:border-accent";
+const controlClass = "rounded-button border-2 border-border px-3 py-3 text-xs font-bold uppercase tracking-wide text-fg-muted hover:border-accent";
 
 /** Full-screen RSVP reader: one word at a time with the focal letter highlighted. Space plays, R restarts, Esc closes. */
 export function SpeedReader({ text, onClose }: { text: string; onClose: () => void }) {
@@ -80,7 +80,7 @@ export function SpeedReader({ text, onClose }: { text: string; onClose: () => vo
         <p className="mt-2 text-xs text-fg-muted">{progress}%</p>
         <div className="mt-5 flex items-center gap-3">
           <button type="button" onClick={restart} aria-label="restart" className={controlClass}>⏮</button>
-          <button type="button" onClick={togglePlay} aria-label={isPlaying ? "pause" : "play"} className="flex-1 rounded-sm border border-accent px-5 py-3 text-xs font-extrabold uppercase tracking-wide text-accent hover:bg-accent-soft md:flex-none">
+          <button type="button" onClick={togglePlay} aria-label={isPlaying ? "pause" : "play"} className="flex-1 rounded-button border-2 border-accent px-5 py-3 text-xs font-extrabold uppercase tracking-wide text-accent hover:bg-accent-soft md:flex-none">
             {isPlaying ? "❚❚ pause" : "▶ play"}
           </button>
           <button type="button" onClick={() => setWpm((w) => Math.max(MIN_WPM, w - WPM_STEP))} aria-label="slower" className={controlClass}>−</button>

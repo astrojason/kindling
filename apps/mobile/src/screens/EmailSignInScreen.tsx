@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput } from "react-native";
 import { useAuth } from "../lib/auth-context";
-import { useTheme } from "../lib/theme";
+import { radius, useTheme } from "../lib/theme";
 import { Button, Card, LinkText } from "../components/ui";
 
 /** Email/password sign-in, for accounts created by the admin (e.g. the App Review demo account). */
@@ -64,6 +64,6 @@ const styles = StyleSheet.create({
   scroll: { padding: 20, paddingTop: 48, paddingBottom: 48 },
   title: { fontSize: 26, fontWeight: "700", textAlign: "center" },
   card: { alignItems: "center" },
-  input: { width: "100%", borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 15 },
+  input: { width: "100%", borderWidth: 1, borderRadius: radius.sm, padding: 12, marginBottom: 12, fontSize: 15 },
   back: { marginTop: 20, textAlign: "center" },
 });

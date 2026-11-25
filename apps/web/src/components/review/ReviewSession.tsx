@@ -61,16 +61,16 @@ export function ReviewSession({ uid, today, cards, onFinished }: { uid: string; 
       <p className="mb-1 text-xs font-bold text-fg-muted">Card {index + 1} of {cards.length} · {CATEGORIES[card.category]}</p>
       <p className="mb-4 text-xl font-extrabold text-fg-strong">{card.question}</p>
       {!revealed ? (
-        <button type="button" onClick={() => setRevealed(true)} className="w-full rounded-md bg-accent py-3.5 text-base font-extrabold text-accent-fg">Show answer</button>
+        <button type="button" onClick={() => setRevealed(true)} className="w-full rounded-button bg-accent py-3.5 text-base font-extrabold text-accent-fg">Show answer</button>
       ) : (
         <>
-          <p className="mb-2 rounded-sm border-2 border-success bg-correct px-3.5 py-3 text-[15px] font-bold text-fg-strong">{card.options[card.correctIndex]}</p>
+          <p className="mb-2 rounded-button border-2 border-success bg-correct px-3.5 py-3 text-[15px] font-bold text-fg-strong">{card.options[card.correctIndex]}</p>
           <p className="mb-4 text-sm italic leading-relaxed text-fg-muted">{card.explanation}</p>
           <p className="mb-2 text-xs font-bold text-fg-muted">How well did you know it?</p>
           <div className="grid grid-cols-4 gap-2">
             {RATINGS.map(({ rating, label, style }) => (
               <button key={rating} type="button" disabled={saving !== null} onClick={() => void rate(rating)}
-                className={`rounded-sm py-3 text-sm font-extrabold disabled:opacity-60 ${style}`}>
+                className={`rounded-button py-3 text-sm font-extrabold disabled:opacity-60 ${style}`}>
                 {saving === rating ? "Saving…" : label}
               </button>
             ))}

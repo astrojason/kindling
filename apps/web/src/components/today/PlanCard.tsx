@@ -25,7 +25,7 @@ export function PlanCard({ plan, onStart, onOpen, onRetry }: { plan: PlanItem[];
               type="button"
               disabled={item.status !== "ready"}
               onClick={() => onOpen(item.key)}
-              className={`flex w-full items-center gap-3 rounded-md p-3 text-left text-fg-strong ${item.done ? "bg-surface/70" : "bg-surface"}`}
+              className={`flex w-full items-center gap-3 rounded-button p-3 text-left text-fg-strong ${item.done ? "bg-surface/70" : "bg-surface"}`}
             >
               <span className="flex size-10 shrink-0 items-center justify-center rounded-button bg-accent-soft text-sm font-extrabold text-accent" aria-hidden="true">
                 {item.done ? "✓" : item.slot}
@@ -44,13 +44,13 @@ export function PlanCard({ plan, onStart, onOpen, onRetry }: { plan: PlanItem[];
         ))}
       </ul>
       {failed && (
-        <button type="button" onClick={onRetry} className="mb-3 w-full rounded-md border-2 border-hero-fg/60 py-2.5 text-sm font-extrabold">Try preparing the rest again</button>
+        <button type="button" onClick={onRetry} className="mb-3 w-full rounded-button border-2 border-hero-fg/60 py-2.5 text-sm font-extrabold">Try preparing the rest again</button>
       )}
       <button
         type="button"
         disabled={!next && !preparing}
         onClick={next ? onStart : undefined}
-        className="w-full rounded-md bg-surface py-4 text-lg font-extrabold text-accent shadow-sm disabled:opacity-80"
+        className="w-full rounded-button bg-surface py-4 text-lg font-extrabold text-accent shadow-sm disabled:opacity-80"
       >
         {next ? (doneCount > 0 ? "Continue today’s plan" : "Start today’s plan") : preparing ? "Preparing your lessons…" : "Review today’s lessons"}
       </button>

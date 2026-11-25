@@ -22,7 +22,7 @@ export function QuizReview({ lesson, answers }: { lesson: Lesson; answers: numbe
                     <div
                       key={i}
                       className={
-                        "mb-2 rounded-sm border px-3.5 py-3 text-left text-[14.5px] " +
+                        "mb-2 rounded-button border px-3.5 py-3 text-left text-[14.5px] " +
                         (state === "correct"
                           ? "border-accent bg-correct"
                           : state === "incorrect"

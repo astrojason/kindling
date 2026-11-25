@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Image, Linking, ScrollView, StyleSheet, Text, useColorScheme, View } from "react-native";
 import { CATEGORIES } from "@random-knowledge/shared/categories";
 import { useAuth } from "../lib/auth-context";
-import { useTheme } from "../lib/theme";
+import { radius, useTheme } from "../lib/theme";
 import { Card, Button, LinkText } from "../components/ui";
 import { EmailSignInScreen } from "./EmailSignInScreen";
 
@@ -92,7 +92,7 @@ export function SignInScreen() {
 }
 
 const styles = StyleSheet.create({
-  mark: { width: 88, height: 88, borderRadius: 12, alignSelf: "center", marginBottom: 16 },
+  mark: { width: 88, height: 88, borderRadius: radius.lg, alignSelf: "center", marginBottom: 16 },
   scroll: { padding: 20, paddingTop: 48, paddingBottom: 48 },
   title: { fontSize: 30, fontWeight: "700", textAlign: "center" },
   feature: { marginBottom: 12 },

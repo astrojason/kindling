@@ -11,7 +11,7 @@ import { Card } from "../components/ui";
 import { useAuth } from "../lib/auth-context";
 import { useIsTablet } from "../lib/layout";
 import { getHistory, getLesson, getProgress } from "../lib/firestore";
-import { useTheme } from "../lib/theme";
+import { radius, useTheme } from "../lib/theme";
 
 type Opened = { entry: HistoryEntry; lesson: Lesson; progress: DailyProgress | null };
 
@@ -116,5 +116,5 @@ const styles = StyleSheet.create({
   detailPane: { flex: 1 },
   scroll: { padding: 16, paddingBottom: 32 },
   title: { fontSize: 24, fontWeight: "800", marginBottom: 16 },
-  row: { flexDirection: "row", alignItems: "center", borderRadius: 6, padding: 14, marginBottom: 8 },
+  row: { flexDirection: "row", alignItems: "center", borderRadius: radius.sm, padding: 14, marginBottom: 8 },
 });

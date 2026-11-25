@@ -32,7 +32,7 @@ export function OrderGame({ prompt, items, seed, onFinish }: { prompt: string; i
           const position = picked.indexOf(item);
           return (
             <button key={item} type="button" disabled={position >= 0} onClick={() => pick(item)}
-              className={`flex items-center gap-3 rounded-sm border-2 px-3.5 py-3 text-left text-sm font-bold ${position >= 0 ? "border-success bg-correct text-fg" : "border-border bg-surface-raised text-fg-strong"}`}>
+              className={`flex items-center gap-3 rounded-button border-2 px-3.5 py-3 text-left text-sm font-bold ${position >= 0 ? "border-success bg-correct text-fg" : "border-border bg-surface-raised text-fg-strong"}`}>
               <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs text-accent">{position >= 0 ? position + 1 : ""}</span>
               {item}
             </button>

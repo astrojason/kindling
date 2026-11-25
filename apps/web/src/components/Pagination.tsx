@@ -1,5 +1,5 @@
 const buttonClass =
-  "rounded-sm border border-border px-3 py-1.5 text-xs font-semibold text-fg-muted enabled:hover:text-accent disabled:cursor-not-allowed disabled:opacity-40";
+  "rounded-button border-2 border-border px-3 py-1.5 text-xs font-extrabold text-fg-muted enabled:hover:border-accent enabled:hover:text-accent disabled:cursor-not-allowed disabled:opacity-40";
 
 /** Previous/Next controls for a zero-based `page`. Renders nothing when there is only one page. */
 export function Pagination({

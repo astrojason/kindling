@@ -40,7 +40,7 @@ export function QuizView({
               disabled={answered}
               onClick={() => onSelect(i)}
               className={
-                "mb-2 block w-full rounded-sm border px-3.5 py-3 text-left text-[14.5px] transition-colors " +
+                "mb-2 block w-full rounded-button border px-3.5 py-3 text-left text-[14.5px] transition-colors " +
                 (state === "correct"
                   ? "border-accent bg-correct"
                   : state === "incorrect"

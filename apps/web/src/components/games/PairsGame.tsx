@@ -27,7 +27,7 @@ export function PairsGame({ pairs, seed, onFinish }: { pairs: MatchPair[]; seed:
     }
   }
 
-  const base = "w-full rounded-sm border-2 px-3.5 py-3 text-left text-sm font-bold transition-colors";
+  const base = "w-full rounded-button border-2 px-3.5 py-3 text-left text-sm font-bold transition-colors";
   return (
     <div>
       <p className="mb-3 text-sm text-fg-muted">Tap a term, then its meaning.</p>

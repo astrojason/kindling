@@ -23,7 +23,7 @@ export function AccessPending({ status }: { status: "pending" | "revoked" }) {
         <button
           type="button"
           onClick={signOut}
-          className="w-full rounded-sm border border-border px-5 py-2.5 text-sm font-semibold text-fg-muted transition-opacity hover:opacity-85"
+          className="w-full rounded-button border-2 border-border px-5 py-2.5 text-sm font-extrabold text-fg-muted transition-colors hover:border-accent"
         >
           Sign out
         </button>
