@@ -67,5 +67,7 @@ PY
 fi
 
 echo "==> Building a Release build and installing it on: $DEVICE"
-npx expo run:ios --device "$DEVICE" --configuration Release
+# --no-bundler: a Release build carries its own JS bundle, so Metro isn't needed. Without it, expo starts
+# Metro and streams the device's logs after installing, and the command never exits.
+npx expo run:ios --device "$DEVICE" --configuration Release --no-bundler
 echo "==> Done. If the app won't open, trust your developer certificate in Settings > General > VPN & Device Management."
