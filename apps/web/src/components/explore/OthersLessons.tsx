@@ -11,8 +11,8 @@ export function OthersLessons({ lessons }: { lessons: ExploreLesson[] }) {
       <p className="mb-4 text-xs text-fg-muted">Lessons Kindling made for other readers.</p>
       <PagedLinkList
         items={lessons.map((lesson) => ({
-          key: `${lesson.uid}/${lesson.key}`,
-          href: `/explore/${lesson.uid}/${lesson.key}`,
+          key: lesson.id,
+          href: `/explore/${lesson.id}`,
           title: lesson.title,
           detail: `${CATEGORIES[lesson.category] ?? lesson.category} · ${formatDateLabel(lesson.key.slice(0, 10))}`,
         }))}

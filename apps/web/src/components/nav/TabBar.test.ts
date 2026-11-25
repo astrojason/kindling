@@ -49,7 +49,7 @@ it("still lists the usual tabs", async () => {
 const hrefs = () => [...container.querySelectorAll("a")].map((a) => a.getAttribute("href"));
 
 it("shows Explore when lessons were generated for other people, even without an articles account", async () => {
-  explore = { loading: false, data: { hasArticles: false, lessons: [{ uid: "ada", key: "2026-11-20" }] }, error: null };
+  explore = { loading: false, data: { hasArticles: false, lessons: [{ id: "abc123", key: "2026-11-20" }] }, error: null };
   await render(null);
   expect(hrefs()).toContain("/discover");
 });

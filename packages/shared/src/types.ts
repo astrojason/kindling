@@ -164,10 +164,10 @@ export interface SharedLesson {
   lesson: Lesson;
 }
 
-/** One entry in Explore's list of lessons generated for other people: where it is stored, and what it is about. */
+/** One entry in Explore's list of lessons generated for other people. `id` is opaque: it never carries their account id. */
 export interface ExploreLesson {
-  uid: string;
-  /** The lesson's key under users/{uid}/lessons: a date, or `date~slot` for a later lesson of that day. */
+  id: string;
+  /** The lesson's date, or `date~slot` for a later lesson of that day. */
   key: string;
   title: string;
   category: CategoryKey;

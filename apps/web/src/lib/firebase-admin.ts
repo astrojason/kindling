@@ -8,6 +8,7 @@ import { CATEGORY_KEYS, defaultWeights, type CategoryKey, type Weights } from "@
 import { fromFirestoreLesson, toFirestoreLesson } from "@/lib/lesson-storage";
 import type { CronRunLogEntry, CronRunResult, GenerationLogEntry, GenerationSource, HistoryEntry, Lesson, ExploreLesson, PushToken, SharePreview } from "@/lib/types";
 import { mergeRoleClaim } from "@/lib/claims";
+import { exploreLessonId } from "@/lib/explore-id";
 
 const STORAGE_BUCKET = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 
@@ -234,24 +235,28 @@ export async function getSharePreviewAdmin(id: string): Promise<SharePreview | n
   return { title, category, ownerName: ownerName ?? null };
 }
 
-/**
- * The lessons generated for everyone else with access (never the caller), newest first: merged from each person's
- * lesson history (their last 60), so no index over every lesson is needed.
- */
-export async function listOthersLessonsAdmin(uid: string, limit: number): Promise<ExploreLesson[]> {
+/** Every lesson in the lesson history (each person's last 60) of everyone with access except the caller. */
+async function othersHistoryAdmin(uid: string): Promise<{ uid: string; entry: HistoryEntry }[]> {
   const [granted, privileged] = await Promise.all([listGrantedUserIds(), listPrivilegedUserIds()]);
   const others = [...new Set([...granted, ...privileged])].filter((id) => id !== uid);
   if (others.length === 0) return [];
   const db = getFirestore(getAdminApp());
   const histories = await db.getAll(...others.map((id) => db.collection("users").doc(id).collection("meta").doc("history")));
-  return histories
-    .flatMap((snap) => ((snap.get("entries") as HistoryEntry[] | undefined) ?? []).map((entry) => ({ uid: snap.ref.parent.parent!.id, key: entry.date, title: entry.title, category: entry.category })))
+  return histories.flatMap((snap) => ((snap.get("entries") as HistoryEntry[] | undefined) ?? []).map((entry) => ({ uid: snap.ref.parent.parent!.id, entry })));
+}
+
+/** The lessons generated for everyone else (never the caller), newest first, each under an id that hides whose it is. */
+export async function listOthersLessonsAdmin(uid: string, limit: number): Promise<ExploreLesson[]> {
+  return (await othersHistoryAdmin(uid))
+    .map(({ uid: owner, entry }) => ({ id: exploreLessonId(owner, entry.date), key: entry.date, title: entry.title, category: entry.category }))
     .sort((a, b) => b.key.localeCompare(a.key))
     .slice(0, limit);
 }
 
-/** One lesson of any account, for Explore's reader. */
-export async function getLessonAdmin(uid: string, key: string): Promise<Lesson | null> {
-  const snap = await getFirestore(getAdminApp()).collection("users").doc(uid).collection("lessons").doc(key).get();
-  return snap.exists ? fromFirestoreLesson(snap.data() as Parameters<typeof fromFirestoreLesson>[0]) : null;
+/** The lesson behind an Explore id, found among the same lessons Explore lists (so never the caller's own, or an unlisted one). */
+export async function getOthersLessonAdmin(uid: string, id: string): Promise<{ date: string; lesson: Lesson } | null> {
+  const match = (await othersHistoryAdmin(uid)).find(({ uid: owner, entry }) => exploreLessonId(owner, entry.date) === id);
+  if (!match) return null;
+  const snap = await getFirestore(getAdminApp()).collection("users").doc(match.uid).collection("lessons").doc(match.entry.date).get();
+  return snap.exists ? { date: match.entry.date.slice(0, 10), lesson: fromFirestoreLesson(snap.data() as Parameters<typeof fromFirestoreLesson>[0]) } : null;
 }

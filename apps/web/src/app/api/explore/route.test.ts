@@ -6,7 +6,7 @@ import { getNoteSettingsAdmin, listOthersLessonsAdmin, verifyIdToken } from "@/l
 vi.mock("@/lib/firebase-admin", () => ({ getAccessRequestAdmin: vi.fn(), verifyIdToken: vi.fn(), getNoteSettingsAdmin: vi.fn(), listOthersLessonsAdmin: vi.fn() }));
 
 const request = (authorization = "Bearer token") => new Request("http://localhost/api/explore", { headers: { authorization } });
-const lessons = [{ uid: "ada", key: "2026-11-20", title: "Tide pools", category: "nature" }];
+const lessons = [{ id: "abc123", key: "2026-11-20", title: "Tide pools", category: "nature" }];
 
 beforeEach(() => {
   vi.resetAllMocks();

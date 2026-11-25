@@ -28,14 +28,14 @@ afterEach(async () => {
 const render = async (state: typeof explore) => { explore = state; await act(async () => root.render(createElement(ExplorePage))); };
 
 it("shows the user's own articles feed when they have an articles account", async () => {
-  await render({ loading: false, data: { hasArticles: true, lessons: [{ uid: "ada", key: "2026-11-20~2", title: "Tide pools", category: "nature" }] }, error: null });
+  await render({ loading: false, data: { hasArticles: true, lessons: [{ id: "abc123", key: "2026-11-20~2", title: "Tide pools", category: "nature" }] }, error: null });
   expect(container.textContent).toContain("Articles feed");
   expect(container.querySelector("a[href^='/explore/']")).toBeNull();
 });
 
 it("otherwise lists the lessons made for other people, each opening in Explore's reader", async () => {
-  await render({ loading: false, data: { hasArticles: false, lessons: [{ uid: "ada", key: "2026-11-20~2", title: "Tide pools", category: "nature" }] }, error: null });
-  const link = container.querySelector("a[href='/explore/ada/2026-11-20~2']");
+  await render({ loading: false, data: { hasArticles: false, lessons: [{ id: "abc123", key: "2026-11-20~2", title: "Tide pools", category: "nature" }] }, error: null });
+  const link = container.querySelector("a[href='/explore/abc123']");
   expect(link?.textContent).toContain("Tide pools");
   expect(container.textContent).not.toContain("Articles feed");
 });
