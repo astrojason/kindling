@@ -18,7 +18,8 @@ function fixture() {
     wikiQuery: "topic research evidence", youtubeQuery: "topic explanation demonstration",
     paragraphSources: [[1], [2], [1, 2]],
     quiz: Array.from({ length: 3 }, () => ({ question: "What happened?", options: ["A", "B", "C", "D"], correctIndex: 0, explanation: "The lesson explains A." })),
-    preQuiz: Array.from({ length: 2 }, () => ({ question: "Which do you expect?", options: ["A", "B", "C"], correctIndex: 0, explanation: "The lesson explains A." })),
+    // Structured output: fixed keys, so the model can only ever return two questions of three options.
+    preQuiz: Object.fromEntries(["first", "second"].map((key) => [key, { question: `Which do you expect (${key})?`, options: { a: "A", b: "B", c: "C" }, correctIndex: 0, explanation: "The lesson explains A." }])) as Record<string, { question: string; options: Record<string, string>; correctIndex: number; explanation: string }>,
   };
   const extras = {
     diagram: { title: "How it works", subtitle: "Four parts", labels: ["One", "Two", "Three", "Four"].map((term) => ({ term, note: `${term} note.` })), principles: ["P1", "P2", "P3"] },
@@ -54,16 +55,27 @@ describe("source-backed lesson generation", () => {
     expect(lesson.body[0]).toBe(String.raw`Odds are \(\frac{364}{365}\approx 0.997\).`);
   });
 
-  it("keeps the simpler pre-review questions the writer produced", async () => {
+  it("keeps the simpler pre-review questions the writer produced, as two questions of three options", async () => {
     const f = fixture();
     const lesson = await f.generate();
-    expect(lesson.preQuiz).toEqual(f.draft.preQuiz);
+    expect(lesson.preQuiz).toEqual(["first", "second"].map((key) => ({ question: `Which do you expect (${key})?`, options: ["A", "B", "C"], correctIndex: 0, explanation: "The lesson explains A." })));
+  });
+
+  it("asks for the draft with a strict schema, so stray fields can't leak into the pre-review questions", async () => {
+    const f = fixture();
+    await f.generate();
+    const format = f.chat.mock.calls[0][0].response_format;
+    expect(format.type).toBe("json_schema");
+    expect(format.json_schema.strict).toBe(true);
+    const preQuiz = format.json_schema.schema.properties.preQuiz;
+    expect(preQuiz.required).toEqual(["first", "second"]);
+    expect(preQuiz.properties.first.properties.options.required).toEqual(["a", "b", "c"]);
   });
 
   it("drops malformed pre-review questions with a warning rather than failing the whole lesson", async () => {
     const f = fixture();
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    f.draft.preQuiz[0].options = ["A", "B"];
+    f.draft.preQuiz.first.options = { a: "A", b: "A", c: "C" };
     const lesson = await f.generate();
     expect(lesson.preQuiz).toBeUndefined();
     expect(lesson.quiz).toHaveLength(3);

@@ -66,9 +66,18 @@ function isQuizQuestion(value: unknown): value is QuizQuestion {
   return isQuestion(value, 4);
 }
 
+/** The writer returns each guess-first question with fixed keys (see `DRAFT_SCHEMA`); the lesson stores plain lists. */
+function preQuizQuestion(value: unknown): unknown {
+  if (!isObject(value) || !isObject(value.options)) return value;
+  return { ...value, options: [value.options.a, value.options.b, value.options.c] };
+}
+
 /** The guess-first questions are a nicety, so a bad batch is dropped (loudly) instead of throwing away a sourced lesson. */
-function parsePreQuiz(value: unknown): QuizQuestion[] | undefined {
-  if (Array.isArray(value) && value.length === 2 && value.every((question) => isQuestion(question, 3))) return value;
+function parsePreQuiz(raw: unknown): QuizQuestion[] | undefined {
+  const value = isObject(raw) ? [raw.first, raw.second].map(preQuizQuestion) : raw;
+  if (Array.isArray(value) && value.length === 2 && value.every((question) => isQuestion(question, 3))) {
+    return value.map(({ question, options, correctIndex, explanation }) => ({ question, options, correctIndex, explanation }));
+  }
   console.warn("Dropping invalid pre-review questions from the generated lesson", value);
   return undefined;
 }
@@ -106,6 +115,32 @@ function parseGames(value: unknown): LessonGames | undefined {
   } else if (trueFalse !== undefined) console.warn("Dropping invalid mini-game true/false statements from the generated lesson", trueFalse);
   return Object.keys(games).length ? games : undefined;
 }
+
+const text = { type: "string" } as const;
+const strictObject = (properties: Record<string, unknown>) => ({ type: "object", properties, required: Object.keys(properties), additionalProperties: false });
+const question = (options: unknown) => strictObject({ question: text, options, correctIndex: { type: "integer" }, explanation: text });
+
+/**
+ * The writer's output shape, enforced by OpenAI structured outputs (strict mode): without it the model sometimes
+ * spilled the next field into an array (pre-review questions ending in `'diagram{'`). Strict mode can't bound an
+ * array's length, so the pre-review questions and their three options use fixed keys; the other counts are checked
+ * when the draft is parsed.
+ */
+const DRAFT_SCHEMA = strictObject({
+  title: text,
+  body: { type: "array", items: text },
+  paragraphSources: { type: "array", items: { type: "array", items: { type: "integer" } } },
+  wikiQuery: text,
+  youtubeQuery: text,
+  quiz: { type: "array", items: question({ type: "array", items: text }) },
+  preQuiz: strictObject({ first: question(strictObject({ a: text, b: text, c: text })), second: question(strictObject({ a: text, b: text, c: text })) }),
+  diagram: strictObject({ title: text, subtitle: text, labels: { type: "array", items: strictObject({ term: text, note: text }) }, principles: { type: "array", items: text } }),
+  games: strictObject({
+    pairs: { type: "array", items: strictObject({ term: text, meaning: text }) },
+    order: strictObject({ prompt: text, items: { type: "array", items: text } }),
+    trueFalse: { type: "array", items: strictObject({ statement: text, isTrue: { type: "boolean" } }) },
+  }),
+});
 
 function parseLessonContent(value: unknown) {
   if (!isObject(value) || !isText(value.title) || value.title.length >= 60 ||
@@ -194,11 +229,11 @@ The supplied evidence notes rest on a single publisher. Search for an independen
   }
   const evidence = JSON.stringify({ notes, sources: sources.map((source, index) => ({ id: index + 1, ...source })) });
 
-  async function jsonCompletion(instructions: string, input: string): Promise<unknown> {
+  async function jsonCompletion(instructions: string, input: string, schema?: Record<string, unknown>): Promise<unknown> {
     const completion = await client.chat.completions.create({
       model,
       max_tokens: 4500,
-      response_format: { type: "json_object" },
+      response_format: schema ? { type: "json_schema", json_schema: { name: "lesson", strict: true, schema } } : { type: "json_object" },
       messages: [{ role: "system", content: instructions }, { role: "user", content: input }],
     });
     await onTokens(completion.usage?.total_tokens ?? 0);
@@ -215,14 +250,14 @@ The supplied evidence notes rest on a single publisher. Search for an independen
 Write one short curiosity lesson using ONLY the supplied research evidence. Stay within the selected category. Explain one specific thing the learner can understand or do after reading. Do not add details from memory. Keep the title accurate and free of clickbait exaggeration.
 Write exactly 3 short paragraphs, roughly 220-320 words total, with no headers. Explain how or why, give a concrete example, and include a meaningful limitation or misconception. Define unfamiliar terms. For practical skills include setup, ordered actions, and an observable success check.
 Provide exactly 3 comprehension questions about this lesson, each with 4 distinct options, one correct answer, and a one-sentence explanation. Distractors are incorrect answer choices, not claims to endorse. The correct answers and explanations must be supported by the lesson and evidence.
-Also provide exactly 2 simpler "preQuiz" questions that a reader can sensibly guess BEFORE reading: about the topic's central idea or a common intuition about it, each with exactly 3 distinct options, one correct answer, and a one-sentence explanation. They must not require knowing the lesson text, and their answers must also be supported by the lesson and evidence.
+Also provide exactly 2 simpler "preQuiz" questions that a reader can sensibly guess BEFORE reading: about the topic's central idea or a common intuition about it, each with exactly 3 distinct options (a, b, c; correctIndex 0, 1 or 2 in that order), one correct answer, and a one-sentence explanation. They must not require knowing the lesson text, and their answers must also be supported by the lesson and evidence.
 For each paragraph provide a nonempty list of the one-based source IDs supporting its claims. Use only IDs in the supplied evidence and use at least two sources from different publishers across the lesson. Do not insert URLs, Markdown, or citation markers into the body. Write any math as LaTeX inside \\( and \\) delimiters, doubling every backslash so the JSON stays valid (for example "\\\\(\\\\frac{364}{365}\\\\approx 0.997\\\\)"), and keep it to simple expressions; the app displays the references separately.
 Also provide a "diagram": a labeled concept map of the lesson's central idea, with a short caps-friendly "title" and one-line "subtitle", exactly 4 "labels" (each a 1-4 word "term" naming a key part or step, plus a one-sentence "note" explaining it), and 3 short "principles" the lesson supports.
 Also provide "games" built only from the lesson and evidence: "pairs" (exactly 4 terms from the lesson, each with a short meaning), "order" (a "prompt" and exactly 4 distinct "items" listed in their correct order, for a process or sequence the lesson explains; use clear, short items) and "trueFalse" (exactly 4 short statements, two true and two false, each clearly true or false according to the lesson). If a game cannot be made faithfully from the lesson, omit just that game.
 Also provide two plain search phrases of 3-6 words, one for Wikipedia and one for YouTube, not invented links or article titles.
 Return ONLY JSON with this shape:
-{"title":"under 60 characters","body":["paragraph1","paragraph2","paragraph3"],"paragraphSources":[[1],[2],[1,2]],"wikiQuery":"short search phrase","youtubeQuery":"short search phrase","quiz":[{"question":"...","options":["a","b","c","d"],"correctIndex":0,"explanation":"..."},{"question":"...","options":["a","b","c","d"],"correctIndex":0,"explanation":"..."},{"question":"...","options":["a","b","c","d"],"correctIndex":0,"explanation":"..."}],"preQuiz":[{"question":"...","options":["a","b","c"],"correctIndex":0,"explanation":"..."},{"question":"...","options":["a","b","c"],"correctIndex":0,"explanation":"..."}],"diagram":{"title":"...","subtitle":"...","labels":[{"term":"...","note":"..."}],"principles":["..."]},"games":{"pairs":[{"term":"...","meaning":"..."}],"order":{"prompt":"...","items":["..."]},"trueFalse":[{"statement":"...","isTrue":true}]}}`,
-  JSON.stringify({ category: CATEGORIES[category], guidance: CATEGORY_GUIDANCE[category], evidence }));
+{"title":"under 60 characters","body":["paragraph1","paragraph2","paragraph3"],"paragraphSources":[[1],[2],[1,2]],"wikiQuery":"short search phrase","youtubeQuery":"short search phrase","quiz":[{"question":"...","options":["a","b","c","d"],"correctIndex":0,"explanation":"..."},{"question":"...","options":["a","b","c","d"],"correctIndex":0,"explanation":"..."},{"question":"...","options":["a","b","c","d"],"correctIndex":0,"explanation":"..."}],"preQuiz":{"first":{"question":"...","options":{"a":"...","b":"...","c":"..."},"correctIndex":0,"explanation":"..."},"second":{"question":"...","options":{"a":"...","b":"...","c":"..."},"correctIndex":0,"explanation":"..."}},"diagram":{"title":"...","subtitle":"...","labels":[{"term":"...","note":"..."}],"principles":["..."]},"games":{"pairs":[{"term":"...","meaning":"..."}],"order":{"prompt":"...","items":["..."]},"trueFalse":[{"statement":"...","isTrue":true}]}}`,
+  JSON.stringify({ category: CATEGORIES[category], guidance: CATEGORY_GUIDANCE[category], evidence }), DRAFT_SCHEMA);
   const lesson = parseLesson(draft, sources);
 
   const review = await jsonCompletion(`${EVIDENCE_RULES}
