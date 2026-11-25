@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, type KeyboardEvent } from "react";
-import { addKeyword } from "@random-knowledge/shared/notes-input";
+import { addKeyword, keywordSuggestions } from "@random-knowledge/shared/notes-input";
 import { useToast } from "@/components/Toast";
 import { LoadState } from "@/components/share/PageFrame";
 import { getNoteSettings, updateNoteSettings } from "@/lib/notes-firestore";
 import { forgetExplore } from "@/lib/useExplore";
 import { useLoad } from "@/lib/useLoad";
 import { fieldClass } from "@/components/form/field";
+import { useArticleCategories } from "./useArticleCategories";
 
 
 /** Which articles account Discover reads, and the keywords that pick which unread articles to suggest. */
@@ -27,6 +28,9 @@ function DiscoverForm({ uid, initialUid, initialKeywords }: { uid: string; initi
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Suggestions come from the saved account, so they follow the field only once it is saved.
+  const [savedAccount, setSavedAccount] = useState(initialUid || null);
+  const categories = useArticleCategories(savedAccount);
 
   function add() {
     setKeywords(addKeyword(keywords, draft));
@@ -44,7 +48,9 @@ function DiscoverForm({ uid, initialUid, initialKeywords }: { uid: string; initi
     setSaving(true);
     setError(null);
     try {
-      await updateNoteSettings(uid, { articlesAppUid: articlesAppUid.trim() || null, interestKeywords: keywords });
+      const account = articlesAppUid.trim() || null;
+      await updateNoteSettings(uid, { articlesAppUid: account, interestKeywords: keywords });
+      setSavedAccount(account);
       // The articles account decides what Explore shows (and whether the tab is there at all).
       forgetExplore(uid);
       toast("Discover settings saved.");
@@ -77,9 +83,15 @@ function DiscoverForm({ uid, initialUid, initialKeywords }: { uid: string; initi
           ))}
         </div>
         <div className="mt-2 flex gap-2">
-          <input aria-label="Add a keyword" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={onKeyDown} placeholder="Add a keyword…" className={fieldClass} />
+          <input aria-label="Add a keyword" list="article-categories" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={onKeyDown} placeholder="Add a keyword…" className={fieldClass} />
           <button type="button" onClick={add} className="rounded-button border-2 border-border px-3 py-1.5 text-sm font-extrabold text-fg-muted hover:border-accent">Add</button>
         </div>
+        <datalist id="article-categories">
+          {keywordSuggestions(categories.data ?? [], keywords, "").map((c) => <option key={c} value={c} />)}
+        </datalist>
+        {!savedAccount && <p className="mt-1 text-xs text-fg-muted">Save your articles account to get category suggestions.</p>}
+        {savedAccount && categories.loading && <p className="mt-1 text-xs text-fg-muted">Loading your categories…</p>}
+        {categories.error && <pre role="alert" className="mt-2 whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all">Could not load your categories: {categories.error}</pre>}
       </div>
 
       {error && <pre role="alert" className="whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all">{error}</pre>}

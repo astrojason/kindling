@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { todayStr } from "@random-knowledge/shared/date";
 import { getStreakStatus } from "@random-knowledge/shared/streak";
@@ -35,6 +35,8 @@ export function ProfileScreen({ onDataReset }: { onDataReset: () => void }) {
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadKey, setLoadKey] = useState(0);
+  // Stable, since the Discover keyword suggestions reload when it changes.
+  const getToken = useCallback(() => (user ? user.getIdToken() : Promise.reject(new Error("You are signed out."))), [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -129,7 +131,7 @@ export function ProfileScreen({ onDataReset }: { onDataReset: () => void }) {
         )}
         {user && <PreReviewSetting uid={user.uid} />}
         {user && <CategorySettings uid={user.uid} />}
-        {user && <DiscoverSettings uid={user.uid} />}
+        {user && <DiscoverSettings uid={user.uid} getToken={getToken} />}
         {API_BASE_URL && (
           <View style={{ gap: 8 }}>
             {[...(canManageAccess(claims) ? [{ title: "Manage access", path: "/admin/access" }] : []), ...LINKS].map((link) => (

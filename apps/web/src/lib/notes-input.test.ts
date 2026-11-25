@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addKeyword, validateNoteInput } from "@random-knowledge/shared/notes-input";
+import { addKeyword, keywordSuggestions, validateNoteInput } from "@random-knowledge/shared/notes-input";
 
 const full = { title: " Black holes ", tag: " physics ", source_url: " https://example.com/a ", what_it_said: " W ", why_it_matters: " Y ", application: " A " };
 
@@ -40,5 +40,18 @@ describe("addKeyword", () => {
     const list = ["a"];
     addKeyword(list, "b");
     expect(list).toEqual(["a"]);
+  });
+});
+
+describe("keywordSuggestions", () => {
+  const categories = ["Big Ideas Simply Explained", "Astronomy", "DIY", "Big Cats"];
+
+  it("offers every category not already a keyword, in any letter case", () => {
+    expect(keywordSuggestions(categories, ["astronomy"], "")).toEqual(["Big Ideas Simply Explained", "DIY", "Big Cats"]);
+  });
+
+  it("narrows to the categories containing the typed text, ignoring case and spaces around it", () => {
+    expect(keywordSuggestions(categories, [], "  big ")).toEqual(["Big Ideas Simply Explained", "Big Cats"]);
+    expect(keywordSuggestions(categories, [], "ideas s")).toEqual(["Big Ideas Simply Explained"]);
   });
 });

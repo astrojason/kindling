@@ -3,13 +3,16 @@
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { requestJson } from "@/lib/api-client";
 import { getNoteSettings, updateNoteSettings } from "@/lib/notes-firestore";
 import { forgetExplore } from "@/lib/useExplore";
 import { DiscoverSettings } from "./DiscoverSettings";
 
 const toast = vi.hoisted(() => vi.fn());
 vi.mock("@/components/Toast", () => ({ useToast: () => toast }));
-vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user: null }) }));
+const user = vi.hoisted(() => ({ uid: "u1", getIdToken: async () => "token" }));
+vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user }) }));
+vi.mock("@/lib/api-client", () => ({ requestJson: vi.fn() }));
 vi.mock("@/lib/usePendingRequests", () => ({ usePendingRequests: () => ({ count: null, error: null }) }));
 vi.mock("@/lib/useExplore", () => ({ forgetExplore: vi.fn() }));
 vi.mock("@/lib/notes-firestore", () => ({ getNoteSettings: vi.fn(), updateNoteSettings: vi.fn() }));
@@ -22,6 +25,7 @@ beforeEach(() => {
   vi.spyOn(console, "error").mockImplementation(() => {});
   vi.mocked(getNoteSettings).mockResolvedValue({ articlesAppUid: "art-1", interestKeywords: ["woodworking", "astronomy"] });
   vi.mocked(updateNoteSettings).mockResolvedValue(undefined);
+  vi.mocked(requestJson).mockResolvedValue({ categories: ["Big Ideas Simply Explained", "Astronomy", "DIY"] });
   container = document.createElement("div");
   root = createRoot(container);
 });
@@ -107,4 +111,45 @@ it("shows a failure to load the settings in full", async () => {
   vi.mocked(getNoteSettings).mockRejectedValue(new Error("Missing or insufficient permissions."));
   await render();
   expect(container.textContent).toContain("Missing or insufficient permissions.");
+});
+
+const suggestions = () => [...container.querySelectorAll("datalist option")].map((o) => o.getAttribute("value"));
+
+it("suggests the articles account's categories that are not keywords yet, as the keyword field's autocomplete", async () => {
+  await render();
+  expect(requestJson).toHaveBeenCalledWith("/api/discover/categories", "token");
+  const list = container.querySelector("datalist")!;
+  expect(field("Add a keyword").getAttribute("list")).toBe(list.id);
+  expect(suggestions()).toEqual(["Big Ideas Simply Explained", "DIY"]);
+
+  await setValue(field("Add a keyword"), "DIY");
+  await click(button("Add"));
+  expect(suggestions()).toEqual(["Big Ideas Simply Explained"]);
+});
+
+it("shows that the categories are loading", async () => {
+  vi.mocked(requestJson).mockReturnValue(new Promise(() => {}));
+  await render();
+  expect(container.textContent).toContain("Loading your categories");
+});
+
+it("shows a failure to load the categories in full, and keywords can still be typed", async () => {
+  vi.mocked(requestJson).mockRejectedValue(new Error("TURSO_DATABASE_URL is not set"));
+  await render();
+  const alert = [...container.querySelectorAll("[role='alert']")].find((a) => a.textContent?.includes("TURSO_DATABASE_URL"));
+  expect(alert?.textContent).toContain("Could not load your categories");
+  expect(alert?.className).toContain("select-all");
+  expect(field("Add a keyword").disabled).toBe(false);
+});
+
+it("does not ask for categories until an articles account is saved, then loads that account's", async () => {
+  vi.mocked(getNoteSettings).mockResolvedValue({ articlesAppUid: null, interestKeywords: [] });
+  await render();
+  expect(requestJson).not.toHaveBeenCalled();
+  expect(container.textContent).toContain("Save your articles account to get category suggestions");
+
+  await setValue(field("Articles account uid"), "art-9");
+  await click(button("Save"));
+  expect(requestJson).toHaveBeenCalledWith("/api/discover/categories", "token");
+  expect(suggestions()).toEqual(["Big Ideas Simply Explained", "Astronomy", "DIY"]);
 });

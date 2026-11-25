@@ -26,3 +26,10 @@ export function addKeyword(keywords: string[], input: string): string[] {
   if (!keyword || keywords.some((k) => k.toLowerCase() === keyword.toLowerCase())) return keywords;
   return [...keywords, keyword];
 }
+
+/** The categories worth suggesting as a keyword: not one already (in any letter case), and containing the typed text. */
+export function keywordSuggestions(categories: string[], keywords: string[], draft: string): string[] {
+  const typed = draft.trim().toLowerCase();
+  const taken = new Set(keywords.map((k) => k.toLowerCase()));
+  return categories.filter((c) => !taken.has(c.toLowerCase()) && c.toLowerCase().includes(typed));
+}

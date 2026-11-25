@@ -7,11 +7,12 @@ import { ErrorBox } from "../ErrorBox";
 import { LoadingView } from "../LoadingView";
 import { Field } from "../notes/Field";
 import { Button } from "../ui";
+import { KeywordSuggestions } from "./KeywordSuggestions";
 
 type Settings = { articlesAppUid: string | null; interestKeywords: string[] };
 
 /** Which articles account Discover reads, and the keywords that pick which unread articles to suggest. */
-export function DiscoverSettings({ uid }: { uid: string }) {
+export function DiscoverSettings({ uid, getToken }: { uid: string; getToken: () => Promise<string> }) {
   const [loaded, setLoaded] = useState<{ settings?: Settings; error?: string } | null>(null);
 
   useEffect(() => {
@@ -31,10 +32,10 @@ export function DiscoverSettings({ uid }: { uid: string }) {
 
   if (!loaded) return <LoadingView text="Loading Discover settings" />;
   if (loaded.error || !loaded.settings) return <ErrorBox message={loaded.error ?? "Could not load the Discover settings."} />;
-  return <DiscoverForm uid={uid} initial={loaded.settings} />;
+  return <DiscoverForm uid={uid} getToken={getToken} initial={loaded.settings} />;
 }
 
-function DiscoverForm({ uid, initial }: { uid: string; initial: Settings }) {
+function DiscoverForm({ uid, getToken, initial }: { uid: string; getToken: () => Promise<string>; initial: Settings }) {
   const theme = useTheme();
   const [articlesAppUid, setArticlesAppUid] = useState(initial.articlesAppUid ?? "");
   const [keywords, setKeywords] = useState(initial.interestKeywords);
@@ -42,9 +43,11 @@ function DiscoverForm({ uid, initial }: { uid: string; initial: Settings }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  // Suggestions come from the saved account, so they follow the field only once it is saved.
+  const [savedAccount, setSavedAccount] = useState(initial.articlesAppUid);
 
-  function add() {
-    setKeywords(addKeyword(keywords, draft));
+  function add(keyword = draft) {
+    setKeywords(addKeyword(keywords, keyword));
     setDraft("");
   }
 
@@ -53,7 +56,9 @@ function DiscoverForm({ uid, initial }: { uid: string; initial: Settings }) {
     setError(null);
     setSaved(false);
     try {
-      await updateNoteSettings(uid, { articlesAppUid: articlesAppUid.trim() || null, interestKeywords: keywords });
+      const account = articlesAppUid.trim() || null;
+      await updateNoteSettings(uid, { articlesAppUid: account, interestKeywords: keywords });
+      setSavedAccount(account);
       setSaved(true);
     } catch (err) {
       console.error("Failed to save the Discover settings", err);
@@ -79,9 +84,10 @@ function DiscoverForm({ uid, initial }: { uid: string; initial: Settings }) {
           </View>
         ))}
       </View>
-      <Field label="Add a keyword" value={draft} onChangeText={setDraft} onSubmitEditing={add} returnKeyType="done" autoCapitalize="none" />
+      <Field label="Add a keyword" value={draft} onChangeText={setDraft} onSubmitEditing={() => add()} returnKeyType="done" autoCapitalize="none" />
+      <KeywordSuggestions savedAccount={savedAccount} getToken={getToken} keywords={keywords} draft={draft} onPick={add} />
       <View style={{ gap: 10 }}>
-        <Button title="Add" variant="secondary" onPress={add} />
+        <Button title="Add" variant="secondary" onPress={() => add()} />
         <Button title={saving ? "Saving…" : "Save"} onPress={() => void save()} disabled={saving} />
       </View>
       {saved && <Text accessibilityRole="alert" style={{ color: theme.success, fontSize: 13, fontWeight: "700", marginTop: 8 }}>Discover settings saved.</Text>}
