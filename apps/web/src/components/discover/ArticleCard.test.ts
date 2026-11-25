@@ -73,6 +73,18 @@ it("shows the article: a link that opens safely in a new tab, summary, reading t
   for (const text of ["How dovetails hold.", "6 min", "woodworking", "DIY"]) expect(container.textContent).toContain(text);
 });
 
+it("always lays out the same five rows (title, details, summary, keywords, actions), so cards side by side line up", async () => {
+  const sparse = { ...article, summary: "", keywords: [], readingTime: 0, categories: [] };
+  for (const shown of [article, sparse]) {
+    await act(async () => root.render(createElement(ArticleCard, { article: shown, uid: "u1", getToken: async () => "tok", onDone })));
+    const card = container.querySelector("article")!;
+    expect(card.children.length).toBe(5);
+    // On wide screens each card takes five rows of the feed's grid and shares them with the card beside it.
+    expect(card.className).toContain("lg:row-span-5");
+    expect(card.className).toContain("lg:grid-rows-subgrid");
+  }
+});
+
 it("skips an article: hides the card for now without recording anything", async () => {
   await render();
   await click(button("Skip"));

@@ -108,40 +108,46 @@ export function ArticleCard({ article, uid, getToken, onDone }: { article: Disco
   const working = stage === "marking" || stage === "marking-read" || stage === "ingesting" || stage === "drafting";
 
   return (
-    <article className="rounded-sm border border-border p-3.5">
-      <a href={article.url} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-fg-strong underline-offset-2 hover:underline">{article.title}</a>
+    // Always five rows (title, details, summary, keywords, actions), an empty one taking no height, so that on wide
+    // screens the card shares its rows with the one beside it and their parts line up.
+    <article className="rounded-sm border border-border p-3.5 lg:row-span-5 lg:grid lg:grid-rows-subgrid lg:gap-y-0">
+      <a href={article.url} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-fg-strong underline-offset-2 hover:underline lg:justify-self-start">{article.title}</a>
       <p className="mt-0.5 text-xs text-fg-muted">{article.readingTime > 0 ? `${article.readingTime} min · ` : ""}{article.categories.join(", ")}</p>
-      {article.summary && <p className="mt-2 text-sm text-fg">{article.summary}</p>}
-      {article.keywords.length > 0 && (
-        <p className="mt-2 flex flex-wrap gap-1.5">
-          {article.keywords.map((k) => <span key={k} className="rounded-full bg-accent-soft px-2.5 py-0.5 text-[11px] font-bold text-accent">{k}</span>)}
-        </p>
-      )}
+      <div>{article.summary && <p className="mt-2 text-sm text-fg">{article.summary}</p>}</div>
+      <div>
+        {article.keywords.length > 0 && (
+          <p className="mt-2 flex flex-wrap gap-1.5">
+            {article.keywords.map((k) => <span key={k} className="rounded-full bg-accent-soft px-2.5 py-0.5 text-[11px] font-bold text-accent">{k}</span>)}
+          </p>
+        )}
+      </div>
 
-      {error && <pre role="alert" className={`mt-3 ${errorClass}`}>{error}</pre>}
+      <div>
+        {error && <pre role="alert" className={`mt-3 ${errorClass}`}>{error}</pre>}
 
-      {stage === "review" && draft ? (
-        <div className="mt-4 border-t border-border pt-4">
-          <NoteForm initial={draft} submitLabel="Save note" onSubmit={save} onCancel={() => setStage("idle")} />
-        </div>
-      ) : (
-        <div className="mt-3 space-y-3">
-          {stage === "paste" && (
-            <div className="space-y-2">
-              <textarea aria-label="Pasted article text" value={pasted} onChange={(e) => setPasted(e.target.value)} rows={5} placeholder="Paste the article text here…" className={fieldClass} />
-              <button type="button" disabled={!pasted.trim()} onClick={() => void makeNote(pasted.trim())} className={primary}>Use pasted text</button>
-            </div>
-          )}
-          <div className="flex flex-wrap gap-2">
-            <button type="button" disabled={working} onClick={() => void makeNote()} className={primary}>
-              {stage === "marking-read" ? "Marking it read…" : stage === "ingesting" ? "Fetching the article…" : stage === "drafting" ? "Drafting the note…" : "Make a note"}
-            </button>
-            {stage === "draft-failed" && content && <button type="button" onClick={() => void makeDraft(content)} className={secondary}>Retry</button>}
-            <button type="button" disabled={working} onClick={() => void markAsRead()} className={secondary}>{stage === "marking" ? "Marking read…" : "Mark as read"}</button>
-            <button type="button" disabled={working} onClick={() => onDone(article.id)} className={secondary}>Skip</button>
+        {stage === "review" && draft ? (
+          <div className="mt-4 border-t border-border pt-4">
+            <NoteForm initial={draft} submitLabel="Save note" onSubmit={save} onCancel={() => setStage("idle")} />
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="mt-3 space-y-3">
+            {stage === "paste" && (
+              <div className="space-y-2">
+                <textarea aria-label="Pasted article text" value={pasted} onChange={(e) => setPasted(e.target.value)} rows={5} placeholder="Paste the article text here…" className={fieldClass} />
+                <button type="button" disabled={!pasted.trim()} onClick={() => void makeNote(pasted.trim())} className={primary}>Use pasted text</button>
+              </div>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <button type="button" disabled={working} onClick={() => void makeNote()} className={primary}>
+                {stage === "marking-read" ? "Marking it read…" : stage === "ingesting" ? "Fetching the article…" : stage === "drafting" ? "Drafting the note…" : "Make a note"}
+              </button>
+              {stage === "draft-failed" && content && <button type="button" onClick={() => void makeDraft(content)} className={secondary}>Retry</button>}
+              <button type="button" disabled={working} onClick={() => void markAsRead()} className={secondary}>{stage === "marking" ? "Marking read…" : "Mark as read"}</button>
+              <button type="button" disabled={working} onClick={() => onDone(article.id)} className={secondary}>Skip</button>
+            </div>
+          </div>
+        )}
+      </div>
     </article>
   );
 }
