@@ -164,6 +164,15 @@ export interface SharedLesson {
   lesson: Lesson;
 }
 
+/** One entry in Explore's list of lessons other people shared. */
+export interface SharedLessonSummary {
+  id: string;
+  title: string;
+  category: CategoryKey;
+  ownerName: string | null;
+  createdAt: string;
+}
+
 /** What a signed-out or not-yet-approved visitor may see of a share: enough to make the invite interesting. */
 export interface SharePreview {
   title: string;

@@ -5,6 +5,8 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { TabBar } from "./TabBar";
 
+const explore: { loading: boolean; data: { hasArticles: boolean; shared: unknown[] } | null; error: string | null } = { loading: false, data: { hasArticles: true, shared: [] }, error: null };
+vi.mock("@/lib/useExplore", async (orig) => ({ ...(await orig<typeof import("@/lib/useExplore")>()), useExplore: () => explore }));
 vi.mock("@/lib/usePendingRequests", () => ({ usePendingRequests: () => ({ count: null, error: null }) }));
 vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user: { uid: "me" }, claims: {} }) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {} }), usePathname: () => "/notes" }));

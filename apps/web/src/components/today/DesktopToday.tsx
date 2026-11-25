@@ -143,8 +143,8 @@ export function DesktopToday({
           )}
           {reviewCount ? <Link href="/review" className="mt-1 self-start rounded-button bg-accent px-5 py-2.5 text-sm font-extrabold text-accent-fg hover:opacity-90">Start review</Link> : null}
           <div className="mt-auto flex flex-col border-t border-border">
-            <Link href="/library" className="flex justify-between border-b border-border py-[11px] text-[15px] font-extrabold text-fg-strong hover:text-accent"><span>Library <span className="text-[13px] font-bold text-fg-muted">· past lessons</span></span><span className="text-accent">→</span></Link>
-            <Link href="/library" className="flex justify-between py-[11px] text-[15px] font-extrabold text-fg-strong hover:text-accent"><span>Shared <span className="text-[13px] font-bold text-fg-muted">· from friends</span></span><span className="text-accent">→</span></Link>
+            <Link href="/review" className="flex justify-between border-b border-border py-[11px] text-[15px] font-extrabold text-fg-strong hover:text-accent"><span>Previous lessons <span className="text-[13px] font-bold text-fg-muted">· in Review</span></span><span className="text-accent">→</span></Link>
+            <Link href="/review" className="flex justify-between py-[11px] text-[15px] font-extrabold text-fg-strong hover:text-accent"><span>Saved <span className="text-[13px] font-bold text-fg-muted">· from friends</span></span><span className="text-accent">→</span></Link>
           </div>
         </div>
         <div className="flex flex-col border-r border-border px-12 py-7">

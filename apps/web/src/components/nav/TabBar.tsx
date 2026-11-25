@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import type { ReactNode } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { exploreAvailable, useExplore } from "@/lib/useExplore";
 import { usePendingRequests } from "@/lib/usePendingRequests";
 import packageJson from "../../../package.json";
 
@@ -20,9 +21,9 @@ function Icon({ children }: { children: ReactNode }) {
 
 const TABS = [
   { href: "/", label: "Today", match: ["/"], icon: <Icon><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" /></Icon> },
-  { href: "/library", label: "Explore", match: ["/library", "/lesson", "/stash", "/share"], icon: <Icon><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5Z" /></Icon> },
+  { href: "/discover", label: "Explore", match: ["/discover", "/share"], icon: <Icon><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5Z" /></Icon> },
   { href: "/notes", label: "Notes", match: ["/notes"], icon: <Icon><path d="M6 3.5h9l3.5 3.5v13H6Z" /><path d="M14.5 3.5V7.5h4M9 12h6M9 15.5h6" /></Icon> },
-  { href: "/review", label: "Review", match: ["/review"], icon: <Icon><rect x="7" y="3.5" width="12" height="15" rx="2.5" /><path d="M4.5 7v11a2.5 2.5 0 0 0 2.5 2.5h9" /></Icon> },
+  { href: "/review", label: "Review", match: ["/review", "/library", "/lesson", "/stash"], icon: <Icon><rect x="7" y="3.5" width="12" height="15" rx="2.5" /><path d="M4.5 7v11a2.5 2.5 0 0 0 2.5 2.5h9" /></Icon> },
   { href: "/profile", label: "Profile", match: ["/profile", "/settings", "/admin"], icon: <Icon><circle cx="12" cy="8" r="3.6" /><path d="M4.5 20.5c.8-4 3.8-6 7.5-6s6.7 2 7.5 6" /></Icon> },
 ];
 
@@ -43,15 +44,18 @@ export function TabBar() {
   const router = useRouter();
   const { user, claims } = useAuth();
   const { count: waiting } = usePendingRequests(user?.uid, claims);
+  // Explore is hidden when there is nothing to explore: no articles account and nothing anyone has shared.
+  const showExplore = exploreAvailable(useExplore(user));
+  const tabs = useMemo(() => TABS.filter((tab) => tab.href !== "/discover" || showExplore), [showExplore]);
   // Desktop shortcut: press 1 to 5 to jump to a tab.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      const tab = TABS[Number(e.key) - 1];
+      const tab = tabs[Number(e.key) - 1];
       if (tab && isShortcut(e)) router.push(tab.href);
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [router]);
+  }, [router, tabs]);
   return (
     <nav aria-label="Main" data-tabbar className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface lg:inset-y-0 lg:right-auto lg:flex lg:w-[76px] lg:flex-col lg:items-center lg:border-r lg:border-t-0 lg:px-0 lg:pb-5 lg:pt-6">
       <span role="img" aria-label="Kindling" className="hidden pb-6 text-gold lg:block">
@@ -60,7 +64,7 @@ export function TabBar() {
         </svg>
       </span>
       <ul className="mx-auto flex w-full max-w-[560px] justify-around px-2 lg:mx-0 lg:max-w-none lg:flex-col lg:items-center lg:justify-start lg:gap-1.5 lg:px-0">
-        {TABS.map((tab, index) => {
+        {tabs.map((tab, index) => {
           const active = isActive(pathname, tab.match);
           return (
             <li key={tab.href} className="flex-1 lg:w-[60px] lg:flex-none">

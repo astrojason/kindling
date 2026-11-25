@@ -40,7 +40,7 @@ export function DiscoverFeed({ uid, getToken }: { uid: string; getToken: () => P
     <div>
       <div className="mb-4 flex items-end justify-between gap-3">
         <div>
-          <h1 className="font-heading text-xl font-bold text-fg-strong">Discover</h1>
+          <h1 className="font-heading text-xl font-bold text-fg-strong">Your articles</h1>
           <p className="text-xs text-fg-muted">Unread articles that match your keywords.</p>
         </div>
         <Link href="/notes" className="text-xs font-bold text-fg-muted hover:text-fg">← Notes</Link>

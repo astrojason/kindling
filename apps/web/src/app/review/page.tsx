@@ -2,6 +2,7 @@
 
 import { AccessGate } from "@/components/AccessGate";
 import { DueNotes } from "@/components/review/DueNotes";
+import { PastLessons } from "@/components/review/PastLessons";
 import { ReviewSession } from "@/components/review/ReviewSession";
 import { LoadState, PageFrame, PANEL } from "@/components/share/PageFrame";
 import { useAuth } from "@/lib/auth-context";
@@ -31,6 +32,9 @@ function Review({ uid }: { uid: string }) {
               {due.length > 0 && <div className={`lg:order-1 ${PANEL}`}><ReviewSession uid={uid} today={today} cards={due} /></div>}
             </div>
             {empty && <p className={`py-6 text-center text-sm text-fg-muted ${PANEL}`}>{empty}</p>}
+            <div className={`mt-6 border-t border-border pt-6 lg:mt-0 lg:border-t lg:pt-7 ${PANEL}`}>
+              <PastLessons uid={uid} />
+            </div>
           </div>
         );
       }}

@@ -68,8 +68,8 @@ it("shows a failure to load the notes in full", async () => {
 it("no longer offers category editing on Today (it lives in Settings), but keeps the other shortcuts", async () => {
   await render({ notes: [], error: null });
   expect(container.textContent).not.toContain("My categories");
-  expect(container.textContent).toContain("Library");
-  expect(container.textContent).toContain("Shared");
+  expect(container.textContent).toContain("Previous lessons");
+  expect(container.textContent).toContain("Saved");
 });
 
 it("shows the desktop Today beside it: the notes due and those coming up, with the daily goal", async () => {

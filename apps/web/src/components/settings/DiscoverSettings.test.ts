@@ -4,12 +4,14 @@ import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { getNoteSettings, updateNoteSettings } from "@/lib/notes-firestore";
+import { forgetExplore } from "@/lib/useExplore";
 import { DiscoverSettings } from "./DiscoverSettings";
 
 const toast = vi.hoisted(() => vi.fn());
 vi.mock("@/components/Toast", () => ({ useToast: () => toast }));
 vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user: null }) }));
 vi.mock("@/lib/usePendingRequests", () => ({ usePendingRequests: () => ({ count: null, error: null }) }));
+vi.mock("@/lib/useExplore", () => ({ forgetExplore: vi.fn() }));
 vi.mock("@/lib/notes-firestore", () => ({ getNoteSettings: vi.fn(), updateNoteSettings: vi.fn() }));
 
 let container: HTMLElement;
@@ -77,6 +79,8 @@ it("saves the trimmed account and the keywords, with progress and a confirmation
 
   await act(async () => finish());
   expect(toast).toHaveBeenCalledWith("Discover settings saved.");
+  // Explore (and whether its tab shows) depends on the account, so its cached answer is dropped.
+  expect(forgetExplore).toHaveBeenCalledWith("u1");
   expect(button("Save").disabled).toBe(false);
 });
 

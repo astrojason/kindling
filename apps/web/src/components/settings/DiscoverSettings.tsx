@@ -5,6 +5,7 @@ import { addKeyword } from "@random-knowledge/shared/notes-input";
 import { useToast } from "@/components/Toast";
 import { LoadState } from "@/components/share/PageFrame";
 import { getNoteSettings, updateNoteSettings } from "@/lib/notes-firestore";
+import { forgetExplore } from "@/lib/useExplore";
 import { useLoad } from "@/lib/useLoad";
 
 const inputClass = "w-full rounded-sm border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent";
@@ -44,6 +45,8 @@ function DiscoverForm({ uid, initialUid, initialKeywords }: { uid: string; initi
     setError(null);
     try {
       await updateNoteSettings(uid, { articlesAppUid: articlesAppUid.trim() || null, interestKeywords: keywords });
+      // The articles account decides what Explore shows (and whether the tab is there at all).
+      forgetExplore(uid);
       toast("Discover settings saved.");
     } catch (err) {
       console.error("Failed to save the Discover settings", err);

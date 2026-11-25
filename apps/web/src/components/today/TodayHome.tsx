@@ -79,13 +79,13 @@ export function TodayHome({
           <section aria-label="Keep exploring">
             <h2 className="mb-3 text-lg font-extrabold text-fg-strong">Keep exploring</h2>
             <div className="grid grid-cols-2 gap-3">
-              <Link href="/library" className={tileClass}>
-                <span className="text-xs font-bold text-fg-muted">Past lessons</span>
-                Library
+              <Link href="/review" className={tileClass}>
+                <span className="text-xs font-bold text-fg-muted">In Review</span>
+                Previous lessons
               </Link>
-              <Link href="/library" className={tileClass}>
+              <Link href="/review" className={tileClass}>
                 <span className="text-xs font-bold text-fg-muted">From friends</span>
-                Shared
+                Saved
               </Link>
             </div>
           </section>

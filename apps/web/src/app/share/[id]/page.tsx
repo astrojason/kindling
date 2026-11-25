@@ -40,7 +40,7 @@ function StashAction({ uid, share }: { uid: string; share: SharedLesson }) {
   if (saved || existing.data) {
     return (
       <span className="text-sm text-fg-muted">
-        In your stash. <Link href="/library" className="text-accent underline">Browse your library</Link>
+        In your stash. <Link href="/review" className="text-accent underline">See your saved lessons</Link>
       </span>
     );
   }

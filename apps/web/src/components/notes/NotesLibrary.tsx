@@ -28,7 +28,7 @@ export function NotesLibrary({ notes, error = null, now = new Date() }: { notes:
           <p className="text-xs text-fg-muted">{visible.length === notes.length ? `${notes.length} notes` : `${visible.length} of ${notes.length}`}</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/discover" className="text-sm font-bold text-fg-muted hover:text-fg">Discover</Link>
+          <Link href="/discover" className="text-sm font-bold text-fg-muted hover:text-fg">Explore</Link>
           <Link href="/notes/new" className="rounded-button bg-accent px-3 py-1.5 text-sm font-extrabold text-accent-fg hover:opacity-85">
             Capture
           </Link>

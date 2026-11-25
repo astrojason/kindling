@@ -60,8 +60,8 @@ export function HeaderMenu({
         </div>
 
         <nav className="flex flex-col gap-3 border-b border-border pb-4">
-          <Link href="/library" className="text-sm font-medium text-fg hover:text-accent">
-            Library
+          <Link href="/review" className="text-sm font-medium text-fg hover:text-accent">
+            Previous lessons
           </Link>
           <Link href="/profile" className="text-sm font-medium text-fg hover:text-accent">
             Profile &amp; settings

@@ -19,7 +19,7 @@ function StashedLesson({ uid, id }: { uid: string; id: string }) {
     setRemoveError(null);
     try {
       await removeFromStash(uid, id);
-      router.push("/library");
+      router.push("/review");
     } catch (err) {
       console.error("Failed to remove from stash:", err);
       setRemoveError(err instanceof Error ? err.message : "Couldn't remove this lesson.");

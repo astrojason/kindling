@@ -31,7 +31,7 @@ it("is closed by default and opens on click", async () => {
 
   await act(async () => openButton().click());
   expect(openButton().getAttribute("aria-expanded")).toBe("true");
-  expect(container.textContent).toContain("Library");
+  expect(container.textContent).toContain("Previous lessons");
 });
 
 it("always links to the profile and settings, but hides My categories until they are editable", async () => {
