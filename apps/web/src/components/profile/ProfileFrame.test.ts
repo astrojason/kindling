@@ -4,10 +4,10 @@ import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { AuthClaims } from "@/lib/auth-guard";
-import { SettingsFrame } from "./SettingsFrame";
+import { ProfileFrame } from "./ProfileFrame";
 
 let claims: AuthClaims | null = null;
-let pathname = "/settings";
+let pathname = "/profile";
 vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user: { uid: "me" }, claims }) }));
 vi.mock("@/lib/usePendingRequests", () => ({ usePendingRequests: () => ({ count: 2, error: null }) }));
 vi.mock("next/navigation", () => ({ usePathname: () => pathname }));
@@ -18,7 +18,7 @@ vi.mock("next/link", () => ({ default: ({ children, ...props }: { href: string; 
 let container: HTMLElement;
 let root: Root;
 beforeEach(() => {
-  pathname = "/settings";
+  pathname = "/profile";
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   container = document.createElement("div");
   root = createRoot(container);
@@ -29,21 +29,21 @@ afterEach(async () => {
 });
 const render = async (c: AuthClaims) => {
   claims = c;
-  await act(async () => root.render(createElement(SettingsFrame, null, "content")));
+  await act(async () => root.render(createElement(ProfileFrame, null, "content")));
 };
 const tabs = () => [...container.querySelectorAll('[role="tab"]')].map((a) => a.getAttribute("href"));
 
-it("shows a superadmin Settings and every admin section as tabs", async () => {
+it("shows a superadmin Profile and every admin section as tabs", async () => {
   await render({ superadmin: true });
-  expect(tabs()).toEqual(["/settings", "/admin/access", "/admin/generation-log", "/admin/cron-log"]);
+  expect(tabs()).toEqual(["/profile", "/admin/access", "/admin/generation-log", "/admin/cron-log"]);
 });
 
-it("shows an admin Settings and Manage access", async () => {
+it("shows an admin Profile and Manage access", async () => {
   await render({ admin: true });
-  expect(tabs()).toEqual(["/settings", "/admin/access"]);
+  expect(tabs()).toEqual(["/profile", "/admin/access"]);
 });
 
-it("shows everyone else just the settings, with no tabs", async () => {
+it("shows everyone else just their profile, with no tabs", async () => {
   await render({});
   expect(tabs()).toEqual([]);
   expect(container.textContent).toContain("content");
@@ -60,7 +60,7 @@ it("shows how many people are waiting on the Manage access tab", async () => {
   expect(container.querySelector('a[href="/admin/access"]')?.textContent).toContain("2");
 });
 
-it("is titled Settings", async () => {
+it("is titled Profile", async () => {
   await render({ admin: true });
-  expect(container.querySelector("header h1")?.textContent).toBe("Settings");
+  expect(container.querySelector("header h1")?.textContent).toBe("Profile");
 });

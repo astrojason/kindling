@@ -9,26 +9,26 @@ import { canManageAccess, isSuperadmin } from "@/lib/auth-guard";
 import { usePendingRequests } from "@/lib/usePendingRequests";
 
 const SECTIONS = [
-  { href: "/settings", label: "Settings", role: "everyone" },
+  { href: "/profile", label: "Profile", role: "everyone" },
   { href: "/admin/access", label: "Manage access", role: "admin" },
   { href: "/admin/generation-log", label: "Generation log", role: "superadmin" },
   { href: "/admin/cron-log", label: "Cron run log", role: "superadmin" },
 ] as const;
 
 /**
- * The Settings page and, for an admin, the admin sections beside it as tabs along the top (a superadmin also gets
- * the logs). Someone who is not an admin just sees their settings, with no tabs.
+ * The Profile page (profile and settings) and, for an admin, the admin sections beside it as tabs along the top (a
+ * superadmin also gets the logs). Someone who is not an admin just sees their profile, with no tabs.
  */
-export function SettingsFrame({ children }: { children: ReactNode }) {
+export function ProfileFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { user, claims } = useAuth();
   const { count: waiting } = usePendingRequests(user?.uid, claims);
   const admin = canManageAccess(claims);
   const sections = SECTIONS.filter((s) => s.role === "everyone" || (s.role === "admin" ? admin : isSuperadmin(claims)));
   return (
-    <PageFrame panels title="Settings">
+    <PageFrame panels title="Profile">
       {admin && (
-        <nav aria-label="Settings sections" role="tablist" className="-mx-6 mb-5 flex gap-5 overflow-x-auto border-b border-border px-6 text-xs font-semibold lg:mx-0 lg:mb-0 lg:h-12 lg:flex-none lg:gap-8 lg:bg-surface lg:px-12 lg:text-sm">
+        <nav aria-label="Profile sections" role="tablist" className="-mx-6 mb-5 flex gap-5 overflow-x-auto border-b border-border px-6 text-xs font-semibold lg:mx-0 lg:mb-0 lg:h-12 lg:flex-none lg:gap-8 lg:bg-surface lg:px-12 lg:text-sm">
           {sections.map(({ href, label }) => {
             const current = pathname === href;
             return (

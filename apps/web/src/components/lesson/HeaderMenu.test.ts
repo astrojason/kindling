@@ -34,12 +34,12 @@ it("is closed by default and opens on click", async () => {
   expect(container.textContent).toContain("Library");
 });
 
-it("always links to the settings page, but hides My categories until they are editable", async () => {
+it("always links to the profile and settings, but hides My categories until they are editable", async () => {
   await act(async () => {
     root.render(createElement(HeaderMenu, { showCategoriesSetting: false, categoryCount: 2, onEditCategories: vi.fn() }));
   });
-  const settings = [...container.querySelectorAll("a")].find((a) => a.textContent === "Settings");
-  expect(settings?.getAttribute("href")).toBe("/settings");
+  const settings = [...container.querySelectorAll("a")].find((a) => a.textContent === "Profile & settings");
+  expect(settings?.getAttribute("href")).toBe("/profile");
   expect(container.textContent).not.toContain("My categories");
 });
 

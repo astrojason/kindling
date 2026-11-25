@@ -59,7 +59,7 @@ export function DiscoverFeed({ uid, getToken }: { uid: string; getToken: () => P
       {feed.error && (
         <div className="space-y-2">
           <pre role="alert" className="whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all">{feed.error}</pre>
-          {feed.error.includes("Settings") && <Link href="/settings" className="text-sm font-bold text-accent underline underline-offset-2">Open settings</Link>}
+          {feed.error.includes("Settings") && <Link href="/profile" className="text-sm font-bold text-accent underline underline-offset-2">Open settings</Link>}
         </div>
       )}
       {!feed.loading && !feed.error && articles.length === 0 && <p className="py-6 text-center text-sm text-fg-muted">No unread articles match your keywords right now.</p>}

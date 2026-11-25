@@ -3,17 +3,18 @@
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { getPreReviewEnabled, getSelectedCategories, setPreReviewEnabled } from "@/lib/firestore";
+import { getPreReviewEnabled, getSelectedCategories, getStats, getStreak, setPreReviewEnabled } from "@/lib/firestore";
 import { getNoteSettings } from "@/lib/notes-firestore";
 import { ToastProvider } from "@/components/Toast";
-import SettingsPage from "./page";
+import ProfilePage from "./page";
 
-vi.mock("@/lib/firestore", () => ({ getPreReviewEnabled: vi.fn(), setPreReviewEnabled: vi.fn(), getSelectedCategories: vi.fn(), setSelectedCategories: vi.fn() }));
+vi.mock("@/lib/firestore", () => ({ getPreReviewEnabled: vi.fn(), setPreReviewEnabled: vi.fn(), getSelectedCategories: vi.fn(), setSelectedCategories: vi.fn(), getStats: vi.fn(), getStreak: vi.fn(), setGoalMinutes: vi.fn(), resetAllUserData: vi.fn() }));
+vi.mock("@/components/nav/TabBar", () => ({ TabBar: () => null }));
 vi.mock("@/lib/notes-firestore", () => ({ getNoteSettings: vi.fn(), updateNoteSettings: vi.fn() }));
-vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user: { uid: "reader" } }) }));
+vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user: { uid: "reader", displayName: "Reader" }, claims: {} }) }));
 vi.mock("@/lib/usePendingRequests", () => ({ usePendingRequests: () => ({ count: null, error: null }) }));
 vi.mock("@/components/AccessGate", () => ({ AccessGate: ({ children }: { children: unknown }) => children }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {} }), usePathname: () => "/settings" }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {} }), usePathname: () => "/profile" }));
 vi.mock("next/link", () => ({ default: ({ href, children }: { href: string; children: unknown }) => createElement("a", { href }, children as never) }));
 
 let container: HTMLElement;
@@ -24,6 +25,8 @@ beforeEach(() => {
   vi.mocked(getPreReviewEnabled).mockResolvedValue(false);
   vi.mocked(setPreReviewEnabled).mockResolvedValue(undefined);
   vi.mocked(getSelectedCategories).mockResolvedValue(null);
+  vi.mocked(getStats).mockResolvedValue({ xp: 120, goalMinutes: 15 } as never);
+  vi.mocked(getStreak).mockResolvedValue({ count: 0, longest: 4, lastDate: null } as never);
   vi.mocked(getNoteSettings).mockResolvedValue({ articlesAppUid: null, interestKeywords: [] });
   vi.spyOn(console, "error").mockImplementation(() => {});
   container = document.createElement("div");
@@ -38,7 +41,7 @@ afterEach(async () => {
 
 // The pre-review switch: the only checkbox that is not one of the category choices.
 const checkbox = () => container.querySelector('input[type="checkbox"]:not([name="categories"])') as HTMLInputElement;
-const render = () => act(async () => root.render(createElement(ToastProvider, null, createElement(SettingsPage))));
+const render = () => act(async () => root.render(createElement(ToastProvider, null, createElement(ProfilePage))));
 
 it("shows the saved pre-review choice and explains it", async () => {
   vi.mocked(getPreReviewEnabled).mockResolvedValue(true);
@@ -84,4 +87,13 @@ it("also offers the category choice", async () => {
   await render();
   expect(container.textContent).toContain("Categories");
   expect(getSelectedCategories).toHaveBeenCalledWith("reader");
+});
+
+it("shows the profile with the settings underneath, and Reset my data", async () => {
+  await render();
+  const text = container.textContent ?? "";
+  expect(text).toContain("Reader");
+  expect(text).toContain("Personal best");
+  expect(text.indexOf("Personal best")).toBeLessThan(text.indexOf("Categories"));
+  expect([...container.querySelectorAll("button")].some((b) => b.textContent === "Reset my data")).toBe(true);
 });

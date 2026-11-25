@@ -99,5 +99,5 @@ it("links to the settings when the articles account has not been set", async () 
   fetchMock.mockImplementation(async () => Response.json({ error: "Set your articles account in Settings before using Discover." }, { status: 400 }));
   await render();
   expect(container.querySelector("[role='alert']")?.textContent).toContain("Set your articles account in Settings");
-  expect(container.querySelector("a[href='/settings']")).not.toBeNull();
+  expect(container.querySelector("a[href='/profile']")).not.toBeNull();
 });

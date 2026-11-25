@@ -63,8 +63,8 @@ export function HeaderMenu({
           <Link href="/library" className="text-sm font-medium text-fg hover:text-accent">
             Library
           </Link>
-          <Link href="/settings" className="text-sm font-medium text-fg hover:text-accent">
-            Settings
+          <Link href="/profile" className="text-sm font-medium text-fg hover:text-accent">
+            Profile &amp; settings
           </Link>
         </nav>
 
