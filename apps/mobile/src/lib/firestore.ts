@@ -15,6 +15,8 @@ export const {
   saveReviewCard,
   getSelectedCategories,
   setSelectedCategories,
+  getPreReviewEnabled,
+  setPreReviewEnabled,
   getHistory,
   appendHistory,
   getLesson,

@@ -15,6 +15,7 @@ import { ErrorView } from "../components/ErrorView";
 import { HeaderMenu } from "../components/HeaderMenu";
 import { LessonView } from "../components/LessonView";
 import { LoadingView } from "../components/LoadingView";
+import { PreReviewView } from "../components/PreReviewView";
 import { QuizView } from "../components/QuizView";
 import { StreakStatus } from "../components/StreakStatus";
 import { TodayHome } from "../components/TodayHome";
@@ -29,11 +30,11 @@ export function DailyLessonScreen({ onFlowChange, onOpenReview, onOpenNote, refr
   const [editingCategories, setEditingCategories] = useState(false);
   const [categoriesSaved, setCategoriesSaved] = useState(false);
   const [started, setStarted] = useState(false);
-  const canEditCategories = ["lesson", "quiz", "done"].includes(phase);
+  const canEditCategories = ["prereview", "lesson", "quiz", "done"].includes(phase);
   const showCategoryPicker = phase === "categories" || (canEditCategories && editingCategories);
   const showCategoriesSetting = canEditCategories && !editingCategories;
   const streakCount = getStreakStatus(streak, date).count;
-  const showHome = !started && !!user && !!lesson && ["lesson", "done"].includes(phase);
+  const showHome = !started && !!user && !!lesson && ["prereview", "lesson", "done"].includes(phase);
 
   const { refreshPlan } = actions;
   useEffect(() => {
@@ -141,11 +142,12 @@ export function DailyLessonScreen({ onFlowChange, onOpenReview, onOpenNote, refr
 
 function LessonPhase({ state, uid }: { state: ReturnType<typeof useDailyLesson>; uid?: string }) {
   const theme = useTheme();
-  const { phase, lessonKey: date, lesson, progress, quiz, errorMessage, actions } = state;
+  const { phase, lessonKey: date, lesson, progress, quiz, preReview, errorMessage, actions } = state;
   if (phase === "loading") return <LoadingView text="Setting things up" />;
   if (phase === "generating") return <LoadingView text="Researching and checking today’s lesson" />;
   if (phase === "error") return <ErrorView message={errorMessage ?? "Unknown error"} onRetry={actions.retry} />;
   if (!lesson) return null;
+  if (phase === "prereview") return <PreReviewView lesson={lesson} preReview={preReview} onAnswer={actions.answerPreReview} onSkip={actions.skipPreReview} />;
   if (phase === "lesson") return <LessonView lesson={lesson} date={date} onStartQuiz={actions.startQuiz} />;
   if (phase === "quiz") return <QuizView lesson={lesson} quiz={quiz} onSelect={actions.selectOption} onNext={actions.nextQuestion} />;
   if (phase !== "done" || !progress) return null;

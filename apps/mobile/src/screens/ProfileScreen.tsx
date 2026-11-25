@@ -10,6 +10,7 @@ import { ResetDataLink } from "../components/ResetDataLink";
 import { LoadingView } from "../components/LoadingView";
 import { CategorySettings } from "../components/settings/CategorySettings";
 import { DiscoverSettings } from "../components/settings/DiscoverSettings";
+import { PreReviewSetting } from "../components/settings/PreReviewSetting";
 import { Button, Card } from "../components/ui";
 import { useAuth } from "../lib/auth-context";
 import { getStats, getStreak, setGoalMinutes } from "../lib/firestore";
@@ -125,6 +126,7 @@ export function ProfileScreen({ onDataReset }: { onDataReset: () => void }) {
             </View>
           </>
         )}
+        {user && <PreReviewSetting uid={user.uid} />}
         {user && <CategorySettings uid={user.uid} />}
         {user && <DiscoverSettings uid={user.uid} />}
         {API_BASE_URL && (

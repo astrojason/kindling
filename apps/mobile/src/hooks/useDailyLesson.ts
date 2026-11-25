@@ -17,6 +17,7 @@ import {
   completeDailyLesson,
   getHistory,
   getLesson,
+  getPreReviewEnabled,
   getProgress,
   getSelectedCategories,
   getStats,
@@ -32,7 +33,7 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 const MAX_LESSON_SECONDS = 20 * 60;
 
-type Phase = "loading" | "categories" | "generating" | "error" | "lesson" | "quiz" | "done";
+type Phase = "loading" | "categories" | "generating" | "error" | "prereview" | "lesson" | "quiz" | "done";
 
 /** Once the daily goal is met no new lesson is prepared: drop the plan entries still waiting and keep those already made. */
 function keepReady(items: PlanItem[]): PlanItem[] {
@@ -49,6 +50,8 @@ export function useDailyLesson(user: User | null) {
   const [selectedCategories, setSelectedCategoriesState] = useState<CategoryKey[]>(CATEGORY_KEYS);
   const [progress, setProgressState] = useState<DailyProgress | null>(null);
   const [quiz, setQuiz] = useState(initialQuizState);
+  /** Which guess-first question is showing, when pre-review is on and the lesson has them. */
+  const [preReview, setPreReview] = useState({ qIndex: 0 });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   /** Set when the points or review cards for a finished lesson could not be saved; the lesson and streak are already saved. */
   const [rewardError, setRewardError] = useState<string | null>(null);
@@ -59,13 +62,16 @@ export function useDailyLesson(user: User | null) {
   const [plan, setPlan] = useState<PlanItem[]>([]);
   const lessons = useRef(new Map<string, Lesson>());
   const planRun = useRef(0);
-  const context = useRef<{ weights: Weights; history: HistoryEntry[]; categories: CategoryKey[]; paused: boolean } | null>(null);
+  const context = useRef<{ weights: Weights; history: HistoryEntry[]; categories: CategoryKey[]; preReviewOn: boolean; paused: boolean } | null>(null);
 
-  const showLesson = useCallback((currentLesson: Lesson, savedProgress: DailyProgress | null) => {
+  const showLesson = useCallback((currentLesson: Lesson, savedProgress: DailyProgress | null, preReviewOn: boolean) => {
     setLessonState(currentLesson);
     setProgressState(savedProgress);
     setQuiz(initialQuizState);
-    setPhase(savedProgress?.done ? "done" : "lesson");
+    setPreReview({ qIndex: 0 });
+    // Lessons saved before pre-review existed (or whose questions were dropped) have none to ask, so they open on the lesson.
+    const guessFirst = preReviewOn && !!currentLesson.preQuiz?.length;
+    setPhase(savedProgress?.done ? "done" : guessFirst ? "prereview" : "lesson");
   }, []);
 
   const load = useCallback(async () => {
@@ -77,7 +83,7 @@ export function useDailyLesson(user: User | null) {
     setDate(today);
 
     try {
-      const [existingLesson, streakData, weightsData, history, progressData, categoriesData, accessRequest] = await Promise.all([
+      const [existingLesson, streakData, weightsData, history, progressData, categoriesData, accessRequest, preReviewOn] = await Promise.all([
         getLesson(user.uid, today),
         getStreak(user.uid),
         getWeights(user.uid),
@@ -85,6 +91,7 @@ export function useDailyLesson(user: User | null) {
         getProgress(user.uid, today),
         getSelectedCategories(user.uid),
         getAccessRequest(user.uid),
+        getPreReviewEnabled(user.uid),
       ]);
       setStreakState(streakData);
       setWeightsState(weightsData);
@@ -104,11 +111,11 @@ export function useDailyLesson(user: User | null) {
         currentLesson = (await createDailyLesson(user, today, weightsData, history, categoriesData ?? CATEGORY_KEYS)).lesson;
       }
 
-      showLesson(currentLesson, progressData);
+      showLesson(currentLesson, progressData, preReviewOn);
       lessons.current = new Map([[today, currentLesson]]);
       setLessonKey(today);
       setPlan([planItem(1, today, currentLesson, !!progressData?.done)]);
-      context.current = { weights: weightsData, history: updatedHistory(history, currentLesson, todaysLesson, today), categories: categoriesData ?? CATEGORY_KEYS, paused: !!fallbackDate };
+      context.current = { weights: weightsData, history: updatedHistory(history, currentLesson, todaysLesson, today), categories: categoriesData ?? CATEGORY_KEYS, preReviewOn, paused: !!fallbackDate };
       void preparePlan(user, today);
     } catch (err) {
       console.error("useDailyLesson load failed:", err);
@@ -127,7 +134,7 @@ export function useDailyLesson(user: User | null) {
   }, [load]);
 
   useEffect(() => {
-    if ((phase === "lesson" || phase === "quiz") && sessionStart.current === null) sessionStart.current = Date.now();
+    if ((phase === "prereview" || phase === "lesson" || phase === "quiz") && sessionStart.current === null) sessionStart.current = Date.now();
   }, [phase]);
 
   useEffect(() => {
@@ -154,6 +161,16 @@ export function useDailyLesson(user: User | null) {
       subscription.remove();
     };
   }, [date, phase, load]);
+
+  function answerPreReview() {
+    if (!lesson?.preQuiz) return;
+    if (preReview.qIndex + 1 < lesson.preQuiz.length) setPreReview({ qIndex: preReview.qIndex + 1 });
+    else setPhase("lesson");
+  }
+
+  function skipPreReview() {
+    setPhase("lesson");
+  }
 
   function startQuiz() {
     setQuiz(initialQuizState);
@@ -269,7 +286,7 @@ export function useDailyLesson(user: User | null) {
       setErrorMessage(null);
       setRewardError(null);
       setEarnedXp(null);
-      showLesson(next, savedProgress);
+      showLesson(next, savedProgress, context.current?.preReviewOn ?? false);
     } catch (err) {
       console.error("Failed to open the lesson:", err);
       setErrorMessage(errorMessageFor(err, "Could not open this lesson."));
@@ -321,13 +338,14 @@ export function useDailyLesson(user: User | null) {
     selectedCategories,
     progress,
     quiz,
+    preReview,
     errorMessage,
     rewardError,
     earnedXp,
     categoryKeys: CATEGORY_KEYS,
     lessonKey,
     plan,
-    actions: { retry: load, openLesson, retryPlan: refreshPlan, refreshPlan, startQuiz, selectOption, nextQuestion, adjustWeight, saveCategories },
+    actions: { retry: load, openLesson, retryPlan: refreshPlan, refreshPlan, answerPreReview, skipPreReview, startQuiz, selectOption, nextQuestion, adjustWeight, saveCategories },
   };
 }
 
