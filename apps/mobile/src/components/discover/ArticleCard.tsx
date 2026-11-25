@@ -9,13 +9,14 @@ import { ErrorBox } from "../ErrorBox";
 import { NoteForm } from "../notes/NoteForm";
 import { Button } from "../ui";
 
-type Stage = "idle" | "marking" | "marking-read" | "writing";
+type Stage = "idle" | "marking" | "marking-read" | "fetching" | "writing";
 
 const message = (err: unknown) => (err instanceof Error ? err.message : String(err));
 
 /**
  * One suggested article. "Make a note" records the read date in the articles app, opens the article in the browser,
- * and opens an empty note form (title and link filled in) for the user to write the note themselves as they read.
+ * and opens the note form with the title, link and the article's text as "What did it say?" (saved text, or fetched
+ * and saved by the server), for the user to write the rest themselves as they read.
  * "Mark as read" records it read and removes it; "Skip" only hides it until the feed reloads.
  * Mirrors the web's ArticleCard, which has the tests.
  */
@@ -24,6 +25,7 @@ export function ArticleCard({ article, uid, getToken, onDone, onSaved }: { artic
   const [stage, setStage] = useState<Stage>("idle");
   const [error, setError] = useState<string | null>(null);
   const [readRecorded, setReadRecorded] = useState(false);
+  const [text, setText] = useState<string | null>(null);
 
   const isWebLink = /^https?:\/\//i.test(article.url);
   const openArticle = () => Linking.openURL(article.url);
@@ -58,6 +60,18 @@ export function ArticleCard({ article, uid, getToken, onDone, onSaved }: { artic
         return;
       }
     }
+    // Fetched before the browser opens too, for the same reason.
+    if (text === null) {
+      setStage("fetching");
+      try {
+        const result = (await requestJson("/api/discover/ingest", await getToken(), { method: "POST", body: JSON.stringify({ articleId: article.id }) })) as { content: string };
+        setText(result.content);
+      } catch (err) {
+        // Not a dead end: the form still opens, and the text can be pasted into "What did it say?".
+        console.error("Failed to fetch an article's text", err);
+        setError(`Could not fetch the article's text: ${message(err)}`);
+      }
+    }
     setStage("writing");
     if (!isWebLink) return;
     try {
@@ -81,7 +95,7 @@ export function ArticleCard({ article, uid, getToken, onDone, onSaved }: { artic
     onSaved(id, warnings.length > 0 ? warnings.join(" ") : "Note saved.");
   }
 
-  const working = stage === "marking" || stage === "marking-read";
+  const working = stage === "marking" || stage === "marking-read" || stage === "fetching";
 
   return (
     <View style={[styles.card, { borderColor: theme.border }]}>
@@ -100,11 +114,11 @@ export function ArticleCard({ article, uid, getToken, onDone, onSaved }: { artic
 
       {stage === "writing" ? (
         <View style={[styles.review, { borderColor: theme.border }]}>
-          <NoteForm initial={{ title: article.title, source_url: article.url }} submitLabel="Save note" onSubmit={save} onCancel={() => setStage("idle")} />
+          <NoteForm initial={{ title: article.title, source_url: article.url, what_it_said: text ?? "" }} submitLabel="Save note" onSubmit={save} onCancel={() => setStage("idle")} />
         </View>
       ) : (
         <View style={{ marginTop: 12, gap: 10 }}>
-          <Button title={stage === "marking-read" ? "Marking it read…" : "Make a note"} onPress={() => void makeNote()} disabled={working} />
+          <Button title={stage === "marking-read" ? "Marking it read…" : stage === "fetching" ? "Fetching the article…" : "Make a note"} onPress={() => void makeNote()} disabled={working} />
           <Button title={stage === "marking" ? "Marking read…" : "Mark as read"} variant="secondary" onPress={() => void markAsRead()} disabled={working} />
           <Button title="Skip" variant="secondary" onPress={() => onDone(article.id)} disabled={working} />
         </View>

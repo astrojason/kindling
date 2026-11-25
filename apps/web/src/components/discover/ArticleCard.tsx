@@ -9,7 +9,7 @@ import { useToast } from "@/components/Toast";
 import { requestJson } from "@/lib/api-client";
 import { createNote, incrementNotesStats } from "@/lib/notes-firestore";
 
-type Stage = "idle" | "marking" | "marking-read" | "writing";
+type Stage = "idle" | "marking" | "marking-read" | "fetching" | "writing";
 
 const message = (err: unknown) => (err instanceof Error ? err.message : String(err));
 const errorClass = "whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all";
@@ -18,7 +18,8 @@ const secondary = "rounded-button border-2 border-border px-3 py-1.5 text-sm fon
 
 /**
  * One suggested article. "Make a note" opens the article in a new tab, records the read date in the articles app,
- * and opens an empty note form (title and link filled in) for the user to write the note themselves as they read.
+ * and opens the note form with the title, link and the article's text as "What did it say?" (saved text, or fetched
+ * and saved by the server), for the user to write the rest themselves as they read.
  * "Mark as read" records it read and removes it; "Skip" only hides it until the feed reloads.
  */
 export function ArticleCard({ article, uid, getToken, onDone }: { article: DiscoverArticle; uid: string; getToken: () => Promise<string>; onDone: (articleId: number) => void }) {
@@ -27,6 +28,7 @@ export function ArticleCard({ article, uid, getToken, onDone }: { article: Disco
   const [stage, setStage] = useState<Stage>("idle");
   const [error, setError] = useState<string | null>(null);
   const [readRecorded, setReadRecorded] = useState(false);
+  const [text, setText] = useState<string | null>(null);
 
   const markRead = async () => requestJson("/api/discover/mark-read", await getToken(), { method: "POST", body: JSON.stringify({ articleId: article.id }) });
 
@@ -59,6 +61,17 @@ export function ArticleCard({ article, uid, getToken, onDone }: { article: Disco
         return;
       }
     }
+    if (text === null) {
+      setStage("fetching");
+      try {
+        const result = (await requestJson("/api/discover/ingest", await getToken(), { method: "POST", body: JSON.stringify({ articleId: article.id }) })) as { content: string };
+        setText(result.content);
+      } catch (err) {
+        // Not a dead end: the form still opens, and the text can be pasted into "What did it say?".
+        console.error("Failed to fetch an article's text", err);
+        setError(`Could not fetch the article's text: ${message(err)}`);
+      }
+    }
     setStage("writing");
   }
 
@@ -76,7 +89,7 @@ export function ArticleCard({ article, uid, getToken, onDone }: { article: Disco
     router.push(`/notes/${id}`);
   }
 
-  const working = stage === "marking" || stage === "marking-read";
+  const working = stage === "marking" || stage === "marking-read" || stage === "fetching";
 
   return (
     // Always five rows (title, details, summary, keywords, actions), an empty one taking no height, so that on wide
@@ -98,11 +111,11 @@ export function ArticleCard({ article, uid, getToken, onDone }: { article: Disco
 
         {stage === "writing" ? (
           <div className="mt-4 border-t border-border pt-4">
-            <NoteForm initial={{ title: article.title, source_url: article.url }} submitLabel="Save note" onSubmit={save} onCancel={() => setStage("idle")} />
+            <NoteForm initial={{ title: article.title, source_url: article.url, what_it_said: text ?? "" }} submitLabel="Save note" onSubmit={save} onCancel={() => setStage("idle")} />
           </div>
         ) : (
           <div className="mt-3 flex flex-wrap gap-2">
-            <button type="button" disabled={working} onClick={() => void makeNote()} className={primary}>{stage === "marking-read" ? "Marking it read…" : "Make a note"}</button>
+            <button type="button" disabled={working} onClick={() => void makeNote()} className={primary}>{stage === "marking-read" ? "Marking it read…" : stage === "fetching" ? "Fetching the article…" : "Make a note"}</button>
             <button type="button" disabled={working} onClick={() => void markAsRead()} className={secondary}>{stage === "marking" ? "Marking read…" : "Mark as read"}</button>
             <button type="button" disabled={working} onClick={() => onDone(article.id)} className={secondary}>Skip</button>
           </div>

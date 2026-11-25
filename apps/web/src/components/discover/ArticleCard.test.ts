@@ -124,7 +124,7 @@ const write = async () => {
   await setValue(field("Tag"), "woodworking");
 };
 
-it("makes a note: opens the article in a new tab, records the read date, and opens an empty form to write the note in", async () => {
+it("makes a note: opens the article in a new tab, records the read date, and opens the form with the article's text to write the note around", async () => {
   const open = vi.fn();
   vi.stubGlobal("open", open);
   await render();
@@ -134,11 +134,12 @@ it("makes a note: opens the article in a new tab, records the read date, and ope
   expect(body(markRead)).toEqual({ articleId: 5 });
   expect(field("Title").value).toBe("Dovetail joints");
   expect(field("Source URL").value).toBe("https://example.com/dovetails");
-  // The note is the user's own writing: nothing is fetched or drafted for them.
-  expect(field("What did it say?").value).toBe("");
+  // "What did it say?" starts as the article's text (saved, or fetched and saved by the server)...
+  expect(body(ingest)).toEqual({ articleId: 5 });
+  expect(field("What did it say?").value).toBe(TEXT);
+  // ...and the rest is the user's own writing: nothing is drafted for them.
   expect(field("Why does it matter?").value).toBe("");
   expect(field("How would you explain it?").value).toBe("");
-  expect(ingest).not.toHaveBeenCalled();
   expect(draftRoute).not.toHaveBeenCalled();
   expect(createNote).not.toHaveBeenCalled();
 });
@@ -162,8 +163,26 @@ it("shows progress while recording the read date", async () => {
   expect(button("Mark as read").disabled).toBe(true);
   expect(button("Skip").disabled).toBe(true);
 
+  let finishIngest!: (r: Response) => void;
+  ingest.mockReturnValueOnce(new Promise<Response>((resolve) => { finishIngest = resolve; }));
   await act(async () => finish(Response.json({ ok: true })));
-  expect(field("Title")).toBeTruthy();
+  expect(button("Fetching the article…").disabled).toBe(true);
+
+  await act(async () => finishIngest(Response.json({ content: TEXT, scraped: true })));
+  expect(field("What did it say?").value).toBe(TEXT);
+});
+
+it("still opens the form when the article's text cannot be fetched, with every reason in full, to paste it in", async () => {
+  vi.stubGlobal("open", vi.fn());
+  ingest.mockResolvedValueOnce(Response.json({ error: "Could not fetch this article. Direct fetch: HTTP 403; Jina Reader: HTTP 429. Paste the text manually instead.", failures: ["Direct fetch: HTTP 403", "Jina Reader: HTTP 429"] }, { status: 422 }));
+  await render();
+  await click(button("Make a note"));
+
+  const alert = container.querySelector("[role='alert']");
+  expect(alert?.textContent).toContain("Direct fetch: HTTP 403");
+  expect(alert?.className).toContain("select-all");
+  expect(field("Title").value).toBe("Dovetail joints");
+  expect(field("What did it say?").value).toBe("");
 });
 
 it("saves the written note with its source, counts it, and opens the note, without marking the article read again", async () => {
@@ -190,7 +209,8 @@ it("cancelling the form goes back to the card, and making a note again does not 
 
   await click(button("Make a note"));
   expect(markRead).toHaveBeenCalledTimes(1);
-  expect(field("Title")).toBeTruthy();
+  expect(ingest).toHaveBeenCalledTimes(1);
+  expect(field("What did it say?").value).toBe(TEXT);
 });
 
 it("shows a failure to record the read date in full, opens no form, and lets the user try again", async () => {
