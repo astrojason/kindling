@@ -11,6 +11,7 @@ vi.mock("@/lib/useAccessStatus", () => ({ useAccessStatus: vi.fn() }));
 vi.mock("@/lib/firestore", () => ({ grantAccess: vi.fn(), listAccessRequests: vi.fn(), revokeAccess: vi.fn(), setAutoGeneration: vi.fn() }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/admin/access" }));
 vi.mock("@/components/lesson/DailyLesson", () => ({ DailyLesson: () => "Daily lesson" }));
+vi.mock("@/lib/usePendingRequests", () => ({ usePendingRequests: () => ({ count: null, error: null }) }));
 vi.mock("@/components/nav/TabBar", () => ({ TabBar: () => null }));
 vi.mock("@/components/LandingPage", () => ({ LandingPage: () => "Public landing page" }));
 

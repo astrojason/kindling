@@ -2,15 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AdminLink } from "@/components/AdminLink";
 
 export function HeaderMenu({
-  showAdminLink,
   showCategoriesSetting,
   categoryCount,
   onEditCategories,
 }: {
-  showAdminLink?: boolean;
   showCategoriesSetting: boolean;
   categoryCount: number;
   onEditCategories: () => void;
@@ -69,7 +66,6 @@ export function HeaderMenu({
           <Link href="/settings" className="text-sm font-medium text-fg hover:text-accent">
             Settings
           </Link>
-          {showAdminLink && <AdminLink />}
         </nav>
 
         {showCategoriesSetting && (

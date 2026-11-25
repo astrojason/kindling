@@ -7,7 +7,6 @@ export function Header({
   date,
   streakCount,
   category,
-  showAdminLink,
   showCategoriesSetting,
   categoryCount,
   onEditCategories,
@@ -16,7 +15,6 @@ export function Header({
   date: string;
   streakCount: number;
   category?: CategoryKey;
-  showAdminLink?: boolean;
   showCategoriesSetting: boolean;
   categoryCount: number;
   onEditCategories: () => void;
@@ -32,7 +30,6 @@ export function Header({
             </button>
           )}
           <HeaderMenu
-            showAdminLink={showAdminLink}
             showCategoriesSetting={showCategoriesSetting}
             categoryCount={categoryCount}
             onEditCategories={onEditCategories}

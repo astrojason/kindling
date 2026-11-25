@@ -4,7 +4,6 @@ import Link from "next/link";
 import { GoalSetting } from "@/components/profile/GoalSetting";
 import { useAuth } from "@/lib/auth-context";
 import { usePendingRequests } from "@/lib/usePendingRequests";
-import { canManageAccess } from "@/lib/auth-guard";
 import { getStats, getStreak } from "@/lib/firestore";
 import { getStreakStatus } from "@/lib/streak";
 import { todayStr } from "@/lib/date";
@@ -46,12 +45,9 @@ export function ProfileView({ uid }: { uid: string }) {
           </div>
           <div className={`flex flex-col gap-6 ${PANEL}`}>
           <nav className="flex flex-col gap-2">
-            <Link href="/settings" className={linkClass}>Settings</Link>
-            {canManageAccess(claims) && (
-              <Link href="/admin" className={linkClass}>
-                Admin{waiting ? <span aria-label={`${waiting} waiting for access`} className="ml-2 rounded-full bg-rust px-2 py-0.5 text-[11px] font-extrabold text-accent-fg">{waiting}</span> : null}
-              </Link>
-            )}
+            <Link href="/settings" className={linkClass}>
+              Settings{waiting ? <span aria-label={`${waiting} waiting for access`} className="ml-2 rounded-full bg-rust px-2 py-0.5 text-[11px] font-extrabold text-accent-fg">{waiting}</span> : null}
+            </Link>
           </nav>
           </div>
         </div>

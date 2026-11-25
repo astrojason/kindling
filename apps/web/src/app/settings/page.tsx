@@ -6,7 +6,8 @@ import { ResetDataLink } from "@/components/profile/ResetDataLink";
 import { CategorySettings } from "@/components/settings/CategorySettings";
 import { DiscoverSettings } from "@/components/settings/DiscoverSettings";
 import { PreReviewSetting } from "@/components/settings/PreReviewSetting";
-import { PageFrame, PANEL } from "@/components/share/PageFrame";
+import { SettingsFrame } from "@/components/settings/SettingsFrame";
+import { PANEL } from "@/components/share/PageFrame";
 import { useAuth } from "@/lib/auth-context";
 
 export default function SettingsPage() {
@@ -15,7 +16,7 @@ export default function SettingsPage() {
   const [resets, setResets] = useState(0);
   return (
     <AccessGate>
-      <PageFrame panels title="Settings">
+      <SettingsFrame>
         <h1 className="mb-4 font-heading text-xl font-bold text-fg-strong lg:hidden">Settings</h1>
         {user && (
           <>
@@ -33,7 +34,7 @@ export default function SettingsPage() {
           </div>
           </>
         )}
-      </PageFrame>
+      </SettingsFrame>
     </AccessGate>
   );
 }

@@ -3,12 +3,13 @@
 import type { ReactNode } from "react";
 import { AccessPending } from "@/components/AccessPending";
 import { LandingPage } from "@/components/LandingPage";
-import { AdminFrame } from "@/components/admin/AdminFrame";
+import { SettingsFrame } from "@/components/settings/SettingsFrame";
+import { PAGE_BODY } from "@/components/share/PageFrame";
 import { LoadingView } from "@/components/lesson/LoadingView";
 import { useAuth } from "@/lib/auth-context";
 import { canManageAccess } from "@/lib/auth-guard";
 
-/** Every page under /admin renders only for a superadmin or an admin (the log pages narrow that to superadmins); everyone else sees what they would anywhere else. */
+/** Every page under /admin is a tab of Settings, and renders only for a superadmin or an admin (the log pages narrow that to superadmins); everyone else sees what they would anywhere else. */
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user, claims, loading } = useAuth();
 
@@ -21,5 +22,5 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
   if (!user) return <LandingPage />;
   if (!canManageAccess(claims)) return <AccessPending status="pending" />;
-  return <AdminFrame>{children}</AdminFrame>;
+  return <SettingsFrame><div className={PAGE_BODY}>{children}</div></SettingsFrame>;
 }
