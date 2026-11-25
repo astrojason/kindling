@@ -10,8 +10,8 @@ import { ArticleCard } from "./ArticleCard";
 
 type Feed = { articles: DiscoverArticle[]; categories: string[] };
 
-/** Unread articles from the user's library that match their keywords, with search and category filters. */
-export function DiscoverFeed({ uid, getToken, onBack, onSaved }: { uid: string; getToken: () => Promise<string>; onBack: () => void; onSaved: (noteId: string, notice: string) => void }) {
+/** Unread articles from the user's library that match their keywords, with search and category filters. `onBack` adds a link back to Notes. */
+export function DiscoverFeed({ uid, getToken, onBack, onSaved }: { uid: string; getToken: () => Promise<string>; onBack?: () => void; onSaved: (noteId: string, notice: string) => void }) {
   const theme = useTheme();
   const [search, setSearch] = useState("");
   const [applied, setApplied] = useState("");
@@ -52,8 +52,8 @@ export function DiscoverFeed({ uid, getToken, onBack, onSaved }: { uid: string; 
 
   return (
     <View>
-      <LinkText title="← Notes" onPress={onBack} />
-      <Text style={{ color: theme.fgStrong, fontSize: 24, fontWeight: "800", marginTop: 12 }}>Discover</Text>
+      {onBack && <LinkText title="← Notes" onPress={onBack} />}
+      <Text style={{ color: theme.fgStrong, fontSize: 24, fontWeight: "800", marginTop: onBack ? 12 : 0 }}>Your articles</Text>
       <Text style={{ color: theme.fgMuted, fontSize: 12, marginBottom: 14 }}>Unread articles that match your keywords.</Text>
 
       <TextInput

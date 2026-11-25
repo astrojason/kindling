@@ -18,12 +18,12 @@ import { radius, useTheme } from "../lib/theme";
 export type NotesRoute = { name: "list" } | { name: "new" } | { name: "detail"; id: string } | { name: "edit"; id: string } | { name: "quiz"; id: string } | { name: "discover" };
 
 /** The Notes tab: the library, and from it a note, its editor and the capture form. */
-export function NotesScreen({ initialRoute = { name: "list" } }: { initialRoute?: NotesRoute }) {
+export function NotesScreen({ initialRoute = { name: "list" }, initialNotice = null }: { initialRoute?: NotesRoute; initialNotice?: string | null }) {
   const { user } = useAuth();
   const theme = useTheme();
   const tablet = useIsTablet();
   const [route, setRoute] = useState<NotesRoute>(initialRoute);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(initialNotice);
   if (!user) return null;
   const uid = user.uid;
   const getToken = () => user.getIdToken();
