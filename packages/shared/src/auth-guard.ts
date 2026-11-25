@@ -55,6 +55,32 @@ export function hasAppAccess(resolved: ResolvedAccess): boolean {
   return resolved === "superadmin" || resolved === "admin" || resolved === "granted";
 }
 
+export type StartupScreen = "starting" | "sign-in" | "pending" | "revoked" | "app";
+
+/**
+ * Which screen the app shows. "starting" covers everything before the answer is known: Firebase
+ * restoring the saved session, and the access check (including the render before it begins, when
+ * the result is still empty). The app keeps its splash up through it, so a signed-in person never
+ * glimpses the sign-in or access-pending screen on the way in.
+ */
+export function startupScreen({
+  authLoading,
+  signedIn,
+  accessLoading,
+  access,
+}: {
+  authLoading: boolean;
+  signedIn: boolean;
+  accessLoading: boolean;
+  access: ResolvedAccess | null;
+}): StartupScreen {
+  if (authLoading) return "starting";
+  if (!signedIn) return "sign-in";
+  if (accessLoading || access === null) return "starting";
+  if (hasAppAccess(access)) return "app";
+  return access === "revoked" ? "revoked" : "pending";
+}
+
 /**
  * Excludes the viewer's own request from the admin list — a superadmin can
  * have a leftover accessRequests doc from before they were granted the

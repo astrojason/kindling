@@ -8,6 +8,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "com.astrojason.kindling",
+      "appleTeamId": "68T36GK536",
       "supportsTablet": true,
       "infoPlist": {
         "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
