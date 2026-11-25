@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { CATEGORIES, CATEGORY_KEYS, type CategoryKey } from "@random-knowledge/shared/categories";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { CATEGORIES, CATEGORY_KEYS, matchCategories, type CategoryKey } from "@random-knowledge/shared/categories";
 import { radius, useTheme } from "../lib/theme";
 import { Button, LinkText } from "./ui";
 
@@ -10,6 +10,7 @@ export function CategoryPicker({
   onCancel,
   editing = Boolean(onCancel),
   compact = false,
+  filterable = false,
 }: {
   selectedCategories: CategoryKey[];
   onSave: (categories: CategoryKey[]) => Promise<void>;
@@ -18,11 +19,16 @@ export function CategoryPicker({
   editing?: boolean;
   /** Sits inside a settings screen: a section-sized heading and no divider under it. */
   compact?: boolean;
+  /** A filter box above the list; Select all / Clear all then act on the categories it shows. */
+  filterable?: boolean;
 }) {
   const theme = useTheme();
   const [selected, setSelected] = useState(selectedCategories);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState("");
+  const shown = matchCategories(filter);
+  const filtering = shown.length !== CATEGORY_KEYS.length;
 
   function toggle(key: CategoryKey) {
     setSelected((current) => (current.includes(key) ? current.filter((k) => k !== key) : [...current, key]));
@@ -48,11 +54,24 @@ export function CategoryPicker({
         Choose at least one category.{" "}
         {editing ? "Changes apply to future lessons; today’s lesson stays the same." : "Your daily lessons will come from your selections. You can change them anytime."}
       </Text>
+      {filterable && (
+        <TextInput
+          accessibilityLabel="Filter categories"
+          value={filter}
+          onChangeText={setFilter}
+          placeholder="Filter categories…"
+          placeholderTextColor={theme.fgMuted}
+          autoCorrect={false}
+          clearButtonMode="while-editing"
+          style={[styles.filter, { color: theme.fg, borderColor: theme.border, backgroundColor: theme.bg }]}
+        />
+      )}
       <View style={styles.linkRow}>
-        <LinkText title="Select all" onPress={() => setSelected([...CATEGORY_KEYS])} />
-        <LinkText title="Clear all" onPress={() => setSelected([])} />
+        <LinkText title={filtering ? "Select shown" : "Select all"} onPress={() => setSelected((current) => CATEGORY_KEYS.filter((k) => current.includes(k) || shown.includes(k)))} />
+        <LinkText title={filtering ? "Clear shown" : "Clear all"} onPress={() => setSelected((current) => current.filter((k) => !shown.includes(k)))} />
       </View>
-      {CATEGORY_KEYS.map((key) => {
+      {filtering && !shown.length && <Text style={{ color: theme.fgMuted, fontSize: 13, marginBottom: 8 }}>No category matches “{filter.trim()}”.</Text>}
+      {shown.map((key) => {
         const isSelected = selected.includes(key);
         return (
           <Pressable
@@ -90,6 +109,7 @@ const styles = StyleSheet.create({
   container: { borderBottomWidth: 1, paddingBottom: 20, marginBottom: 20 },
   title: { fontSize: 22, fontWeight: "700" },
   compactTitle: { fontSize: 16, fontWeight: "800" },
+  filter: { borderWidth: 1, borderRadius: radius.sm, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15, marginBottom: 12 },
   linkRow: { flexDirection: "row", gap: 16, marginBottom: 10 },
   row: { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: radius.sm, borderWidth: 1, padding: 12, marginBottom: 8 },
   checkbox: { width: 18, height: 18, borderRadius: 4, borderWidth: 1.5, alignItems: "center", justifyContent: "center" },

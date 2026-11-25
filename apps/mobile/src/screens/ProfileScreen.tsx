@@ -16,6 +16,7 @@ import { useAuth } from "../lib/auth-context";
 import { getStats, getStreak, setGoalMinutes } from "../lib/firestore";
 import { radius, useTheme } from "../lib/theme";
 import { canManageAccess } from "@random-knowledge/shared/auth-guard";
+import { version } from "../../package.json";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const LINKS = [
@@ -156,6 +157,7 @@ export function ProfileScreen({ onDataReset }: { onDataReset: () => void }) {
           </View>
         </View>
         {error && <ErrorBox message={error} />}
+        <Text style={{ color: theme.fgMuted, fontSize: 11, textAlign: "center" }}>Kindling {version}</Text>
       </Card>
     </ScrollView>
   );

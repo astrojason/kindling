@@ -95,6 +95,12 @@ export const CATEGORY_GUIDANCE = {
 
 export const CATEGORY_KEYS = Object.keys(CATEGORIES) as CategoryKey[];
 
+/** The categories whose shown name contains the filter text, ignoring case; a blank filter keeps them all. */
+export function matchCategories(filter: string): CategoryKey[] {
+  const needle = filter.trim().toLowerCase();
+  return needle ? CATEGORY_KEYS.filter((key) => CATEGORIES[key].toLowerCase().includes(needle)) : CATEGORY_KEYS;
+}
+
 export type Weights = Record<CategoryKey, number>;
 
 export function defaultWeights(): Weights {
