@@ -8,6 +8,7 @@ import { NoteForm } from "@/components/notes/NoteForm";
 import { useToast } from "@/components/Toast";
 import { ApiError, requestJson } from "@/lib/api-client";
 import { createNote, incrementNotesStats } from "@/lib/notes-firestore";
+import { fieldClass } from "@/components/form/field";
 
 type Stage = "idle" | "skipping" | "ingesting" | "paste" | "drafting" | "draft-failed" | "review";
 
@@ -119,7 +120,7 @@ export function ArticleCard({ article, uid, getToken, onDone }: { article: Disco
         <div className="mt-3 space-y-3">
           {stage === "paste" && (
             <div className="space-y-2">
-              <textarea aria-label="Pasted article text" value={pasted} onChange={(e) => setPasted(e.target.value)} rows={5} placeholder="Paste the article text here…" className="w-full rounded-sm border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent" />
+              <textarea aria-label="Pasted article text" value={pasted} onChange={(e) => setPasted(e.target.value)} rows={5} placeholder="Paste the article text here…" className={fieldClass} />
               <button type="button" disabled={!pasted.trim()} onClick={() => void makeNote(pasted.trim())} className={primary}>Use pasted text</button>
             </div>
           )}

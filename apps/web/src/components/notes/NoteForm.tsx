@@ -3,8 +3,8 @@
 import { useState, type FormEvent } from "react";
 import type { CreateNoteInput } from "@random-knowledge/shared/notes";
 import { validateNoteInput } from "@random-knowledge/shared/notes-input";
+import { fieldClass } from "@/components/form/field";
 
-const inputClass = "w-full rounded-sm border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent";
 const chip = (active: boolean) =>
   `rounded-full px-3 py-1 text-xs font-bold ${active ? "bg-accent text-accent-fg" : "border border-border text-fg-muted hover:border-accent"}`;
 
@@ -63,16 +63,16 @@ export function NoteForm({
   return (
     <form onSubmit={submit} className="space-y-4">
       <Field label="Title">
-        <input aria-label="Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Note title…" className={inputClass} />
+        <input aria-label="Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Note title…" className={fieldClass} />
       </Field>
       <Field label="What did it say?" hint="Markdown">
-        <textarea aria-label="What did it say?" value={what} onChange={(e) => setWhat(e.target.value)} rows={4} className={inputClass} />
+        <textarea aria-label="What did it say?" value={what} onChange={(e) => setWhat(e.target.value)} rows={4} className={fieldClass} />
       </Field>
       <Field label="Why does it matter?" hint="Markdown">
-        <textarea aria-label="Why does it matter?" value={why} onChange={(e) => setWhy(e.target.value)} rows={3} className={inputClass} />
+        <textarea aria-label="Why does it matter?" value={why} onChange={(e) => setWhy(e.target.value)} rows={3} className={fieldClass} />
       </Field>
       <Field label="How would you explain it?" hint="Markdown">
-        <textarea aria-label="How would you explain it?" value={application} onChange={(e) => setApplication(e.target.value)} rows={4} className={inputClass} />
+        <textarea aria-label="How would you explain it?" value={application} onChange={(e) => setApplication(e.target.value)} rows={4} className={fieldClass} />
       </Field>
       <div>
         <span className="text-xs font-extrabold uppercase tracking-wide text-accent">Tag</span>
@@ -85,10 +85,10 @@ export function NoteForm({
             ))}
           </div>
         )}
-        <input aria-label="Tag" value={tag} onChange={(e) => setTag(e.target.value)} placeholder="Enter a tag…" className={`${inputClass} mt-2`} />
+        <input aria-label="Tag" value={tag} onChange={(e) => setTag(e.target.value)} placeholder="Enter a tag…" className={`${fieldClass} mt-2`} />
       </div>
       <Field label="Source" hint="optional">
-        <input aria-label="Source URL" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} placeholder="https://…" className={inputClass} />
+        <input aria-label="Source URL" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} placeholder="https://…" className={fieldClass} />
       </Field>
 
       {error && <pre role="alert" className="whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all">{error}</pre>}

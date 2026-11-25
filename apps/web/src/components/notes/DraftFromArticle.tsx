@@ -3,8 +3,8 @@
 import { useState } from "react";
 import type { CreateNoteInput } from "@random-knowledge/shared/notes";
 import { requestJson } from "@/lib/api-client";
+import { fieldClass } from "@/components/form/field";
 
-const inputClass = "w-full rounded-sm border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent";
 
 /** Paste an article and let the AI draft a note from it; the draft is handed back for the user to review and edit. */
 export function DraftFromArticle({ getToken, onDraft }: { getToken: () => Promise<string>; onDraft: (draft: Partial<CreateNoteInput>) => void }) {
@@ -30,8 +30,8 @@ export function DraftFromArticle({ getToken, onDraft }: { getToken: () => Promis
   return (
     <div className="space-y-3 rounded-sm border border-border p-3.5">
       <p className="text-sm font-bold text-fg-strong">Draft from an article</p>
-      <input aria-label="Article title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Article title" className={inputClass} />
-      <textarea aria-label="Article text" value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder="Paste the article text…" className={inputClass} />
+      <input aria-label="Article title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Article title" className={fieldClass} />
+      <textarea aria-label="Article text" value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder="Paste the article text…" className={fieldClass} />
       {error && <pre role="alert" className="whitespace-pre-wrap rounded-sm bg-rust-soft p-3 text-xs text-rust select-all">{error}</pre>}
       <button
         type="button"

@@ -14,6 +14,7 @@ import { useStudyTimer } from "@/lib/useStudyTimer";
 import { createSession, getCompletedSessions, getIncompleteSession, incrementNotesStats, updateNoteAfterRating, updateSession } from "@/lib/notes-firestore";
 import { LoadingView } from "@/components/lesson/LoadingView";
 import { MarkdownBody } from "./MarkdownBody";
+import { fieldClass } from "@/components/form/field";
 
 /** Time spent on one turn (reading the coach, thinking, answering) counts at most this long. */
 const MAX_TURN_SECONDS = 3 * 60;
@@ -236,7 +237,7 @@ export function QuizSession({ uid, note, getToken }: { uid: string; note: Note; 
             disabled={streaming}
             rows={3}
             placeholder="Answer in your own words…"
-            className="w-full rounded-sm border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent disabled:opacity-60"
+            className={fieldClass}
           />
           <button type="button" disabled={streaming || !input.trim()} onClick={() => void send(input)} className="rounded-button bg-accent px-4 py-1.5 text-sm font-extrabold text-accent-fg hover:opacity-85 disabled:opacity-50">
             {streaming ? "Thinking…" : "Send"}

@@ -6,6 +6,7 @@ import type { Note } from "@random-knowledge/shared/notes";
 import { ageLabel, dueLabel, filterNotes, reviewedLabel, sortNotes, type NoteSort } from "@random-knowledge/shared/notes-view";
 import { getUniqueTags } from "@random-knowledge/shared/tags";
 import { StrengthBar } from "./StrengthBar";
+import { fieldClass } from "@/components/form/field";
 
 const SORTS: NoteSort[] = ["recent", "strength", "tag"];
 const chip = (active: boolean) =>
@@ -46,7 +47,7 @@ export function NotesLibrary({ notes, error = null, now = new Date() }: { notes:
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search title or tag…"
             aria-label="Search notes"
-            className="mb-3 w-full rounded-sm border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent"
+            className={`mb-3 ${fieldClass}`}
           />
           <div className="mb-3 flex items-center gap-3 text-xs">
             <span className="text-fg-muted">Sort</span>

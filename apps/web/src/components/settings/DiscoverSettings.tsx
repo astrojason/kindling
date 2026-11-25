@@ -7,8 +7,8 @@ import { LoadState } from "@/components/share/PageFrame";
 import { getNoteSettings, updateNoteSettings } from "@/lib/notes-firestore";
 import { forgetExplore } from "@/lib/useExplore";
 import { useLoad } from "@/lib/useLoad";
+import { fieldClass } from "@/components/form/field";
 
-const inputClass = "w-full rounded-sm border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent";
 
 /** Which articles account Discover reads, and the keywords that pick which unread articles to suggest. */
 export function DiscoverSettings({ uid }: { uid: string }) {
@@ -63,7 +63,7 @@ function DiscoverForm({ uid, initialUid, initialKeywords }: { uid: string; initi
 
       <label className="block">
         <span className="text-xs font-extrabold uppercase tracking-wide text-accent">Articles account</span>
-        <input aria-label="Articles account uid" value={articlesAppUid} onChange={(e) => setArticlesAppUid(e.target.value)} placeholder="Your uid in the articles app" className={`${inputClass} mt-1`} />
+        <input aria-label="Articles account uid" value={articlesAppUid} onChange={(e) => setArticlesAppUid(e.target.value)} placeholder="Your uid in the articles app" className={`${fieldClass} mt-1`} />
       </label>
 
       <div>
@@ -77,7 +77,7 @@ function DiscoverForm({ uid, initialUid, initialKeywords }: { uid: string; initi
           ))}
         </div>
         <div className="mt-2 flex gap-2">
-          <input aria-label="Add a keyword" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={onKeyDown} placeholder="Add a keyword…" className={inputClass} />
+          <input aria-label="Add a keyword" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={onKeyDown} placeholder="Add a keyword…" className={fieldClass} />
           <button type="button" onClick={add} className="rounded-button border-2 border-border px-3 py-1.5 text-sm font-extrabold text-fg-muted hover:border-accent">Add</button>
         </div>
       </div>

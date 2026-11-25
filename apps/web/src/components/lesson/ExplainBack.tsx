@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import type { Lesson } from "@/lib/types";
 import { useLoad } from "@/lib/useLoad";
 import { requestJson } from "@/lib/api-client";
+import { fieldClass } from "@/components/form/field";
 
 const MIN_LENGTH = 20;
 const MAX_LENGTH = 1500;
@@ -67,7 +68,7 @@ function ExplainBackForm({ lesson, getToken }: { lesson: Lesson; getToken: () =>
         maxLength={MAX_LENGTH}
         rows={4}
         onChange={(e) => setText(e.target.value)}
-        className="mb-3 block w-full rounded-sm border border-border bg-surface p-2.5 text-sm text-fg"
+        className={`mb-3 block ${fieldClass}`}
       />
       {error && <p role="alert" className="mb-3 text-sm text-rust">{error}</p>}
       {feedback && <p className="mb-3 text-[14.5px] leading-relaxed text-fg">{feedback}</p>}

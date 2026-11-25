@@ -6,9 +6,10 @@ import type { DiscoverArticle } from "@random-knowledge/shared/discover";
 import { LoadingView } from "@/components/lesson/LoadingView";
 import { requestJson } from "@/lib/api-client";
 import { useLoad } from "@/lib/useLoad";
+import { fieldClass } from "@/components/form/field";
+import { Select } from "@/components/form/Select";
 import { ArticleCard } from "./ArticleCard";
 
-const inputClass = "rounded-sm border border-border bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent";
 
 /** Unread articles from the user's library that match their keywords, with search and category filters. */
 export function DiscoverFeed({ uid, getToken }: { uid: string; getToken: () => Promise<string> }) {
@@ -47,12 +48,12 @@ export function DiscoverFeed({ uid, getToken }: { uid: string; getToken: () => P
       </div>
 
       <form onSubmit={onSearch} className="mb-4 flex flex-wrap gap-2">
-        <input aria-label="Search articles" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search…" className={`${inputClass} min-w-0 flex-1`} />
+        <input aria-label="Search articles" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search…" className={`${fieldClass} min-w-0 flex-1 basis-40`} />
         <button type="submit" className="rounded-button border-2 border-border px-3 py-1.5 text-sm font-extrabold text-fg-muted hover:border-accent">Search</button>
-        <select aria-label="Category" value={category} onChange={(e) => setCategory(e.target.value)} className={inputClass}>
+        <Select aria-label="Category" value={category} onChange={(e) => setCategory(e.target.value)}>
           <option value="">All categories</option>
           {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-        </select>
+        </Select>
       </form>
 
       {feed.loading && <LoadingView text="Finding articles" />}
