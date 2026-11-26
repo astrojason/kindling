@@ -20,7 +20,7 @@ const message = (err: unknown) => (err instanceof Error ? err.message : String(e
  * "Mark as read" records it read and removes it; "Skip" only hides it until the feed reloads.
  * Mirrors the web's ArticleCard, which has the tests.
  */
-export function ArticleCard({ article, uid, getToken, onDone, onSaved }: { article: DiscoverArticle; uid: string; getToken: () => Promise<string>; onDone: (articleId: number) => void; onSaved: (noteId: string, notice: string) => void }) {
+export function ArticleCard({ article, uid, getToken, onDone, onSaved, onOpenArticle }: { article: DiscoverArticle; uid: string; getToken: () => Promise<string>; onDone: (articleId: number) => void; onSaved: (noteId: string, notice: string) => void; onOpenArticle: () => void }) {
   const theme = useTheme();
   const [stage, setStage] = useState<Stage>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +28,10 @@ export function ArticleCard({ article, uid, getToken, onDone, onSaved }: { artic
   const [text, setText] = useState<string | null>(null);
 
   const isWebLink = /^https?:\/\//i.test(article.url);
-  const openArticle = () => Linking.openURL(article.url);
+  const openArticle = () => {
+    onOpenArticle();
+    return Linking.openURL(article.url);
+  };
 
   const markRead = async () => requestJson("/api/discover/mark-read", await getToken(), { method: "POST", body: JSON.stringify({ articleId: article.id }) });
 

@@ -2,14 +2,28 @@
 
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, expect, it, vi, type Mock } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import type { DiscoverArticle } from "@random-knowledge/shared/discover";
+import { nowMs } from "@/lib/clock";
+import { todayStr } from "@/lib/date";
+import { addStats } from "@/lib/firestore";
 import { DiscoverFeed } from "./DiscoverFeed";
+
+const toast = vi.hoisted(() => vi.fn());
+vi.mock("@/components/Toast", () => ({ useToast: () => toast }));
+vi.mock("@/lib/clock", () => ({ nowMs: vi.fn() }));
+vi.mock("@/lib/firestore", () => ({ addStats: vi.fn() }));
 
 vi.mock("next/link", () => ({ default: ({ href, children, className }: { href: string; children: unknown; className?: string }) => createElement("a", { href, className }, children as never) }));
 vi.mock("./ArticleCard", () => ({
-  ArticleCard: ({ article, onDone }: { article: DiscoverArticle; onDone: (id: number) => void }) =>
-    createElement("div", { "data-article": article.id }, article.title, createElement("button", { type: "button", onClick: () => onDone(article.id) }, `done ${article.id}`)),
+  ArticleCard: ({ article, onDone, onOpenArticle }: { article: DiscoverArticle; onDone: (id: number) => void; onOpenArticle: () => void }) =>
+    createElement(
+      "div",
+      { "data-article": article.id },
+      article.title,
+      createElement("button", { type: "button", onClick: () => onDone(article.id) }, `done ${article.id}`),
+      createElement("button", { type: "button", onClick: onOpenArticle }, `open ${article.id}`),
+    ),
 }));
 
 const art = (id: number, title: string): DiscoverArticle => ({ id, title, url: `https://example.com/${id}`, summary: "", readingTime: 3, keywords: [], categories: [], content: "", createdAt: 1 });
@@ -20,6 +34,9 @@ let root: Root;
 beforeEach(() => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.spyOn(console, "error").mockImplementation(() => {});
+  vi.mocked(addStats).mockReset().mockResolvedValue(undefined);
+  vi.mocked(nowMs).mockReturnValue(0);
+  toast.mockReset();
   fetchMock = vi.fn<(url: string, init: RequestInit) => Promise<Response>>(async () => Response.json({ articles: [art(1, "Dovetails"), art(2, "Mortise")], categories: ["DIY", "Home"] }));
   vi.stubGlobal("fetch", fetchMock);
   container = document.createElement("div");
@@ -100,4 +117,67 @@ it("links to the settings when the articles account has not been set", async () 
   await render();
   expect(container.querySelector("[role='alert']")?.textContent).toContain("Set your articles account in Settings");
   expect(container.querySelector("a[href='/profile']")).not.toBeNull();
+});
+
+describe("exploring time", () => {
+  const setVisibility = (state: "visible" | "hidden") => {
+    Object.defineProperty(document, "visibilityState", { value: state, configurable: true });
+    return act(async () => { document.dispatchEvent(new Event("visibilitychange")); });
+  };
+  const leave = async () => {
+    await act(async () => root.unmount());
+    root = createRoot(container);
+  };
+  const clickButton = (text: string) => act(async () => ([...container.querySelectorAll("button")].find((b) => b.textContent === text) as HTMLElement).click());
+  afterEach(() => setVisibility("visible"));
+
+  it("counts the time spent on Explore toward today's learning time when the page is left", async () => {
+    await render();
+    vi.mocked(nowMs).mockReturnValue(90_000);
+    await leave();
+    expect(addStats).toHaveBeenCalledWith("u1", todayStr(), { seconds: 90 });
+  });
+
+  it("keeps counting while an opened article is read in another tab", async () => {
+    await render();
+    vi.mocked(nowMs).mockReturnValue(10_000);
+    await clickButton("open 1");
+    await setVisibility("hidden");
+    expect(addStats).toHaveBeenLastCalledWith("u1", todayStr(), { seconds: 10 });
+
+    vi.mocked(nowMs).mockReturnValue(310_000); // five minutes reading the article
+    await setVisibility("visible");
+    vi.mocked(nowMs).mockReturnValue(370_000); // a minute writing the note
+    await leave();
+    expect(vi.mocked(addStats).mock.calls.reduce((sum, [, , stats]) => sum + (stats.seconds ?? 0), 0)).toBe(370);
+  });
+
+  it("stops counting while the tab is hidden for anything else", async () => {
+    await render();
+    vi.mocked(nowMs).mockReturnValue(20_000);
+    await setVisibility("hidden");
+    vi.mocked(nowMs).mockReturnValue(500_000);
+    await setVisibility("visible");
+    vi.mocked(nowMs).mockReturnValue(510_000);
+    await leave();
+    expect(vi.mocked(addStats).mock.calls.map(([, , stats]) => stats.seconds)).toEqual([20, 10]);
+  });
+
+  it("counts an article read elsewhere for at most 30 minutes", async () => {
+    await render();
+    await clickButton("open 1");
+    await setVisibility("hidden");
+    vi.mocked(nowMs).mockReturnValue(5 * 60 * 60_000); // left for five hours
+    await setVisibility("visible");
+    await leave();
+    expect(vi.mocked(addStats).mock.calls.reduce((sum, [, , stats]) => sum + (stats.seconds ?? 0), 0)).toBe(30 * 60);
+  });
+
+  it("tells the user when the time could not be recorded", async () => {
+    vi.mocked(addStats).mockRejectedValue(new Error("stats down"));
+    await render();
+    vi.mocked(nowMs).mockReturnValue(30_000);
+    await leave();
+    expect(toast).toHaveBeenCalledWith(expect.stringContaining("stats down"));
+  });
 });

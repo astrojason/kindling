@@ -23,6 +23,7 @@ let ingest: Handler;
 let draftRoute: Handler;
 let markRead: Handler;
 let onDone: Mock<(articleId: number) => void>;
+let onOpenArticle: Mock<() => void>;
 let container: HTMLElement;
 let root: Root;
 
@@ -43,6 +44,7 @@ beforeEach(() => {
   vi.mocked(createNote).mockResolvedValue("note-1");
   vi.mocked(incrementNotesStats).mockResolvedValue(undefined);
   onDone = vi.fn<(articleId: number) => void>();
+  onOpenArticle = vi.fn<() => void>();
   container = document.createElement("div");
   root = createRoot(container);
 });
@@ -52,7 +54,7 @@ afterEach(async () => {
   vi.restoreAllMocks();
 });
 
-const render = () => act(async () => root.render(createElement(ArticleCard, { article, uid: "u1", getToken: async () => "tok", onDone })));
+const render = () => act(async () => root.render(createElement(ArticleCard, { article, uid: "u1", getToken: async () => "tok", onDone, onOpenArticle })));
 const button = (text: string) => [...container.querySelectorAll("button")].find((b) => b.textContent === text) as HTMLButtonElement;
 const click = (el: Element | undefined) => act(async () => (el as HTMLElement).click());
 const setValue = (el: Element, value: string) => {
@@ -73,10 +75,18 @@ it("shows the article: a link that opens safely in a new tab, summary, reading t
   for (const text of ["How dovetails hold.", "6 min", "woodworking", "DIY"]) expect(container.textContent).toContain(text);
 });
 
+it("says when the article is opened from its title, so reading it counts as exploring time", async () => {
+  await render();
+  const link = container.querySelector("a[href='https://example.com/dovetails']")!;
+  link.addEventListener("click", (e) => e.preventDefault());
+  await click(link);
+  expect(onOpenArticle).toHaveBeenCalledTimes(1);
+});
+
 it("always lays out the same five rows (title, details, summary, keywords, actions), so cards side by side line up", async () => {
   const sparse = { ...article, summary: "", keywords: [], readingTime: 0, categories: [] };
   for (const shown of [article, sparse]) {
-    await act(async () => root.render(createElement(ArticleCard, { article: shown, uid: "u1", getToken: async () => "tok", onDone })));
+    await act(async () => root.render(createElement(ArticleCard, { article: shown, uid: "u1", getToken: async () => "tok", onDone, onOpenArticle })));
     const card = container.querySelector("article")!;
     expect(card.children.length).toBe(5);
     // On wide screens each card takes five rows of the feed's grid and shares them with the card beside it.
@@ -131,6 +141,7 @@ it("makes a note: opens the article in a new tab, records the read date, and ope
   await click(button("Make a note"));
 
   expect(open).toHaveBeenCalledWith("https://example.com/dovetails", "_blank", "noopener,noreferrer");
+  expect(onOpenArticle).toHaveBeenCalled(); // so reading it in that tab counts as exploring time
   expect(body(markRead)).toEqual({ articleId: 5 });
   expect(field("Title").value).toBe("Dovetail joints");
   expect(field("Source URL").value).toBe("https://example.com/dovetails");
@@ -147,9 +158,10 @@ it("makes a note: opens the article in a new tab, records the read date, and ope
 it("does not open a link that is not a web address", async () => {
   const open = vi.fn();
   vi.stubGlobal("open", open);
-  await act(async () => root.render(createElement(ArticleCard, { article: { ...article, url: "javascript:alert(1)" }, uid: "u1", getToken: async () => "tok", onDone })));
+  await act(async () => root.render(createElement(ArticleCard, { article: { ...article, url: "javascript:alert(1)" }, uid: "u1", getToken: async () => "tok", onDone, onOpenArticle })));
   await click(button("Make a note"));
   expect(open).not.toHaveBeenCalled();
+  expect(onOpenArticle).not.toHaveBeenCalled();
   expect(field("Title")).toBeTruthy();
 });
 

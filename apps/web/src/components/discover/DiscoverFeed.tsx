@@ -9,15 +9,17 @@ import { useLoad } from "@/lib/useLoad";
 import { fieldClass } from "@/components/form/field";
 import { Select } from "@/components/form/Select";
 import { ArticleCard } from "./ArticleCard";
+import { useExploreTime } from "./useExploreTime";
 
 
-/** Unread articles from the user's library that match their keywords, with search and category filters. */
+/** Unread articles from the user's library that match their keywords, with search and category filters. Time here counts toward today's learning time. */
 export function DiscoverFeed({ uid, getToken }: { uid: string; getToken: () => Promise<string> }) {
   const [search, setSearch] = useState("");
   const [applied, setApplied] = useState("");
   const [category, setCategory] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [removed, setRemoved] = useState<Set<number>>(new Set());
+  const articleOpened = useExploreTime(uid);
 
   const params = new URLSearchParams();
   if (applied) params.set("search", applied);
@@ -66,7 +68,7 @@ export function DiscoverFeed({ uid, getToken }: { uid: string; getToken: () => P
       {!feed.loading && !feed.error && articles.length === 0 && <p className="py-6 text-center text-sm text-fg-muted">No unread articles match your keywords right now.</p>}
       <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
         {articles.map((article) => (
-          <ArticleCard key={article.id} article={article} uid={uid} getToken={getToken} onDone={(id) => setRemoved((prev) => new Set(prev).add(id))} />
+          <ArticleCard key={article.id} article={article} uid={uid} getToken={getToken} onOpenArticle={articleOpened} onDone={(id) => setRemoved((prev) => new Set(prev).add(id))} />
         ))}
       </div>
     </div>

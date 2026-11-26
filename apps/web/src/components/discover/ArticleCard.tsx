@@ -22,7 +22,7 @@ const secondary = "rounded-button border-2 border-border px-3 py-1.5 text-sm fon
  * and saved by the server), for the user to write the rest themselves as they read.
  * "Mark as read" records it read and removes it; "Skip" only hides it until the feed reloads.
  */
-export function ArticleCard({ article, uid, getToken, onDone }: { article: DiscoverArticle; uid: string; getToken: () => Promise<string>; onDone: (articleId: number) => void }) {
+export function ArticleCard({ article, uid, getToken, onDone, onOpenArticle }: { article: DiscoverArticle; uid: string; getToken: () => Promise<string>; onDone: (articleId: number) => void; onOpenArticle: () => void }) {
   const router = useRouter();
   const toast = useToast();
   const [stage, setStage] = useState<Stage>("idle");
@@ -47,7 +47,10 @@ export function ArticleCard({ article, uid, getToken, onDone }: { article: Disco
 
   async function makeNote() {
     // Opened first, while still inside the click, so the browser does not block the new tab.
-    if (/^https?:\/\//i.test(article.url)) window.open(article.url, "_blank", "noopener,noreferrer");
+    if (/^https?:\/\//i.test(article.url)) {
+      onOpenArticle();
+      window.open(article.url, "_blank", "noopener,noreferrer");
+    }
     setError(null);
     if (!readRecorded) {
       setStage("marking-read");
@@ -95,7 +98,7 @@ export function ArticleCard({ article, uid, getToken, onDone }: { article: Disco
     // Always five rows (title, details, summary, keywords, actions), an empty one taking no height, so that on wide
     // screens the card shares its rows with the one beside it and their parts line up.
     <article className="rounded-sm border border-border p-3.5 lg:row-span-5 lg:grid lg:grid-rows-subgrid lg:gap-y-0">
-      <a href={article.url} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-fg-strong underline-offset-2 hover:underline lg:justify-self-start">{article.title}</a>
+      <a href={article.url} target="_blank" rel="noopener noreferrer" onClick={onOpenArticle} className="text-sm font-bold text-fg-strong underline-offset-2 hover:underline lg:justify-self-start">{article.title}</a>
       <p className="mt-0.5 text-xs text-fg-muted">{article.readingTime > 0 ? `${article.readingTime} min · ` : ""}{article.categories.join(", ")}</p>
       <div>{article.summary && <p className="mt-2 text-sm text-fg">{article.summary}</p>}</div>
       <div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import type { DiscoverArticle } from "@random-knowledge/shared/discover";
+import { useExploreTime } from "../../hooks/useExploreTime";
 import { requestJson } from "../../lib/api";
 import { radius, useTheme } from "../../lib/theme";
 import { ErrorBox } from "../ErrorBox";
@@ -10,7 +11,7 @@ import { ArticleCard } from "./ArticleCard";
 
 type Feed = { articles: DiscoverArticle[]; categories: string[] };
 
-/** Unread articles from the user's library that match their keywords, with search and category filters. `onBack` adds a link back to Notes. */
+/** Unread articles from the user's library that match their keywords, with search and category filters. Time here counts toward today's learning time. `onBack` adds a link back to Notes. */
 export function DiscoverFeed({ uid, getToken, onBack, onSaved }: { uid: string; getToken: () => Promise<string>; onBack?: () => void; onSaved: (noteId: string, notice: string) => void }) {
   const theme = useTheme();
   const [search, setSearch] = useState("");
@@ -18,6 +19,7 @@ export function DiscoverFeed({ uid, getToken, onBack, onSaved }: { uid: string; 
   const [category, setCategory] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [removed, setRemoved] = useState<Set<number>>(new Set());
+  const articleOpened = useExploreTime(uid);
   const [result, setResult] = useState<{ key: string; feed?: Feed; error?: string } | null>(null);
 
   const params = new URLSearchParams();
@@ -82,7 +84,7 @@ export function DiscoverFeed({ uid, getToken, onBack, onSaved }: { uid: string; 
       {current?.error && <ErrorBox message={current.error} />}
       {current?.feed && articles.length === 0 && <Text style={{ color: theme.fgMuted, textAlign: "center", paddingVertical: 24 }}>No unread articles match your keywords right now.</Text>}
       {articles.map((article) => (
-        <ArticleCard key={article.id} article={article} uid={uid} getToken={getToken} onDone={(id) => setRemoved((prev) => new Set(prev).add(id))} onSaved={onSaved} />
+        <ArticleCard key={article.id} article={article} uid={uid} getToken={getToken} onOpenArticle={articleOpened} onDone={(id) => setRemoved((prev) => new Set(prev).add(id))} onSaved={onSaved} />
       ))}
     </View>
   );
